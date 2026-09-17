@@ -1,0 +1,9 @@
+{
+  "stage": "scaffold",
+  "functional_rtl_implemented": false,
+  "rtl_simulation_passed": false,
+  "physical_validation_passed": false,
+  "target_shuttle": "ttihp26b",
+  "target_tiles": "1x2",
+  "template_commit": "6598bef4d3159f19fe471a2a2225df52e6f5ad25"
+}

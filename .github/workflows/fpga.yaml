@@ -1,0 +1,19 @@
+name: fpga
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fpga:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Refuse hardware artifacts for the inert scaffold
+        run: python3 tools/require_rtl.py
+
+      - name: FPGA bitstream for TT ASIC Sim (ICE40UP5K)
+        uses: TinyTapeout/tt-gds-action/fpga/ice40up5k@ttihp26b
