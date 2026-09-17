@@ -1,90 +1,68 @@
-# PIO ASIC — coprocesseur d'entrées-sorties programmable
+# PIO ASIC — coprocesseur numérique programmable
 
-## État : première version fonctionnelle en simulation, pas prête à fabriquer
+## État : RTL v2 testé, fabrication bloquée
 
-Ce projet est un **PIO généraliste** relié à un LPC55xxx par SPI. WS2812 est
-une application de validation, pas une fonction câblée dans l'ASIC.
+Deux contextes PIO, un hôte **LPC546xx**, une SRAM de **256 octets** et une cible
+**TTIHP26b, deux tiles 1×2**. Le placement/routage a produit un GDS dans cette
+surface. **Ne pas soumettre** : la SRAM officielle échoue au DRC du run, des
+hypothèses de timing restent à qualifier et le statut détaillé fait autorité.
+Voir [vérification](docs/verification.md) et [blocage SRAM](docs/sram-drc-blocker.md).
 
-Base : [template officiel IHP](https://github.com/TinyTapeout/ttihp-verilog-template),
-commit `6598bef4d3159f19fe471a2a2225df52e6f5ad25`, vérifié le 17 septembre 2026.
-Le dépôt Git local possède une branche `main`, sans aucun remote : aucun dépôt
-distant n'a été créé et aucun fichier n'a été publié. Le template d'origine est
-identifié ci-dessus pour conserver sa provenance.
+Le projet reste un PIO généraliste : UART, SPI et WS2812 sont des programmes,
+pas des circuits spécialisés. Il n'est pas compatible avec l'ISA RP2040.
 
-## Objectif de conception
+## Capacité implémentée
 
-- Cible provisoire : TTIHP26b, IHP SG13G2, **deux tiles (`1x2`)**.
-- Un moteur d'exécution partagé par **deux contextes** programmables.
-- Ordonnancement déterministe, attentes d'événement et de temps.
-- SPI dédié vers le LPC, interruptions et petits tampons de données.
-- Programme chargé par l'ARM après reset ; aucune flash interne prévue.
-- Huit GPIO bidirectionnelles, cinq entrées fixes et six sorties fixes pour les programmes.
-- Aucune dépendance à un décodeur WS2812, UART ou SPI applicatif câblé.
+- Deux contextes à créneaux fixes, chacun une instruction tous les six clocks.
+- 48 instructions de 16 bits par contexte, accumulateur 8 bits, compteur 4 bits.
+- Quatre files SRAM de 16 octets : TX et RX pour chacun des deux contextes.
+- Attentes de niveau, délais relatifs, événements, IRQ et transfert direct entre contextes.
+- SPI hôte dédié, mode 0, paquets de quatre octets ; SPI applicatif par programme.
+- 8 broches bidirectionnelles, 5 entrées fixes et 6 sorties fixes applicatives.
+- Deux banques de 7 sorties protégées ; les 13 entrées sont accessibles aux deux contextes.
+- Assembleur, programmes démonstrateurs et bibliothèque C portable pour le transport LPC.
 
-Deux contextes sont implémentés ; leur tenue physique dans deux tiles et la
-profondeur mémoire finale restent à valider. `clock_hz: 50000000` et la contrainte de 20 ns sont des
-**objectifs exploratoires**, pas une fréquence garantie. Le nom de module,
-l'auteur et le brochage restent à confirmer avant publication.
+La répartition mémoire utilise les 256 octets : 192 de code et 64 de files.
+Ce n'est pas une RAM librement adressable par les instructions. Il n'y a ni flash,
+DMA autonome vers la RAM ARM, échéances absolues, ni ordonnanceur à priorités.
+Les créneaux fixes privilégient un timing prévisible à un débit opportuniste.
 
-## Ce qui existe aujourd'hui
+## Documentation
 
-- Interface Tiny Tapeout : SPI dédié, IRQ et 19 signaux applicatifs.
-- Deux contextes, 16 instructions de 16 bits chacun, accumulateurs 16 bits.
-- Créneaux fixes alternés, attente d'entrée et temporisation non bloquantes pour l'autre contexte.
-- 15 instructions génériques, sorties et directions protégées par masques disjoints.
-- Chargement/lecture SPI, protection contre la modification du code actif, fautes et reset.
-- Assembleur minimal, formation de paquets hôte et deux exemples programmables.
-- Tests RTL sur les broches et tests des outils hôte.
-- Workflows du template ; génération GDS et FPGA volontairement bloquée au stade prototype.
-- [ISA v0, registres et timing](docs/isa-v0.md).
-- [Architecture et décisions ouvertes](docs/architecture.md).
-- [Plan de vérification](docs/verification.md).
+- [Architecture et brochage](docs/architecture.md)
+- [ISA v2 et registres, contrat de référence](docs/isa-v2.md)
+- [Applications, débit et raccordement LPC546xx](docs/applications.md)
+- [Versions EDA, SRAM, contraintes physiques](docs/toolchain.md)
+- [Preuve reproductible du défaut DRC de la macro](docs/sram-drc-blocker.md)
+- [Tests exécutés et limites](docs/verification.md)
+- [Revue locale et points à faire vérifier](docs/review-notes.md)
+- [Plan et limites d'autorisation](docs/development-plan.md)
 
-**Pas encore de FIFOs, de streaming, d'échanges entre contextes ou de pilote LPC.
-Aucune validation WS2812, synthèse IHP, mesure de surface ou GDS. Ne pas soumettre
-ce prototype.** Les 64 octets de code sont en logique inférée, pas en macro SRAM.
-L'ISA et les registres sont provisoires et pourront évoluer.
+## Reproduire les tests
 
-## Vérification locale
-
-Préparer un environnement avec Python 3.11 à 3.13 (cocotb 2.0.1 ne prend pas en
-charge Python 3.14), ainsi qu'Icarus Verilog dans le PATH :
+Python 3.11–3.13, Icarus Verilog et un compilateur C sont requis.
 
 ```sh
 python3.13 -m venv .venv
-source .venv/bin/activate
+. .venv/bin/activate
 python -m pip install -r test/requirements.txt
 make test
+python tools/pioasm.py examples/ws2812_tx.pio
 ```
 
-`make check` vérifie la structure et les outils sans simulation RTL. Assembler
-un programme (mots hexadécimaux sur la sortie standard) :
+Modèle mémoire PDK : `PDK_ROOT="$PWD/work/pdk" make test SRAM=yes`.
+Deuxième simulateur : `make -C test SIM=verilator SIM_BUILD=sim_build/verilator`.
+Les scripts de vérification rejettent les échecs et les tests sautés.
+Le flow physique local est lancé avec `sh tools/harden_local.sh nom-essai` après
+installation des versions indiquées dans la documentation ; il archive ses entrées.
 
-```sh
-python tools/pioasm.py examples/blink.pio
-```
+## Publication et soumission
 
-Les workflows GDS et FPGA sont manuels. Leur verrou `tools/require_rtl.py`
-échoue volontairement tant que `design_status.json` indique `rtl_prototype`.
-Le passage à `rtl_implemented` nécessitera d'implémenter et vérifier le périmètre
-PIO prévu ; ce statut ne vaut jamais validation physique ou autorisation de
-soumission. Une simulation RTL à période 20 ns ne prouve pas un timing silicium.
+Dépôt Git local, branche `main`, sans remote. Aucun coupon utilisé ou enregistré,
+aucune publication ni soumission externe. Les workflows distants restent manuels
+et verrouillés tant que le statut n'autorise pas leur lancement. Un GDS existant,
+des tests verts ou une simulation à 50 MHz ne signifient pas « prêt à fabriquer ».
 
-## Prochain jalon
-
-Mesurer tôt la surface de cette base, puis ajouter les files RX/TX et les échanges
-entre contextes avec leurs tests. Étendre ensuite l'ordonnancement aux événements
-et échéances nécessaires aux applications ; ne pas transformer le cœur en
-décodeur WS2812 spécialisé. La référence exacte du LPC55xxx et les tensions
-seront nécessaires au pilote, au DMA et au raccordement matériel.
-
-## Coupons et soumission
-
-Aucun coupon n'est nécessaire pour concevoir ou simuler. Les coupons restent
-hors du code, de Git et des fichiers de configuration. Leur validité, le run,
-l'expiration et le nombre de tiles couvertes se vérifient dans le portail.
-Ne pas supposer que deux coupons sont cumulables ni qu'ils couvrent le devkit.
-Publication GitHub, réservation, utilisation d'un coupon et soumission finale
-seront des étapes séparées à valider avec l'utilisateur.
-
-Licence du template conservée : Apache-2.0.
+Template officiel IHP, commit `6598bef4d3159f19fe471a2a2225df52e6f5ad25` :
+[source](https://github.com/TinyTapeout/ttihp-verilog-template/tree/6598bef4d3159f19fe471a2a2225df52e6f5ad25).
+Licence Apache-2.0 conservée. Attribution publique et unicité du nom de module à confirmer.

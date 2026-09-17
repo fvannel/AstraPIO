@@ -24,7 +24,12 @@ def read_value(response: bytes) -> int:
 
 def program_frames(context: int, words: list[int]) -> list[bytes]:
     """Data frames only. Caller must stop BOTH contexts before uploading."""
-    if context not in (0, 1) or not 1 <= len(words) <= 16:
-        raise ValueError("context must be 0/1 and program length 1..16")
-    return [write_frame(0x40 + 16 * context + index, word)
-            for index, word in enumerate(words)]
+    if context not in (0, 1) or not 1 <= len(words) <= 48:
+        raise ValueError("context must be 0/1 and program length 1..48")
+    frames = [write_frame(0x1F + 16 * context, 0)]  # Invalidate previous program first.
+    for index, word in enumerate(words):
+        if index < 16:
+            frames.append(write_frame(0x40 + 16 * context + index, word))
+        else:
+            frames.extend((write_frame(0x0A, 64 * context + index), write_frame(0x0B, word)))
+    return frames

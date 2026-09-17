@@ -1,6 +1,6 @@
-# ISA et interface hôte — prototype v0, révision 1
+# HISTORIQUE — ISA v0, remplacée par [isa-v2.md](isa-v2.md)
 
-Contrat du RTL actuel, **provisoire et non compatible avec les PIO Raspberry Pi**.
+Contrat de l'ancien prototype, **ne pas utiliser pour le RTL actuel**.
 Les FIFOs, le streaming, les événements entre contextes et les échéances absolues
 ne sont pas encore implémentés. Cette version ne valide pas l'application WS2812.
 

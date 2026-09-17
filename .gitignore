@@ -10,6 +10,9 @@ src/config_merged.json
 test/sim_build
 test/__pycache__/
 test/results.xml
+test/*-results.xml
+test/units/sim_build/
+test/units/results.xml
 test/gate_level_netlist.v
 __pycache__/
 .venv/
@@ -17,3 +20,9 @@ __pycache__/
 .env.*
 secrets/
 coupons/
+work/
+.reviews/
+tt/
+/tt
+gds_render*.png
+gds_render*.svg

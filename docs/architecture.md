@@ -1,99 +1,73 @@
-# Architecture de travail — PIO généraliste
+# Architecture v2 — 18 septembre 2026
 
-## Périmètre convenu
+## Choix fondés sur la surface mesurée
 
-Deux tiles IHP comme budget cible, un hôte ARM LPC55xxx, liaison SPI dédiée,
-et deux contextes PIO partageant un moteur. Chaque contexte conserve sa position
-dans le programme, son état de travail et ses conditions d'attente. Le nombre
-de contextes est réalisé dans le prototype ; la surface reste à vérifier.
+La première version à code en bascules dépassait les deux tiles. Une SRAM 256×16
+laissait trop peu de place pour la logique. La version actuelle partage une
+SRAM 256×8 entre **192 octets de code** et **64 octets de files**. Les banques
+de sorties fixes et le datapath 8 bits réduisent le coût de la configuration.
+Les capacités ci-dessous décrivent le RTL actuel, pas la première ISA v0.
 
-Les protocoles applicatifs sont des programmes rechargeables après fabrication.
-La réception, l'émission, le relais et la modification WS2812 constituent un
-cas de validation exigeant ; aucun bloc de remplacement de pixels spécifique
-ne doit entrer silencieusement dans l'architecture.
+## Brochage
 
-## Répartition des broches proposée
+| Fonction | Broches Tiny Tapeout | Indices vus par les programmes |
+|---|---|---|
+| SPI SCK / MOSI / CS_N | ui[0:2] | réservées à l'hôte |
+| SPI MISO / IRQ | uo[0:1] | réservées à l'hôte |
+| 5 entrées fixes | ui[3:7] | entrées 8…12 |
+| 6 sorties fixes | uo[2:7] | sorties globales 8…13 |
+| 8 bidirectionnelles | uio[0:7] | entrées et sorties globales 0…7 |
 
-| Interface | Broches Tiny Tapeout | Direction vue par l'ASIC |
-| --- | --- | --- |
-| SPI hôte SCK, MOSI, CS_N | ui[0], ui[1], ui[2] | Entrées |
-| SPI hôte MISO | uo[0] | Sortie, bus dédié |
-| Interruption hôte | uo[1] | Sortie |
-| PIO_IN0 à PIO_IN4 | ui[3] à ui[7] | Entrées |
-| PIO_OUT0 à PIO_OUT5 | uo[2] à uo[7] | Sorties |
-| PIO_IO0 à PIO_IO7 | uio[0] à uio[7] | Bidirectionnelles |
+Horloge, reset et sélection `ena` sont dédiés. Il y a 19 signaux applicatifs,
+pas 19 par contexte. Contexte 0 : sorties locales 0…6 → globales 0…6.
+Contexte 1 : locales 0…6 → globales 7…13. Chaque banque possède un masque
+d'activation de 7 bits, initialement nul. Les deux contextes lisent les 13 entrées.
+Le MISO est une sortie permanente à zéro hors CS : **bus SPI dédié**, sans partage
+avec un autre esclave MISO non isolé.
 
-Horloge et reset dédiés en plus. Dix-neuf signaux applicatifs partagés, pas par
-contexte. Les indices logiques sont définis dans [l'ISA v0](isa-v0.md).
-La référence LPC exacte et ses broches ne sont pas encore connues.
+## Ordonnanceur et mémoire
 
-## Fonctions génériques
+Chaque tour de six clocks est fixe : fetch bas C0, fetch haut C0, exécution C0,
+fetch bas C1, fetch haut C1, exécution C1. Les clocks d'exécution sont aussi les
+créneaux du port mémoire de données. Une attente ne redistribue jamais le créneau
+de l'autre contexte. À l'objectif de 50 MHz : 120 ns par créneau/contexte.
 
-- Lecture/écriture masquée des broches et contrôle de leur direction.
-- Décalage de données, petits registres et branchements.
-- Attente d'un niveau ou d'un événement, temporisation et échéances.
-- Échange avec l'hôte et entre contextes, sans imposer un détour ARM.
-- Arrêt, reprise, remise à zéro et indication des erreurs.
+Le port de données arbitre dans l'ordre : prélecture RX de l'hôte, écriture TX
+de l'hôte, opération du contexte actif. Une instruction PULL/PUSH/RECV peut
+réessayer au tour suivant ; les instructions ordinaires gardent leur cadence.
+Les accès programme exigent l'arrêt des deux contextes ; pas d'auto-modification.
+La mémoire est volatile et non effacée au reset : longueurs valides et pointeurs
+empêchent d'exécuter/lire le contenu non initialisé.
 
-La première version dispose d'une ISA provisoire de 15 instructions, d'un
-accumulateur 16 bits par contexte et d'un contrat cycle par cycle documenté.
-Broches, décalages, branchements, attente de niveau, délai, stop/reprise et
-erreurs sont implémentés. Événements inter-contextes, échéances absolues et
-échanges de données via files restent à développer. Aucune compatibilité
-RP2040/RP2350 n'est revendiquée.
+| Octets physiques SRAM | Usage |
+|---|---|
+| 00…5F | 48 mots de code contexte 0, little-endian dans SRAM |
+| 60…6F / 70…7F | TX0 / RX0, 16 octets chacun |
+| 80…DF | 48 mots de code contexte 1 |
+| E0…EF / F0…FF | TX1 / RX1, 16 octets chacun |
 
-## Ordonnanceur
+PULL consomme TX propre ; PUSH produit RX propre ; RECV consomme RX du pair.
+Le PC reste bloqué sur FIFO vide/pleine, sans perte. Une écriture hôte dans une
+TX pleine est rejetée avec erreur persistante. La lecture RX est un instantané
+réservé pendant la trame SPI ; seule une lecture complète et valide le consomme.
+Une arrivée après un instantané vide reste disponible pour la trame suivante.
 
-Le prototype utilise des créneaux fixes : un contexte par cycle, en alternance,
-même lorsque l'autre attend ou est arrêté. Chaque contexte conserve ainsi un
-créneau tous les deux cycles. Ce premier ordonnanceur simple n'est pas encore
-l'ordonnanceur avancé envisagé. L'éventuelle redistribution de créneaux, les
-priorités et les échéances devront conserver un contrat de timing explicite.
+## Événements, reset et sûreté
 
-Conflits de broches : masques disjoints vérifiés par le matériel. Les états de
-sortie persistent entre instructions, et au stop/HALT/faute/RESTART. Reset ou
-désactivation libèrent les bidirectionnelles ; modifier la propriété pendant
-l'arrêt efface aussi les anciennes sorties possédées. Les politiques d'échéance
-et de file pleine/vide restent à définir lors de leur implémentation.
+SIGNAL positionne un bit chez le pair ; AWAIT attend puis consomme son bit.
+Ces événements sont des drapeaux coalescents, pas des compteurs : deux SIGNAL
+avant AWAIT ne comptent que pour un. L'hôte peut les positionner/acquitter.
+IRQ combine événements logiciels, fautes, erreur hôte et RX non vide masquée.
 
-## Mémoire
+Stop, HALT et faute conservent les sorties et directions. RESTART arrête le
+contexte, réinitialise PC/A/X/délai/événement/faute/IRQ et vide ses files, mais
+conserve son code, masque, sorties et directions. Reset ou `ena=0` libère
+immédiatement les bidirectionnelles et invalide les deux programmes.
+Assertion de reset asynchrone, relâchement synchronisé par deux bascules communes.
+Les entrées applicatives et SPI traversent deux bascules de synchronisation.
+Cela réduit le risque métastable mais ne constitue pas un calcul de MTBF.
 
-Le prototype charge 16 instructions de 16 bits par contexte via SPI, soit
-64 octets au total, dans une mémoire inférée en logique avec bits de validité.
-Les petits tampons RX/TX n'existent pas encore ; le stockage volumineux sera dans
-le LPC. La profondeur finale et une éventuelle macro SRAM autorisée restent à
-arbitrer après mesure. Aucune quantité de RAM silicium n'est garantie.
-
-Ne pas supposer qu'un tableau Verilog devient automatiquement une macro SRAM.
-Les SRAM 256x8/512x8 du catalogue IHP principal ne figurent pas dans la version
-`e16d00b7b26a93956563c373b782f54dd4d77a7f` actuellement référencée par le dépôt
-IHP26b, vérifiée le 17 septembre 2026. Leur emploi demande confirmation du flow.
-La macro 1024x8 présente dans cette version est grande pour notre budget.
-
-Le rechargement du programme et la modification des propriétés sont interdits
-tant qu'au moins un contexte s'exécute. Une future mémoire code/données partagée
-devra inclure ses conflits d'accès et sa latence dans le modèle d'exécution.
-
-## Interface et horloges
-
-SPI mode 0, transactions 32 bits, entrées suréchantillonnées et synchronisées
-sur `clk`, registres et interruption définis dans l'ISA v0. Limite provisoire
-de protocole : SCK au plus `clk/10`, à valider électriquement et physiquement.
-Le DMA sera celui du LPC, pas un accès direct de l'ASIC à sa RAM. Le pilote LPC
-et les FIFOs nécessaires au streaming ne sont pas implémentés.
-
-## Ordre de développement
-
-1. Réalisé : première ISA, SPI, deux contextes, attentes et tests RTL.
-2. Prochainement : première synthèse/mesure de surface sur la base actuelle.
-3. Tampons hôte et inter-contextes, politiques de blocage/perte, tests de streaming.
-4. Ordonnancement avancé et placement-routage IHP très tôt.
-5. UART/SPI applicatifs, puis WS2812 émission, réception et modification.
-6. Validation FPGA avec le LPC et préparation de la soumission.
-
-## Sources
-
-- [Template IHP](https://github.com/TinyTapeout/ttihp-verilog-template/tree/6598bef4d3159f19fe471a2a2225df52e6f5ad25)
-- [Mémoires Tiny Tapeout](https://tinytapeout.com/specs/memory/)
-- [Run IHP26b](https://github.com/TinyTapeout/tinytapeout-ihp-26b)
-- [PDK référencé](https://github.com/TinyTapeout/IHP-Open-PDK/tree/e16d00b7b26a93956563c373b782f54dd4d77a7f)
+Les limites importantes restent explicites : pas de capture d'impulsion plus
+courte que la cadence de WAIT, pas de files infinies, pas de gigue nulle pour
+une entrée asynchrone, pas de priorité dynamique ni de détection automatique
+des trames d'un protocole particulier. Voir [ISA](isa-v2.md) et [tests](verification.md).

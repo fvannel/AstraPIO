@@ -1,0 +1,11 @@
+# Context 1, no output mask needed. Inputs: MOSI=uio0, SCK=uio1.
+# MSB-first, mode 0, eight clocks per byte. No CS/framing recovery in this demo.
+byte:
+    LDX 8
+bit:
+    WAIT 1, 1
+    INBIT 0
+    WAIT 1, 0
+    DJNZ bit
+    PUSH
+    JMP byte

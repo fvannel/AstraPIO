@@ -10,4 +10,4 @@ bad = [test.attrib.get("name", "?") for test in tests
        if any(test.find(tag) is not None for tag in ("failure", "error", "skipped"))]
 if not tests or bad:
     raise SystemExit(f"FAILED: {len(tests)} tests; failing or skipped: {bad}")
-print(f"PASS: {len(tests)} RTL tests, no failures/errors/skips.")
+print(f"PASS: {len(tests)} simulation tests, no failures/errors/skips.")

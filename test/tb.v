@@ -8,7 +8,13 @@ module tb ();
 
   // Dump the signals to a FST file. You can view it with gtkwave or surfer.
   initial begin
+`ifdef GL_TEST
+    $dumpfile("tb_gl.fst");
+`elsif PIO_IHP_SRAM
+    $dumpfile("tb_sram.fst");
+`else
     $dumpfile("tb.fst");
+`endif
     $dumpvars(0, tb);
     #1;
   end

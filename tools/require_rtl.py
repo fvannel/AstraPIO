@@ -1,4 +1,4 @@
-"""Block hardware workflows until the complete intended RTL is explicitly enabled."""
+"""Block remote hardware workflows until RTL and an explicit release gate allow them."""
 
 import json
 from pathlib import Path
@@ -9,9 +9,11 @@ if not (
     status["stage"] == "rtl_implemented"
     and status["functional_rtl_implemented"]
     and status["rtl_simulation_passed"]
+    and status.get("hardware_workflows_enabled", False)
 ):
     raise SystemExit(
-        "BLOCKED: incomplete PIO prototype. Complete and verify the intended RTL "
-        "before enabling hardware workflows. Local development/synthesis remains possible."
+        "BLOCKED: remote hardware workflows are not enabled. Review the physical "
+        "release blockers and authorize publication before changing this gate. "
+        "Local development/synthesis remains possible."
     )
 print("RTL development gate passed; physical validation is still required.")

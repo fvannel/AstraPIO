@@ -13,15 +13,51 @@
 
   "//": "PL_TARGET_DENSITY_PCT - You can increase this if Global Placement fails with error GPL-0302.",
   "//": "Users have reported that values up to 80 worked well for them.",
-  "PL_TARGET_DENSITY_PCT": 60,
+  "PL_TARGET_DENSITY_PCT": 80,
 
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
   "CLOCK_PERIOD": 20,
+  "PNR_SDC_FILE": "dir::timing.sdc",
+  "SIGNOFF_SDC_FILE": "dir::timing.sdc",
+
+  "//": "IHP26b precheck PDK c4b8b4e: synchronous instruction SRAM. See docs/toolchain.md.",
+  "VERILOG_DEFINES": ["PIO_IHP_SRAM"],
+  "MACROS": {
+    "RM_IHPSG13_1P_256x8_c3_bm_bist": {
+      "vh": ["dir::sram_blackbox.v"],
+      "gds": ["pdk_dir::libs.ref/sg13g2_sram/gds/RM_IHPSG13_1P_256x8_c3_bm_bist.gds"],
+      "lef": ["pdk_dir::libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_256x8_c3_bm_bist.lef"],
+      "lib": {
+        "*typ*": ["pdk_dir::libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x8_c3_bm_bist_typ_1p20V_25C.lib"],
+        "*slow*": ["pdk_dir::libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x8_c3_bm_bist_slow_1p08V_125C.lib"],
+        "*fast*": ["pdk_dir::libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x8_c3_bm_bist_fast_1p32V_m55C.lib"]
+      },
+      "spice": ["pdk_dir::libs.ref/sg13g2_sram/cdl/RM_IHPSG13_1P_256x8_c3_bm_bist.cdl"],
+      "instances": {"core.imem.sram": {"location": [124, 8], "orientation": "E"}}
+    }
+  },
+  "PDN_MACRO_CONNECTIONS": [
+    "core\\.imem\\.sram VPWR VGND VDD! VSS!",
+    "core\\.imem\\.sram VPWR VGND VDDARRAY! VSS!"
+  ],
+  "PDN_CFG": "dir::pdn.tcl",
+  "FP_MACRO_HORIZONTAL_HALO": 3,
+  "FP_MACRO_VERTICAL_HALO": 3,
+  "PDN_HORIZONTAL_HALO": 3,
+  "PDN_VERTICAL_HALO": 3,
+  "SYNTH_ABC_AREA_USE_NF": false,
+  "SYNTH_STRATEGY": "AREA 0",
+  "RUN_POST_GRT_DESIGN_REPAIR": true,
+  "RUN_POST_GRT_RESIZER_TIMING": true,
+  "RSZ_CORNERS": ["nom_fast_1p32V_m40C", "nom_slow_1p08V_125C", "nom_typ_1p20V_25C"],
+  "CTS_CORNERS": ["nom_fast_1p32V_m40C", "nom_slow_1p08V_125C", "nom_typ_1p20V_25C"],
+  "CTS_SINK_CLUSTERING_SIZE": 7,
+  "MAX_FANOUT_CONSTRAINT": 8,
 
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
-  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
-  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.05,
+  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.02,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.02,
 
   "//": "RUN_LINTER, LINTER_INCLUDE_PDK_MODELS - Disabling the linter is not recommended!",
   "RUN_LINTER": 1,

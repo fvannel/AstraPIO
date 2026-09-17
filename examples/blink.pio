@@ -1,10 +1,7 @@
-# General-purpose waveform generation on PIO_OUT0.
-# Host sets ownership of context 0 to 0x0100 before starting.
+# Context 1, ownership 0x0100: local pin 1 = fixed PIO_OUT0.
 loop:
-    LDI 0x100
-    OUT
+    SET 1, 1
     DELAY 15
-    LDI 0
-    OUT
+    SET 1, 0
     DELAY 15
     JMP loop

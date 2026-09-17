@@ -18,22 +18,32 @@ module tt_um_fabien_pio (
 );
 
   wire active = ena & rst_n;
+  // Asynchronous assertion releases the pads immediately; internal reset
+  // deassertion crosses one shared two-flop synchronizer.
+  (* async_reg = "true" *) reg [1:0] reset_release;
+  always @(posedge clk or negedge active) begin
+      if (!active) reset_release <= 0;
+      else reset_release <= {reset_release[0], 1'b1};
+  end
+  wire core_reset_n = reset_release[1];
   wire [7:0] address;
   wire [15:0] write_data, read_data;
-  wire write_enable, miso, irq;
+  wire write_enable, read_commit, read_busy, read_valid, miso, irq;
   wire [13:0] pins_out;
   wire [7:0] pins_oe;
 
   pio_spi spi (
-      .clk(clk), .rst_n(active),
+      .clk(clk), .rst_n(core_reset_n),
       .sck(ui_in[0]), .mosi(ui_in[1]), .cs_n(ui_in[2]), .miso(miso),
       .address(address), .write_data(write_data), .write_enable(write_enable),
-      .read_data(read_data)
+      .read_data(read_data), .read_valid(read_valid),
+      .read_commit(read_commit), .read_busy(read_busy)
   );
 
   pio_core core (
-      .clk(clk), .rst_n(active), .address(address),
+      .clk(clk), .rst_n(core_reset_n), .address(address),
       .write_data(write_data), .write_enable(write_enable), .read_data(read_data),
+      .read_commit(read_commit), .read_busy(read_busy), .read_valid(read_valid),
       .pins_in({ui_in[7:3], uio_in}),
       .pins_out(pins_out), .pins_oe(pins_oe), .irq(irq)
   );

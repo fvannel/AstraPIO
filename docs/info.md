@@ -1,36 +1,35 @@
 ## How it works
 
-**Functional RTL prototype — not a validated ASIC and not ready for submission.**
+General-purpose digital programmable I/O coprocessor for an LPC546xx host.
+**Engineering prototype: NOT ready for submission.** The current SRAM macro
+fails the shuttle's official DRC; see the repository verification report.
 
-This is a general-purpose programmable I/O coprocessor intended for an LPC55xxx
-host over a dedicated SPI link. A shared execution engine runs two independent
-program contexts using fixed alternating execution slots.
-WS2812 interception is one planned software example, not a hardwired protocol.
-Neither RP2040 instruction compatibility nor two-tile fit is currently claimed.
+Two contexts share a byte-oriented execution engine and a 256-byte IHP SRAM.
+Each context has 48 16-bit instructions, an 8-bit accumulator, 4-bit loop counter,
+relative delay, and 16-byte TX and RX FIFOs. A fixed six-clock schedule per context
+supports GPIO, shifts, branches, level waits, events, interrupts and peer transfer.
+It is not RP2040-ISA compatible. There are no protocol-specific hardware blocks.
 
-The prototype implements mode-0 SPI register access, 16 x 16-bit instructions
-per context, 16-bit accumulators, masked GPIO operations, branches, shifts,
-wait-for-level, delay, interrupts, halt and faults. Program writes require both
-contexts to be stopped. SPI timing currently requires SCK <= clk/10 and CS setup,
-hold and inter-frame high times >= 5 clk periods. These are RTL protocol limits,
-not characterized silicon specifications. See isa-v0.md for the full contract.
+Mode-0 host SPI uses one 32-bit transaction per CS: command, address, 16-bit data.
+SCK half-period, CS setup, hold and inactive gap must each be at least six ASIC
+clock periods. Program upload and output mask configuration require both contexts
+stopped. Output bank 0 is uio[0:6]; bank 1 is uio[7] plus uo[2:7]. Input indices
+0…7 map to uio, 8…12 to ui[3:7]. See `docs/isa-v2.md` for the exact contract.
 
-There are no host streaming FIFOs, inter-context data queues, absolute deadlines
-or LPC driver yet. Memory uses inferred logic rather than a SRAM macro. No
-application protocol, two-tile physical fit or 50 MHz operation has been proven.
-Reset/disable releases bidirectional pins; halt/fault/stop retain their state.
+50 MHz is the constrained engineering target, not a characterized silicon rating.
+Physical clock assumptions, electrical closure and external validation are release gates.
 
 ## How to test
 
-Run `make test` with Icarus Verilog and the pinned cocotb dependencies installed.
-The pin-level tests cover host transfers, abort/reset, both contexts, ownership,
-instruction behavior, faults and deterministic slot timing during SPI traffic.
-These establish prototype behavior, not silicon readiness. Further streaming,
-application, CDC, IHP physical-flow and gate-level validation is required.
+Run `make test`. Additional modes exercise the actual PDK SRAM model, Verilator,
+and the placed/routed gate netlist. Pin-level tests cover SPI aborts, reset,
+program bounds, randomized arithmetic and streaming, event coordination,
+UART, application SPI, and programmable WS2812-like capture/transform/transmit.
+These are bounded digital tests, not exhaustive verification or an electrical test.
 
 ## External hardware
 
-Planned: an LPC55xxx board, a stable external ASIC clock, and appropriate voltage
-translation for the selected application. The dedicated SPI MISO output is on
-an output-only pin and must not share a bus with another active MISO driver.
-Do not connect 5 V sources without checking the board's electrical limits.
+LPC546xx board, stable ASIC clock and suitable voltage translation as required.
+MISO is an output-only pin: use a dedicated SPI bus or an external isolation gate.
+Do not directly connect 5 V LED data or other sources without verifying board
+voltage limits. Reset/disable releases uio; stop/halt/fault intentionally retain it.

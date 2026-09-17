@@ -1,0 +1,19 @@
+# Context 0, mask 1, uio0. UART 8N1, LSB first.
+# At 50 MHz: each bit = 72 slots x 120 ns = 8.64 us (~115741 baud).
+# PULL may pause between complete frames, leaving the line idle high.
+    LDI 1
+    DIR
+    SET 0, 1
+byte:
+    PULL
+    LDX 8
+    SET 0, 0
+    DELAY 70
+bit:
+    OUT
+    SHR
+    DELAY 68
+    DJNZ bit
+    SET 0, 1
+    DELAY 70
+    JMP byte
