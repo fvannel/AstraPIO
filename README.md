@@ -1,6 +1,6 @@
 # PIO ASIC — coprocesseur d'entrées-sorties programmable
 
-## État : projet initialisé, moteur PIO non implémenté
+## État : première version fonctionnelle en simulation, pas prête à fabriquer
 
 Ce projet est un **PIO généraliste** relié à un LPC55xxx par SPI. WS2812 est
 une application de validation, pas une fonction câblée dans l'ASIC.
@@ -21,50 +21,62 @@ identifié ci-dessus pour conserver sa provenance.
 - Huit GPIO bidirectionnelles, cinq entrées fixes et six sorties fixes pour les programmes.
 - Aucune dépendance à un décodeur WS2812, UART ou SPI applicatif câblé.
 
-Les deux contextes, la profondeur mémoire et la fréquence ne sont pas des
-capacités validées. `clock_hz: 50000000` et la contrainte de 20 ns sont des
+Deux contextes sont implémentés ; leur tenue physique dans deux tiles et la
+profondeur mémoire finale restent à valider. `clock_hz: 50000000` et la contrainte de 20 ns sont des
 **objectifs exploratoires**, pas une fréquence garantie. Le nom de module,
 l'auteur et le brochage restent à confirmer avant publication.
 
 ## Ce qui existe aujourd'hui
 
-- Interface Tiny Tapeout et brochage proposé.
-- Wrapper RTL inerte : sorties à zéro, broches bidirectionnelles en entrée.
-- Test de démarrage du wrapper préparé pour cocotb, pas de test fonctionnel PIO.
-- Workflows du template ; génération GDS et FPGA bloquée tant que le RTL est un squelette.
+- Interface Tiny Tapeout : SPI dédié, IRQ et 19 signaux applicatifs.
+- Deux contextes, 16 instructions de 16 bits chacun, accumulateurs 16 bits.
+- Créneaux fixes alternés, attente d'entrée et temporisation non bloquantes pour l'autre contexte.
+- 15 instructions génériques, sorties et directions protégées par masques disjoints.
+- Chargement/lecture SPI, protection contre la modification du code actif, fautes et reset.
+- Assembleur minimal, formation de paquets hôte et deux exemples programmables.
+- Tests RTL sur les broches et tests des outils hôte.
+- Workflows du template ; génération GDS et FPGA volontairement bloquée au stade prototype.
+- [ISA v0, registres et timing](docs/isa-v0.md).
 - [Architecture et décisions ouvertes](docs/architecture.md).
 - [Plan de vérification](docs/verification.md).
 
-**Il n'y a encore ni SPI fonctionnel, ni ordonnanceur, ni mémoire de programme,
-ni programme exécutable, ni GDS validé. Ne pas soumettre ce squelette.**
+**Pas encore de FIFOs, de streaming, d'échanges entre contextes ou de pilote LPC.
+Aucune validation WS2812, synthèse IHP, mesure de surface ou GDS. Ne pas soumettre
+ce prototype.** Les 64 octets de code sont en logique inférée, pas en macro SRAM.
+L'ISA et les registres sont provisoires et pourront évoluer.
 
 ## Vérification locale
 
-Cohérence de la structure, sans simuler le circuit :
+Préparer un environnement avec Python 3.11 à 3.13 (cocotb 2.0.1 ne prend pas en
+charge Python 3.14), ainsi qu'Icarus Verilog dans le PATH :
 
 ```sh
-python3 tools/check_scaffold.py
+python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r test/requirements.txt
+make test
 ```
 
-Simulation du wrapper après installation d'Icarus Verilog et des dépendances
-de `test/requirements.txt` dans un environnement Python dédié :
+`make check` vérifie la structure et les outils sans simulation RTL. Assembler
+un programme (mots hexadécimaux sur la sortie standard) :
 
 ```sh
-cd test
-make
+python tools/pioasm.py examples/blink.pio
 ```
 
 Les workflows GDS et FPGA sont manuels. Leur verrou `tools/require_rtl.py`
-échoue volontairement tant que `design_status.json` indique un squelette.
-Le passage à `rtl_implemented` nécessitera du RTL réel et des tests fonctionnels ;
-ce statut ne vaut jamais validation physique ou autorisation de soumission.
+échoue volontairement tant que `design_status.json` indique `rtl_prototype`.
+Le passage à `rtl_implemented` nécessitera d'implémenter et vérifier le périmètre
+PIO prévu ; ce statut ne vaut jamais validation physique ou autorisation de
+soumission. Une simulation RTL à période 20 ns ne prouve pas un timing silicium.
 
 ## Prochain jalon
 
-Fixer une ISA minimale, les contextes et le modèle de timing ; implémenter une
-première tranche de bout en bout : chargement SPI d'un programme qui manipule
-une sortie. Puis ajouter le deuxième contexte, les attentes et les files RX/TX,
-mesurer la surface et exécuter le placement-routage IHP.
+Mesurer tôt la surface de cette base, puis ajouter les files RX/TX et les échanges
+entre contextes avec leurs tests. Étendre ensuite l'ordonnancement aux événements
+et échéances nécessaires aux applications ; ne pas transformer le cœur en
+décodeur WS2812 spécialisé. La référence exacte du LPC55xxx et les tensions
+seront nécessaires au pilote, au DMA et au raccordement matériel.
 
 ## Coupons et soumission
 

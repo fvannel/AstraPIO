@@ -1,10 +1,34 @@
 # Plan de vérification
 
-## État initial
+## Résultat local — 17 septembre 2026
 
-Seul un wrapper inerte existe. Les vérifications de structure ne remplacent
-ni la simulation RTL ni la vérification physique. Le test cocotb initial
-vérifie seulement que les sorties du squelette restent inactives.
+Icarus Verilog 13.0, cocotb 2.0.1, Python 3.13.9, horloge simulée 20 ns.
+**9 scénarios RTL et 4 tests d'outils passent**. Les tests RTL n'accèdent qu'aux
+broches Tiny Tapeout, jamais aux registres internes du RTL.
+
+- Lecture ID, 32 mots programme avec données pseudo-aléatoires, lecture/écriture
+  SPI, interruptions de transfert à 7 longueurs, commande inconnue et horloges
+  surnuméraires. SPI à phases variables avec demi-périodes 100/109/113/137 ns.
+- Deux contextes indépendants, attente non bloquante, masques de propriété,
+  lecture d'entrées et directions de sortie.
+- Refus des écritures dangereuses, faute sur instruction non chargée, opcode
+  invalide et mauvais indice WAIT ; remise à zéro des fautes.
+- Instructions, branches, rebouclage du PC, pause/reprise, attente haute/basse,
+  16 programmes arithmétiques pseudo-aléatoires comparés à un calcul Python.
+- Impulsions de 12 et 14 cycles d'horloge, sans variation observée pendant les
+  lectures SPI et acquittements d'IRQ, avec l'autre contexte bloqué.
+- Reset/désactivation : sorties masquées, directions libérées et code invalidé ;
+  reset pendant un transfert SPI partiel.
+- Assembleur : encodages, labels, limites et erreurs ; helpers de paquets SPI.
+
+Le calcul Python de référence couvre l'arithmétique, **pas encore un modèle
+indépendant complet du système**. Il ne s'agit ni de couverture exhaustive, ni
+de preuve formelle. Aucune synthèse, simulation de netlist ou mesure physique
+n'a été effectuée. Une période de simulation de 20 ns ne valide pas 50 MHz.
+
+Reproduction : `make test` dans l'environnement documenté dans le README.
+Résultats détaillés générés dans `test/results.xml`, traces dans `test/tb.fst`
+(fichiers ignorés par Git). Le vérificateur rejette aussi les tests sautés.
 
 ## Tests nécessaires avant de figer l'ASIC
 

@@ -12,7 +12,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Refuse fabrication artifacts for the inert scaffold
+      - name: Refuse fabrication artifacts for the incomplete prototype
         run: python3 tools/require_rtl.py
 
       - name: Build GDS

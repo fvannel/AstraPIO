@@ -1,0 +1,8 @@
+# Wait for PIO_IN0 (input index 8), then set PIO_IO0.
+# Host assigns context 1 ownership 0x0001 and starts it with context 0.
+    WAIT 8, 1
+    LDI 1
+    OUT
+    DIR
+    IRQ
+    HALT

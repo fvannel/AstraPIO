@@ -12,7 +12,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Refuse hardware artifacts for the inert scaffold
+      - name: Refuse hardware artifacts for the incomplete prototype
         run: python3 tools/require_rtl.py
 
       - name: FPGA bitstream for TT ASIC Sim (ICE40UP5K)

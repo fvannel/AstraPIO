@@ -1,4 +1,4 @@
-"""Avoid building/publishing fabrication artifacts for an inert scaffold."""
+"""Block hardware workflows until the complete intended RTL is explicitly enabled."""
 
 import json
 from pathlib import Path
@@ -11,6 +11,7 @@ if not (
     and status["rtl_simulation_passed"]
 ):
     raise SystemExit(
-        "BLOCKED: inert scaffold. Implement and verify the PIO before building hardware."
+        "BLOCKED: incomplete PIO prototype. Complete and verify the intended RTL "
+        "before enabling hardware workflows. Local development/synthesis remains possible."
     )
 print("RTL development gate passed; physical validation is still required.")

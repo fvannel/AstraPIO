@@ -1,7 +1,10 @@
 {
-  "stage": "scaffold",
-  "functional_rtl_implemented": false,
-  "rtl_simulation_passed": false,
+  "stage": "rtl_prototype",
+  "functional_rtl_implemented": true,
+  "rtl_simulation_passed": true,
+  "simulation_scope": "ISA v0 prototype, not complete streaming PIO; see docs/verification.md",
+  "streaming_implemented": false,
+  "ready_for_submission": false,
   "physical_validation_passed": false,
   "target_shuttle": "ttihp26b",
   "target_tiles": "1x2",

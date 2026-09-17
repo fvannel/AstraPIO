@@ -3,7 +3,7 @@ project:
   title:        "Programmable IO Coprocessor (development)"
   author:       "Fabien" # Confirm public attribution before publishing.
   discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
-  description:  "General-purpose programmable IO; scaffold, not ready for tapeout"
+  description:  "General-purpose programmable IO prototype; not ready for tapeout"
   language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
   clock_hz:     50000000 # Exploratory target, not verified.
 
@@ -18,39 +18,41 @@ project:
   # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
   source_files:
     - "project.v"
+    - "pio_spi.v"
+    - "pio_core.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
 pinout:
   # Inputs
-  ui[0]: "HOST_SCK (planned)"
-  ui[1]: "HOST_MOSI (planned)"
-  ui[2]: "HOST_CS_N (planned)"
-  ui[3]: "PIO_IN0 (planned)"
-  ui[4]: "PIO_IN1 (planned)"
-  ui[5]: "PIO_IN2 (planned)"
-  ui[6]: "PIO_IN3 (planned)"
-  ui[7]: "PIO_IN4 (planned)"
+  ui[0]: "HOST_SCK"
+  ui[1]: "HOST_MOSI"
+  ui[2]: "HOST_CS_N"
+  ui[3]: "PIO_IN0"
+  ui[4]: "PIO_IN1"
+  ui[5]: "PIO_IN2"
+  ui[6]: "PIO_IN3"
+  ui[7]: "PIO_IN4"
 
   # Outputs
-  uo[0]: "HOST_MISO (planned)"
-  uo[1]: "HOST_IRQ (planned)"
-  uo[2]: "PIO_OUT0 (planned)"
-  uo[3]: "PIO_OUT1 (planned)"
-  uo[4]: "PIO_OUT2 (planned)"
-  uo[5]: "PIO_OUT3 (planned)"
-  uo[6]: "PIO_OUT4 (planned)"
-  uo[7]: "PIO_OUT5 (planned)"
+  uo[0]: "HOST_MISO"
+  uo[1]: "HOST_IRQ"
+  uo[2]: "PIO_OUT0"
+  uo[3]: "PIO_OUT1"
+  uo[4]: "PIO_OUT2"
+  uo[5]: "PIO_OUT3"
+  uo[6]: "PIO_OUT4"
+  uo[7]: "PIO_OUT5"
 
   # Bidirectional pins
-  uio[0]: "PIO_IO0 (planned)"
-  uio[1]: "PIO_IO1 (planned)"
-  uio[2]: "PIO_IO2 (planned)"
-  uio[3]: "PIO_IO3 (planned)"
-  uio[4]: "PIO_IO4 (planned)"
-  uio[5]: "PIO_IO5 (planned)"
-  uio[6]: "PIO_IO6 (planned)"
-  uio[7]: "PIO_IO7 (planned)"
+  uio[0]: "PIO_IO0"
+  uio[1]: "PIO_IO1"
+  uio[2]: "PIO_IO2"
+  uio[3]: "PIO_IO3"
+  uio[4]: "PIO_IO4"
+  uio[5]: "PIO_IO5"
+  uio[6]: "PIO_IO6"
+  uio[7]: "PIO_IO7"
 
 # Do not change!
 yaml_version: 6

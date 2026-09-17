@@ -18,11 +18,16 @@ for group in ("ui", "uo", "uio"):
     for index in range(8):
         assert len(re.findall(rf"^  {group}\[{index}\]:", info, re.M)) == 1
 assert re.search(r'^\s+tiles:\s+"1x2"', info, re.M)
-assert '"project.v"' in info
-assert "PROJECT_SOURCES = project.v" in (root / "test/Makefile").read_text()
+sources = re.findall(r'^\s+- "([^"]+\.v)"', info, re.M)
+assert sources and len(sources) == len(set(sources))
+for name in sources:
+    assert (root / "src" / name).is_file(), name
+sim_sources = re.search(r'^PROJECT_SOURCES = (.+)$', (root / "test/Makefile").read_text(), re.M).group(1).split()
+assert sources == sim_sources, "Simulation and Tiny Tapeout must use the same sources"
 status = json.loads((root / "design_status.json").read_text())
-assert status["stage"] == "scaffold"
-assert not status["functional_rtl_implemented"]
+assert status["stage"] in ("scaffold", "rtl_prototype", "rtl_implemented")
+assert status["functional_rtl_implemented"] == (status["stage"] != "scaffold")
+assert status["target_tiles"] == "1x2"
 for source in list((root / "test").glob("*.py")) + list((root / "tools").glob("*.py")):
     ast.parse(source.read_text(), filename=str(source))
 for name in ("gds", "fpga"):
@@ -30,5 +35,5 @@ for name in ("gds", "fpga"):
     assert "tools/require_rtl.py" in workflow
     assert "@ttihp26b" in workflow
     assert not re.search(r"^  push:", workflow, re.M)
-print("PASS: scaffold structure, module names, 24 pin labels, Python syntax and hardware guards.")
-print("NOT CHECKED: RTL simulation, PIO behavior, memory capacity, area, timing or GDS.")
+print("PASS: project structure, source lists, module names, 24 pin labels, Python syntax and hardware guards.")
+print("NOT CHECKED by this script: RTL behavior, memory capacity, area, timing or GDS.")
