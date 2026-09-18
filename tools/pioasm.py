@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assembler for the project's byte-oriented ISA v2, not Raspberry Pi PIO."""
+"""Assembler for compact ISA/ABI v3: 16 shared words, not Raspberry Pi PIO."""
 
 import argparse
 from pathlib import Path
@@ -25,8 +25,8 @@ def assemble(source: str) -> list[int]:
             labels[label] = len(instructions)
         if line:
             instructions.append((number, line.replace(",", " ").split()))
-    if not 1 <= len(instructions) <= 48:
-        raise ValueError("a context requires 1..48 instructions")
+    if not 1 <= len(instructions) <= 16:
+        raise ValueError("the shared program requires 1..16 instructions")
 
     words = []
     for number, tokens in instructions:
@@ -36,7 +36,7 @@ def assemble(source: str) -> list[int]:
                 word = EXT_SIMPLE[op]
             elif op in ("OUTBIT", "INBIT", "LDX", "DJNZ", "JBIT") and len(args) == 1:
                 value = labels[args[0]] if op in ("DJNZ", "JBIT") and args[0] in labels else int(args[0], 0)
-                limit = {"OUTBIT": 6, "INBIT": 12, "LDX": 15, "DJNZ": 47, "JBIT": 47}[op]
+                limit = {"OUTBIT": 6, "INBIT": 12, "LDX": 15, "DJNZ": 15, "JBIT": 15}[op]
                 if not 0 <= value <= limit:
                     raise ValueError(f"operand must be 0..{limit}")
                 base = {"OUTBIT": 0xF300, "INBIT": 0xF400, "LDX": 0xF500,
@@ -53,7 +53,7 @@ def assemble(source: str) -> list[int]:
                 word = 0x2100
             elif op in IMMEDIATE and len(args) == 1:
                 value = labels[args[0]] if op in ("JMP", "JNZ") and args[0] in labels else int(args[0], 0)
-                limit = 47 if op in ("JMP", "JNZ") else 255
+                limit = 15 if op in ("JMP", "JNZ") else 255
                 if not 0 <= value <= limit:
                     raise ValueError(f"operand must be 0..{limit}")
                 word = (IMMEDIATE[op] << 12) | value

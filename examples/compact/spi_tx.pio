@@ -1,0 +1,10 @@
+# Compact v3, context 0 mask 3, entry 0. MOSI=uio0 SCK=uio1.
+LDI 3
+DIR
+byte: PULL
+LDX 8
+bit: OUTBIT 0
+SET 1,1
+SET 1,0
+DJNZ bit
+JMP byte

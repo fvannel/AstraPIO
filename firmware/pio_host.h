@@ -18,11 +18,13 @@ int pio_read(pio_device *, uint8_t address, uint16_t *value);
 int pio_write(pio_device *, uint8_t address, uint16_t value);
 int pio_probe(pio_device *);
 int pio_stop(pio_device *); /* Stops BOTH contexts; GPIO levels are retained. */
-int pio_load(pio_device *, unsigned context, const uint16_t *words, size_t count);
+/* ABI v3 only: one shared program, reload resets BOTH contexts and their queues. */
+int pio_load(pio_device *, const uint16_t *words, size_t count);
+int pio_set_entry(pio_device *, unsigned context, unsigned pc);
 int pio_set_mask(pio_device *, unsigned context, uint16_t global_mask);
 int pio_run(pio_device *, unsigned context_mask);
 int pio_push(pio_device *, unsigned context, uint8_t byte);
-/* One credit read, then up to 16 writes; preferred for sustained TX streams.
+/* One credit read, then up to 2 writes; preferred for sustained TX streams.
  * *sent counts certainly completed writes; on PIO_EIO the failing transaction
  * may still have reached hardware, so the application must resynchronize. */
 int pio_push_many(pio_device *, unsigned context, const uint8_t *, size_t count, size_t *sent);

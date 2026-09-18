@@ -13,6 +13,15 @@ jobs:
         shell: bash
         run: sudo apt-get update && sudo apt-get install -y iverilog
 
+      - name: Get exact shuttle standard-cell simulation models
+        uses: actions/checkout@v6
+        with:
+          repository: IHP-GmbH/IHP-Open-PDK
+          ref: c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c
+          path: work/ci-pdk
+          sparse-checkout: ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog
+          persist-credentials: false
+
       # Set Python up and install cocotb
       - name: Setup python
         uses: actions/setup-python@v6
@@ -24,6 +33,8 @@ jobs:
         run: pip install -r test/requirements.txt
 
       - name: Run tests
+        env:
+          PDK_ROOT: ${{ github.workspace }}/work/ci-pdk
         run: |
           make test
 

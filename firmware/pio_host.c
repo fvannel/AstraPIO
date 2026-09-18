@@ -19,25 +19,35 @@ int pio_probe(pio_device *d) {
     if (rc) return rc;
     if (value != 0x5049) return PIO_EABI;
     rc = pio_read(d, 1, &value);
-    return rc ? rc : value == 0x0200 ? PIO_OK : PIO_EABI;
+    return rc ? rc : value == 0x0300 ? PIO_OK : PIO_EABI;
 }
 int pio_stop(pio_device *d) { return pio_write(d, 3, 0); }
 
-int pio_load(pio_device *d, unsigned c, const uint16_t *words, size_t count) {
+int pio_load(pio_device *d, const uint16_t *words, size_t count) {
     uint16_t value;
     int rc;
-    if (c > 1 || !words || count == 0 || count > 48) return PIO_EINVAL;
+    if (!words || count == 0 || count > 16) return PIO_EINVAL;
+    if ((rc = pio_probe(d))) return rc;
     if ((rc = pio_stop(d))) return rc;
-    if ((rc = pio_write(d, 4, (uint16_t)(1u << c)))) return rc;
-    if ((rc = pio_write(d, (uint8_t)(0x1f + 16*c), 0))) return rc;
+    if ((rc = pio_write(d, 4, 3))) return rc;
+    if ((rc = pio_write(d, 0x0a, 0))) return rc;
     for (size_t i = 0; i < count; ++i) {
-        if ((rc = pio_write(d, 0x0a, (uint16_t)(64*c+i)))) return rc;
-        if ((rc = pio_write(d, 0x0b, words[i]))) return rc;
-        if ((rc = pio_read(d, 0x0b, &value))) return rc;
+        if ((rc = pio_write(d, (uint8_t)(0x40+i), words[i]))) return rc;
+        if ((rc = pio_read(d, (uint8_t)(0x40+i), &value))) return rc;
         if (value != words[i]) return PIO_EVERIFY;
     }
     if ((rc = pio_read(d, 6, &value))) return rc;
     return value ? PIO_EFAULT : PIO_OK;
+}
+int pio_set_entry(pio_device *d, unsigned c, unsigned pc) {
+    uint16_t value;
+    int rc;
+    if (c > 1 || pc > 15) return PIO_EINVAL;
+    if ((rc = pio_read(d, 3, &value))) return rc;
+    if (value & (1u << c)) return PIO_EFAULT;
+    if ((rc = pio_write(d, (uint8_t)(0x11+16*c), (uint16_t)pc))) return rc;
+    if ((rc = pio_read(d, (uint8_t)(0x11+16*c), &value))) return rc;
+    return value == pc ? PIO_OK : PIO_EVERIFY;
 }
 int pio_set_mask(pio_device *d, unsigned c, uint16_t mask) {
     uint16_t actual;
@@ -62,7 +72,7 @@ int pio_push(pio_device *d, unsigned c, uint8_t byte) {
     int rc;
     if (c > 1) return PIO_EINVAL;
     if ((rc = pio_read(d, (uint8_t)(0x16 + 16*c), &status))) return rc;
-    if ((status & 31) == 16) return PIO_EFULL;
+    if (status & 2) return PIO_EFULL;
     return pio_write(d, (uint8_t)(0x14 + 16*c), byte);
 }
 int pio_pop(pio_device *d, unsigned c, uint8_t *byte) {
@@ -82,9 +92,9 @@ int pio_push_many(pio_device *d, unsigned c, const uint8_t *bytes, size_t count,
     if (c > 1 || (!bytes && count)) return PIO_EINVAL;
     if (!count) return PIO_OK;
     if ((rc = pio_read(d, (uint8_t)(0x16 + 16*c), &status))) return rc;
-    unsigned level = status & 31;
-    if (level > 16) return PIO_EVERIFY;
-    size_t available = 16 - level;
+    unsigned level = (status >> 12) & 3;
+    if (level > 2) return PIO_EVERIFY;
+    size_t available = 2 - level;
     if (!available) return PIO_EFULL;
     if (count > available) count = available;
     while (*sent < count) {

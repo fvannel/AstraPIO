@@ -1,0 +1,5 @@
+# Both contexts enter 0. Independent TX/RX queues share this same code.
+loop: PULL
+XOR 0x5A
+PUSH
+JMP loop
