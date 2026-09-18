@@ -38,6 +38,27 @@ class ReleasePolicyTest(unittest.TestCase):
         self.assertIs(status.get("magic_drc_nonblocking_authorized"), False)
         self.assertIs(status.get("provisional_sram_precheck_nonblocking_authorized"), False)
 
+    def test_compact_build_has_no_sram_or_custom_timing_deck(self):
+        config = json.loads((ROOT / "src/config.json").read_text())
+        for key in ("MACROS", "PNR_SDC_FILE", "SIGNOFF_SDC_FILE", "EXTRA_SDC_FILES"):
+            self.assertNotIn(key, config)
+        sources = (ROOT / "info.yaml").read_text()
+        self.assertNotIn('"pio_sram.v"', sources)
+        self.assertNotIn('"sram_blackbox.v"', sources)
+        for key in ("RUN_KLAYOUT_DRC", "RUN_KLAYOUT_XOR", "RUN_CTS"):
+            self.assertTrue(config[key], key)
+        workflow = (ROOT / ".github/workflows/gds.yaml").read_text()
+        self.assertIn("tools-ref: 01d5d2814fa9dd61e9d211e0b235a4a592a9316a", workflow)
+        self.assertNotIn("deploy-pages", workflow)
+
+    def test_cell_models_and_status_use_exact_shuttle_pdk(self):
+        expected = "c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c"
+        status = json.loads((ROOT / "design_status.json").read_text())
+        self.assertEqual(status["pdk_version"], expected)
+        workflow = (ROOT / ".github/workflows/test.yaml").read_text()
+        self.assertIn("ref: " + expected, workflow)
+        self.assertIn("iverilog_13.0-1_amd64.deb", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

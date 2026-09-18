@@ -241,3 +241,50 @@ async def reset_disable_and_queue_flush_isolation(dut):
     assert await host.read(0x0A) == 0
     assert await host.read(3) == 0
     assert (await host.read(0x26)>>12)&3 == 0
+
+
+@cocotb.test()
+async def host_snapshot_excludes_peer_through_commit(dut):
+    host = await setup(dut)
+    for offset in (0, 20, 40, 60):
+        host.inputs = 0
+        host.drive()
+        dut.rst_n.value = 0
+        await ClockCycles(dut.clk,5)
+        dut.rst_n.value = 1
+        await ClockCycles(dut.clk,5)
+        await Timer(offset + 1,unit='ns')
+        # Context 0 sends two bytes; context 1 requests the first only after the
+        # host snapshot has already locked it. The peer must get only byte two.
+        await load_shared(host, [0x10A5,0xF100,0x8108,0x105A,0xF100,0xE000,
+                                 0x8109,0xF900,0xF100,0xE000])
+        await host.write(0x21,6)
+        await host.write(3,3)
+        async def release_peer():
+            await Timer(5000,unit='ns')
+            host.inputs = 2  # transfer() drives the changed input on its next bit.
+        task = cocotb.start_soon(release_peer())
+        assert await host.read(0x15) == 0x80A5
+        await task
+        assert await host.read(0x25) == 0, 'peer duplicated the host snapshot'
+        host.inputs = 3
+        host.drive()
+        assert await host.read(0x25) == 0x805A
+        assert await host.read(0x15) == 0
+        assert await host.read(6) == 0
+
+
+@cocotb.test()
+async def empty_snapshot_does_not_pop_late_byte(dut):
+    host = await setup(dut,half=137)
+    await load_shared(host,[0x8108,0x10C7,0xF100,0xE000])
+    await host.write(3,1)
+    async def release_producer():
+        await Timer(5500,unit='ns')
+        host.inputs = 1
+    task = cocotb.start_soon(release_producer())
+    assert await host.read(0x15) == 0
+    await task
+    assert await host.read(0x15) == 0x80C7
+    assert await host.read(0x15) == 0
+    assert await host.read(6) == 0

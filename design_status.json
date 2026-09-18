@@ -10,8 +10,8 @@
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,
-  "distinct_pin_level_test_scenarios": 8,
-  "simulation_scope": "Compact ABI 0x0300; eight pin-level scenarios and separate FIFO/program-memory units using unchanged shuttle PDK models with Icarus 13. Not SDF or exhaustive.",
+  "distinct_pin_level_test_scenarios": 10,
+  "simulation_scope": "Compact ABI 0x0300; ten pin-level scenarios, including all four scheduler phases of host/peer RX arbitration, plus separate FIFO/latch-store units. Exact shuttle PDK functional models, Icarus 13. Not SDF or exhaustive.",
   "hardware_workflows_enabled": true,
   "publication_authorized": true,
   "submission_authorized": false,
@@ -25,9 +25,9 @@
   "official_precheck_passed": false,
   "routed_netlist_functional_simulation_passed": false,
   "release_blockers": [
-    "Post-CTS detailed placement failed in first official run; testing clock-tree clustering, no waived checks",
+    "Post-CTS detailed placement failed in first two official runs; now testing smaller characterized clock-tree root buffers, no waived checks",
     "Full routed timing including ICG/latch paths, DRC/LVS and official precheck with exact shuttle PDK required",
-    "Independent RTL CI must pass with official Icarus 13; routed-netlist regression still required",
+    "Independent CI must rerun after RX snapshot race fix; routed-netlist regression still required",
     "Final board interface and release review required"
   ],
   "historical_sram_candidate": {
@@ -133,5 +133,20 @@
     "core_area_um2": 60109.3,
     "post_cts_utilization": 0.89559,
     "inserted_hold_buffers": 242
+  },
+  "independent_rtl_ci": {
+    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385298799",
+    "commit": "c8808f877f96e73880de5bff8e38bd7fd46688ae",
+    "conclusion": "success",
+    "pin_level_scenarios": 8,
+    "scope": "Before additional RX snapshot regression/fix"
+  },
+  "second_compact_physical_run": {
+    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385308221",
+    "commit": "c8808f877f96e73880de5bff8e38bd7fd46688ae",
+    "conclusion": "failed_post_cts_detailed_placement",
+    "post_cts_stdcell_area_um2": 53664.5,
+    "post_cts_utilization": 0.892783,
+    "inserted_hold_buffers": 237
   }
 }

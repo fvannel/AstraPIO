@@ -3,7 +3,7 @@
 
 // Mode 0, MSB first, one 32-bit transaction per CS assertion:
 // [command:8][address:8][data:16]. 0x02 writes, 0x03 reads.
-// Oversampling, not a separate SCK clock domain. See docs/isa-v2.md for limits.
+// Oversampling, not a separate SCK clock domain. See docs/compact-v3.md for limits.
 module pio_spi (
     input wire clk, rst_n,
     input wire sck, mosi, cs_n,
@@ -30,11 +30,14 @@ module pio_spi (
     // CS itself only masks the output; all state updates use synchronized CS.
     assign miso = (!cs_n && !cs_sync[1] && rst_n) ? miso_bit : 1'b0;
     assign write_data = rx_shift;
-    assign read_busy = !cs_sync[1] && command_read && count >= 16 && count < 32;
+    // Keep the RX head locked through the cycle that consumes read_commit.
+    // Releasing at count==32 allowed a peer RECV to duplicate the host's byte.
+    // CS deassertion terminates the lock even for an aborted transaction.
+    assign read_busy = !cs_sync[1] && command_read && count >= 16;
 
     // Payload registers need no reset: a command is decoded only after eight
     // received bits and read data is loaded before its first observable bit.
-    // Keeping RX stable when CS rises also covers the queued SRAM write latency.
+    // RX remains stable when CS rises, until the next transaction shifts it.
     always @(posedge clk) begin
         if (rst_n && !cs_sync[1]) begin
             if (rising_sck && count < 32)

@@ -103,7 +103,7 @@ to 0..15**. The supplied assembler enforces program size and operand ranges.
 | 3000 / 4000 | OUT / DIR using the accumulator, limited by ownership |
 | 500a / 600a | JMP / JNZ accumulator to shared address a |
 | 7000 | DEC accumulator modulo 256 |
-| 80ip / 81ip | WAIT input p low/high (assembler emits i=0); p=0..12 |
+| 800p / 810p | WAIT input p low/high; p=0..12 |
 | 90dd | DELAY: consume this slot then dd further slots |
 | A0ii / B000 / C000 | XOR byte / SHL / SHR, zero filling |
 | D000 / E000 | IRQ / HALT |
