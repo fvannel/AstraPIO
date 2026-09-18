@@ -9,6 +9,10 @@ permissions:
   contents: read
   actions: read
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   magic:
     runs-on: ubuntu-24.04
@@ -57,7 +61,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential tcl-dev tk-dev libx11-dev libxext-dev libxt-dev libcairo2-dev libreadline-dev libncurses-dev libglu1-mesa-dev libgl1-mesa-dev flex bison zlib1g-dev time
-          python -m pip install 'ciel==2.4.0' 'gdstk==0.9.52'
+          python -m pip install 'ciel==2.4.0' 'numpy==1.26.4' 'gdstk==0.9.52'
+          python -m tools.magic_version_diagnostic --help
           ciel enable --pdk-root "$GITHUB_WORKSPACE/work/magic-comparison/pdk" --pdk ihp-sg13g2 "$PDK_VERSION"
 
       - name: Build Magic without source patches

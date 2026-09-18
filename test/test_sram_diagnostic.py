@@ -52,7 +52,7 @@ class PrecheckResultTest(unittest.TestCase):
 
 class InstrumentedMagicTest(unittest.TestCase):
     def test_completed_check_is_required(self):
-        complete = "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_COMPLETE 0\n"
+        complete = "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_GLOBAL 0\nASTRA_DRC_COMPLETE 0\n"
         self.assertEqual(assess_magic_staged(0, "TOTAL\t0\n", complete)["status"], "pass")
         for log in ("", "ASTRA_STAGE drc_catchup BEGIN 123\n",
                     "ASTRA_STAGE list_results END 2ms\n",
@@ -61,9 +61,16 @@ class InstrumentedMagicTest(unittest.TestCase):
                 self.assertNotEqual(assess_magic_staged(0, "TOTAL\t0\n", log)["status"], "pass")
 
     def test_stage_progress_does_not_hide_crash_or_violations(self):
-        log = "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_COMPLETE 2\n"
+        log = "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_GLOBAL 1\nASTRA_DRC_COMPLETE 2\n"
         self.assertEqual(assess_magic_staged(1, "2\tCnt.c\nTOTAL\t2\n", log)["status"], "violations")
         self.assertEqual(assess_magic_staged(139, None, log)["status"], "process_error")
+
+    def test_global_error_cannot_be_hidden_by_report_window(self):
+        for count in (None, 1):
+            log = "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_COMPLETE 0\n"
+            if count is not None:
+                log += f"ASTRA_DRC_GLOBAL {count}\n"
+            self.assertNotEqual(assess_magic_staged(0, "TOTAL\t0\n", log)["status"], "pass")
 
 
 if __name__ == "__main__":

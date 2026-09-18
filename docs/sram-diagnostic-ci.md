@@ -78,10 +78,14 @@ Local ARM64 stage instrumentation then established:
   crashes (exit 139) during `drc catchup`.
 - Thus PDK startup alone is not the reproducer. The last generic log line did
   not identify the failing operation accurately enough.
-- The deliberately invalid 0.1 um Metal1 witness also returns zero with the
-  local ARM64 8.3.623 build, even after explicitly covering its full bounding
-  box. This is an unresolved checker/harness defect, not a valid physical pass.
-  The CI treats failure to detect the negative witness as a blocking failure.
+- The deliberately invalid 0.1 um Metal1 witness exposed a diagnostic report
+  window defect: Magic's global count is 1 but `drc listall why` returns no
+  markers inside the exact geometry boundary. The width marker lies just
+  outside that boundary. The harness now explicitly covers the entire top cell,
+  expands only the **report window** by 100 um, and cross-checks the global
+  count so that a zero report can never pass with a nonzero global count.
+  The DRC rule halo and input geometry are unchanged. The CI also treats failure
+  to detect the negative witness as a blocking failure.
 
 `magic-version-diagnostic.yaml` now runs on this diagnostic branch. The original
 container comparison remains available manually; its checks have not been
@@ -102,6 +106,9 @@ violations. Both SRAMs and AstraPIO must have zero errors to pass. A timeout,
 crash, missing report, or missing completion marker fails. There are no SRAM
 exclusions, rule edits, or replacement macro geometry. Stage times, CPU time,
 maximum resident memory, raw violation coordinates, and hashes are archived.
+The first comparison attempt (`35355216004`) stopped before any layout checks
+because the gdstk 0.9.52 wheel requires NumPy 1.x. The dependency is now pinned
+to NumPy 1.26.4 and import-checked before the PDK download and tool builds.
 
 Motivating upstream changes (hypotheses, not yet proven causes):
 

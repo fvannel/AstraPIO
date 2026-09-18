@@ -55,9 +55,12 @@ def assess_magic_staged(returncode, report, log):
     result = assess_magic(returncode, report)
     result["stages"] = re.findall(r"^ASTRA_STAGE (\w+) (BEGIN|END) (\S+)$", log, re.M)
     complete = re.findall(r"^ASTRA_DRC_COMPLETE (\d+)$", log, re.M)
+    global_count = re.findall(r"^ASTRA_DRC_GLOBAL (\d+)$", log, re.M)
+    result["global_error_tiles"] = int(global_count[0]) if len(global_count) == 1 else None
     listed = re.search(r"^ASTRA_STAGE list_results END \d+ms$", log, re.M)
     if result["status"] in ("pass", "violations") and (
-        not listed or complete != [str(result["errors"])]
+        not listed or complete != [str(result["errors"])] or len(global_count) != 1
+        or (result["errors"] == 0 and global_count != ["0"])
     ):
         result["status"] = "invalid_report"
     return result

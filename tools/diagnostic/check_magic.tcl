@@ -12,6 +12,7 @@ proc astra_step {name script} {
 crashbackups disable
 locking disable
 units internal
+snap internal
 gds noduplicates true
 gds readonly true
 astra_step import_setup {source $env(ASTRA_FLATGLOB)}
@@ -29,6 +30,11 @@ astra_step euclidean {drc euclidean on}
 astra_step drc_style {drc style drc(full)}
 astra_step drc_check {drc check}
 astra_step drc_catchup {drc catchup}
+# Error markers can extend outside the geometry (e.g. a too-thin wire).
+# Expand the report window, not the layout or DRC rule halo.
+astra_step report_window {box grow c 100um}
+set global_count [astra_step global_count {drc listall count total}]
+puts stdout "ASTRA_DRC_GLOBAL $global_count"
 set results [astra_step list_results {drc listall why}]
 set raw [open $env(ASTRA_RAW_REPORT) w]
 puts $raw $results
@@ -46,5 +52,9 @@ puts stdout "ASTRA_DRC_TOTAL $total"
 close $report
 puts stdout "ASTRA_DRC_COMPLETE $total"
 flush stdout
+if {$total == 0 && $global_count != 0} {
+    puts stderr "Global DRC errors exist outside the report window; result is incomplete."
+    exit 2
+}
 if {$total > 0} {exit 1}
 exit 0
