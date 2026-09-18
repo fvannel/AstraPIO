@@ -21,8 +21,8 @@
   "PNR_SDC_FILE": "dir::timing.sdc",
   "SIGNOFF_SDC_FILE": "dir::timing.sdc",
 
-  "//": "Authorized provisional submission only: keep Magic DRC reports, do not block artifact generation. Official precheck remains unchanged. See docs/provisional-submission.md.",
-  "ERROR_ON_MAGIC_DRC": false,
+  "//": "All future revisions require blocking DRC checks. The first provisional revision is historical; see docs/sram-investigation-20260918.md.",
+  "ERROR_ON_MAGIC_DRC": true,
 
   "//": "IHP26b precheck PDK c4b8b4e: synchronous instruction SRAM. See docs/toolchain.md.",
   "VERILOG_DEFINES": ["PIO_IHP_SRAM"],

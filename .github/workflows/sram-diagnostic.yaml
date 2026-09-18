@@ -1,0 +1,65 @@
+name: SRAM diagnostic (not a release)
+
+on:
+  push:
+    branches: [diagnostic/sram-magic]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ASTRA_TOOL_IMAGE: ghcr.io/librelane/librelane:3.0.5@sha256:ecabd075d0ddf6a2bd1cd4a32109c7dbb861ec007f7e4e423a9a081f8d23b8e2
+      PDK_VERSION: 5e6d592e4002946a4616f798c357f0f3c06cf3b6
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Guard against bypasses and false diagnostic passes
+        run: |
+          python3 -m unittest discover -s test -p test_release_policy.py
+          python3 -m unittest discover -s test -p test_sram_diagnostic.py
+
+      - name: Get unchanged Tiny Tapeout checkers
+        uses: actions/checkout@v6
+        with:
+          repository: TinyTapeout/tt-support-tools
+          ref: 01d5d2814fa9dd61e9d211e0b235a4a592a9316a
+          path: work/diagnostic/tt
+          persist-credentials: false
+
+      - name: Download the exact previously submitted artifact
+        uses: actions/download-artifact@v7
+        with:
+          artifact-ids: '10540429315'
+          run-id: '35328977063'
+          github-token: ${{ github.token }}
+          path: work/diagnostic/submission
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install diagnostic dependencies and existing Ciel PDK release
+        run: |
+          python -m pip install 'ciel==2.4.0' -r work/diagnostic/tt/precheck/requirements.txt
+          ciel enable --pdk-root "$GITHUB_WORKSPACE/work/diagnostic/pdk" --pdk ihp-sg13g2 "$PDK_VERSION"
+          docker pull --platform linux/amd64 "$ASTRA_TOOL_IMAGE"
+
+      - name: Run independent probes with strict final failure status
+        run: python tools/sram_diagnostic.py --work work/diagnostic
+
+      - name: Preserve logs and reports even after failures
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sram-diagnostic-x86_64-${{ github.run_attempt }}
+          path: work/diagnostic/evidence
+          if-no-files-found: error
+          retention-days: 30

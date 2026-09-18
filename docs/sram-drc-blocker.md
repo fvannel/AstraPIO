@@ -1,5 +1,10 @@
 # Blocage DRC reproductible — macro SRAM IHP
 
+Ce document décrit le premier diagnostic, avant la soumission provisoire.
+Le [bilan du 18 septembre](sram-investigation-20260918.md) le complète : precheck
+local 10/10 avec le PDK corrigé, Magic non résolu, contrôles bloquants rétablis
+localement pour les prochaines révisions.
+
 Constaté localement le 18 septembre 2026. **Aucune règle ni géométrie PDK modifiée ;
 aucune dérogation demandée ou appliquée.** Ce rapport est prêt à communiquer,
 mais aucun message n'a été envoyé à Tiny Tapeout/IHP.

@@ -1,5 +1,12 @@
 # Première soumission provisoire — autorisation et périmètre
 
+**Historique uniquement.** À la demande de l'utilisateur du 18 septembre, les
+contournements de cette première révision ont été retirés du workflow local pour
+les prochaines publications. Aucun push ni remplacement de la révision soumise
+n'a été effectué pendant l'enquête initiale. La suite autorisée est un
+[CI de diagnostic sur branche séparée](sram-diagnostic-ci.md), sans merge ni
+nouvelle soumission. Voir [le bilan SRAM](sram-investigation-20260918.md).
+
 **Résultat vérifié le 18 septembre 2026 à 11:48 Zurich : première révision
 enregistrée**, [PR n°122](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/122)
 ouverte pour le commit `487ee6c`, deux tiles 1×2. Le bilan et les limites sont

@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+: "${ASTRA_WORKSPACE:?Workspace must be set}"
+: "${ASTRA_TOOL_IMAGE:?Pinned tool image must be set}"
+exec docker run --rm --platform linux/amd64 \
+    --volume "$ASTRA_WORKSPACE:$ASTRA_WORKSPACE" --workdir "$PWD" \
+    "$ASTRA_TOOL_IMAGE" timeout --kill-after=10 600 klayout "$@"
