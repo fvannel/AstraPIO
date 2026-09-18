@@ -10,8 +10,8 @@
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,
-  "distinct_pin_level_test_scenarios": 10,
-  "simulation_scope": "Compact ABI 0x0300; ten pin-level scenarios, including all four scheduler phases of host/peer RX arbitration, plus separate FIFO/latch-store units. Exact shuttle PDK functional models, Icarus 13. Not SDF or exhaustive.",
+  "distinct_pin_level_test_scenarios": 11,
+  "simulation_scope": "Compact ABI 0x0300; eleven pin-level scenarios plus exact depth-two byte FIFO and latch-store units. Exact shuttle PDK functional models with Icarus 13. Same eleven integration scenarios also passed local synthesized-netlist simulation (10+1 separate runs). No routed/SDF simulation yet.",
   "hardware_workflows_enabled": true,
   "publication_authorized": true,
   "submission_authorized": false,
@@ -27,7 +27,7 @@
   "release_blockers": [
     "Post-CTS detailed placement failed in first two official runs; now testing smaller characterized clock-tree root buffers, no waived checks",
     "Full routed timing including ICG/latch paths, DRC/LVS and official precheck with exact shuttle PDK required",
-    "Independent CI must rerun after RX snapshot race fix; routed-netlist regression still required",
+    "Latest test-only additions need independent CI; full routed-netlist regression and timing qualification remain required",
     "Final board interface and release review required"
   ],
   "historical_sram_candidate": {
@@ -135,11 +135,11 @@
     "inserted_hold_buffers": 242
   },
   "independent_rtl_ci": {
-    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385298799",
-    "commit": "c8808f877f96e73880de5bff8e38bd7fd46688ae",
+    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385953714",
+    "commit": "946648ff304834c2c34deca6c4b14031f191dd39",
     "conclusion": "success",
-    "pin_level_scenarios": 8,
-    "scope": "Before additional RX snapshot regression/fix"
+    "pin_level_scenarios": 10,
+    "scope": "Includes RX snapshot fix; extra ALU scenario and exact FIFO unit parameters subsequently added"
   },
   "second_compact_physical_run": {
     "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385308221",
@@ -148,5 +148,11 @@
     "post_cts_stdcell_area_um2": 53664.5,
     "post_cts_utilization": 0.892783,
     "inserted_hold_buffers": 237
+  },
+  "third_compact_physical_run": {
+    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385953304",
+    "commit": "946648ff304834c2c34deca6c4b14031f191dd39",
+    "conclusion": "in_progress",
+    "change": "Characterized CTS root buffer sg13g2_buf_4; all safety/timing constraints retained"
   }
 }

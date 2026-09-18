@@ -288,3 +288,34 @@ async def empty_snapshot_does_not_pop_late_byte(dut):
     assert await host.read(0x15) == 0x80C7
     assert await host.read(0x15) == 0
     assert await host.read(6) == 0
+
+
+@cocotb.test()
+async def byte_alu_branches_and_both_input_banks(dut):
+    host = await setup(dut)
+    rng = random.Random(0xA103)
+    for value, mask in [(0,0),(255,0),(0x80,0x55)] + [(rng.randrange(256),rng.randrange(256)) for _ in range(7)]:
+        await host.write(4,3)
+        await load_shared(host,[0x1000|value,0xA000|mask,0xB000,0xC000,0x7000,0xF100,0xE000])
+        await host.write(3,3)
+        expected = (((value ^ mask) & 0x7F) - 1) & 255
+        for address in (0x15,0x25): assert await host.read(address) == 0x8000 | expected
+        assert await host.read(6) == 0
+    await host.write(4,3)
+    # A zero loop count means sixteen iterations. JBIT taken and JNZ not taken.
+    await load_shared(host,[0x1000,0xF500,0x7000,0xF602,0xF100,0x1080,0xF809,
+                            0x10AA,0xE000,0x1000,0x600D,0x1055,0xF100,0xE000])
+    await host.write(3,3)
+    for address in (0x15,0x25):
+        assert await host.read(address) == 0x80F0
+        assert await host.read(address) == 0x8055
+    await host.write(4,3)
+    host.inputs = 0x1B
+    host.drive()
+    dut.uio_in.value = 0xA5
+    await load_shared(host,[0x2000,0xF100,0x2100,0xF100,0xE000])
+    await host.write(3,3)
+    for address in (0x15,0x25):
+        assert await host.read(address) == 0x80A5
+        assert await host.read(address) == 0x801B
+    assert await host.read(6) == 0

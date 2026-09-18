@@ -10,6 +10,8 @@ from cocotb.triggers import Timer
 async def fifo_order_capacity_simultaneous_and_flush(dut):
     queue = deque()
     rng = random.Random(0xF1F0)
+    depth = 1 << (len(dut.level) - 1)
+    value_mask = (1 << len(dut.data_in)) - 1
     dut.clk.value = 0
     dut.rst_n.value = 0
     dut.flush.value = 0
@@ -18,6 +20,7 @@ async def fifo_order_capacity_simultaneous_and_flush(dut):
     dut.data_in.value = 0
 
     async def cycle(push=0, pop=0, value=0, flush=0):
+        value &= value_mask
         dut.clk.value = 0
         dut.push.value = push
         dut.pop.value = pop
@@ -26,13 +29,13 @@ async def fifo_order_capacity_simultaneous_and_flush(dut):
         await Timer(5, unit="ns")
         reset = not int(dut.rst_n.value) or flush
         can_pop = bool(queue) and pop
-        can_push = push and (len(queue) < 4 or can_pop)
+        can_push = push and (len(queue) < depth or can_pop)
         if not reset:
             assert int(dut.empty.value) == (len(queue) == 0)
-            assert int(dut.full.value) == (len(queue) == 4)
+            assert int(dut.full.value) == (len(queue) == depth)
             assert int(dut.level.value) == len(queue)
             assert int(dut.data_out.value) == (queue[0] if queue else 0)
-            assert int(dut.push_ready.value) == (len(queue) < 4 or can_pop)
+            assert int(dut.push_ready.value) == (len(queue) < depth or can_pop)
         if reset:
             queue.clear()
         else:
@@ -48,11 +51,11 @@ async def fifo_order_capacity_simultaneous_and_flush(dut):
     await cycle()
     dut.rst_n.value = 1
     await cycle(pop=1)  # Empty pop: no wraparound.
-    for value in range(4):
+    for value in range(depth):
         await cycle(push=1, value=0x1000 + value)
     await cycle(push=1, value=0xDEAD)  # Full push is rejected.
     await cycle(push=1, pop=1, value=0xBEEF)  # Full replacement keeps capacity/order.
-    for _ in range(4):
+    for _ in range(depth):
         await cycle(pop=1)
     await cycle(push=1, pop=1, value=0x1234)  # No empty fall-through; value is queued.
     await cycle(flush=1, push=1, pop=1, value=0xFFFF)

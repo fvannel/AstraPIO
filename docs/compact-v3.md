@@ -134,8 +134,9 @@ firmware must not be reused silently. LPC transport/DMA remains board-specific.
 Validated application examples live in `examples/compact/`: two-context byte
 transform, SPI transmitter and UART transmitter. The old 27-word WS2812 code and
 larger relay **do not fit unchanged**. Their old validation is not applicable.
-The eight initial pin-level scenarios include a full 16-word SPI TX/RX loopback
-program and an external UART decoder. See current test results for later coverage.
+The eleven pin-level scenarios include a full 16-word SPI TX/RX loopback,
+an external UART decoder and phased RX arbitration checks. See the
+[validation ledger](compact-validation.md) for evidence and outstanding checks.
 
 ## Release policy
 
