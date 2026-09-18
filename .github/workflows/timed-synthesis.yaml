@@ -10,6 +10,18 @@ jobs:
   synthesis:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - strategy: 0
+            nf: true
+          - strategy: 1
+            nf: false
+          - strategy: 2
+            nf: false
+          - strategy: 3
+            nf: false
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -26,11 +38,11 @@ jobs:
           python tt/tt_tool.py --ihp --create-user-config
       - name: Synthesis only — no GDS or submission artifact
         run: |
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag timed-synth --to Yosys.Synthesis src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag timed-synth --to Yosys.Synthesis -c 'SYNTH_STRATEGY="AREA ${{ matrix.strategy }}"' -c 'SYNTH_ABC_AREA_USE_NF=${{ matrix.nf }}' src/config_merged.json
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: timed-synthesis-evidence
+          name: timed-synthesis-area${{ matrix.strategy }}-nf${{ matrix.nf }}
           path: |
             src/runs/timed-synth
             src/config_merged.json

@@ -10,8 +10,8 @@
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": false,
-  "distinct_pin_level_test_scenarios": 11,
-  "simulation_scope": "Compact ABI 0x0300; eleven pin-level scenarios plus exact depth-two byte FIFO and latch-store units. Exact shuttle PDK functional models with Icarus 13. Eleven scenarios pass RTL, local synthesis (10+1), and the frozen official routed netlist (11 together). Official routed CI ran the first ten. All simulations are functional, without SDF delay annotation.",
+  "distinct_pin_level_test_scenarios": 20,
+  "simulation_scope": "Timed experiment: eleven existing compact scenarios and nine timed pin-level scenarios. Current extension tested at RTL only; no routed-netlist or SDF qualification. Historical compact routed results below apply only to fallback 946648ff.",
   "hardware_workflows_enabled": false,
   "publication_authorized": true,
   "submission_authorized": true,
@@ -30,7 +30,7 @@
   "ready_for_submission": false,
   "magic_drc_nonblocking_authorized": false,
   "provisional_sram_precheck_nonblocking_authorized": false,
-  "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. Authorized compact revision submitted directly by exact commit; main and Pages unchanged. Await central checks and maintainer acceptance.",
+  "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. New timed experiment is on its own branch and cannot replace fallback until all gates pass. Main and Pages unchanged.",
   "physical_validation_passed": false,
   "physical_validation_scope": "Timed extension is unvalidated physically. Compact evidence below belongs only to the unchanged fallback, not to the modified RTL.",
   "placement_routing_completed": false,
@@ -40,7 +40,7 @@
   "sdf_simulation_performed": false,
   "release_blockers": [
     "Final clock/board interface review: 20 ns clock, 0.25 ns uncertainty, 4 ns IO delays and 6 fF output load are block constraints, not board qualification; explicit 5 percent audit has only 4.63 ps worst hold margin",
-    "New timed extension requires complete pin-level regression and area/routing/timing/official precheck proof. Existing compact PR142 central checks passed; it remains unmerged fallback."
+    "Timed extension initial synthesis uses 62670.132 square micrometers before 16 ICGs and routing, exceeding the 60109.3 square micrometer core. Area optimization is required; no new revision is authorized while this persists. Existing compact PR142 central checks passed; it remains unmerged fallback."
   ],
   "historical_sram_candidate": {
     "project_name": "AstraPIO",
