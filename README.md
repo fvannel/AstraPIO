@@ -69,8 +69,10 @@ administrative ne constitue pas une validation de fabrication ; voir
 Dépôt public autorisé par l'utilisateur : [fvannel/AstraPIO](https://github.com/fvannel/AstraPIO),
 branche `main`, remote `origin`. Les deux coupons ont été utilisés
 le 18 septembre : le compte affiche deux tiles et deux DevKits sur TTIHP26b.
-Aucun code n'est enregistré dans les fichiers. Le rattachement au projet sur la
-plateforme est suivi dans `docs/reservation.md`. Le GDS n'est pas soumis.
+Aucun code n'est enregistré dans les fichiers. Le projet
+[AstraPIO n°5799](https://app.tinytapeout.com/projects/5799) est créé sur TTIHP26b,
+avec ses deux tiles **affectées** (1×2). Aucune révision GDS n'est soumise :
+le projet n'est pas encore inclus pour fabrication. Voir `docs/reservation.md`.
 Les workflows de tests et documentation peuvent s'exécuter sur GitHub ; les
 workflows matériels restent manuels et verrouillés tant que le statut n'autorise
 pas leur lancement. Un GDS existant,

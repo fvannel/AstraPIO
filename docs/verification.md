@@ -33,7 +33,8 @@ Un succès de simulation ou un GDS produit n'annule pas ces blocages.
 | Preuve formelle exhaustive / simulation avec SDF | NON EXÉCUTÉ |
 | Revue indépendante de signoff | NON RÉALISÉE ; revue locale dans `review-notes.md` |
 | Validation FPGA, carte LPC, niveaux électriques et silicium | NON EXÉCUTÉ |
-| Allocation individuelle, publication et dépôt au portail | NON VÉRIFIÉ / NON EFFECTUÉ |
+| Allocation individuelle et publication | MISE À JOUR : dépôt GitHub publié, projet 5799 créé et 1×2 tiles affectées ; voir `reservation.md` |
+| Révision GDS au portail | NON SOUMISE ; aucun succès de signoff revendiqué |
 
 Les quatre configurations de simulation exécutent **les mêmes 22 scénarios**,
 pas 88 scénarios indépendants. Chaque suite simule environ 34,789 ms au total.
@@ -129,7 +130,7 @@ Le precheck possède ses propres rapports, archivés à côté du candidat physi
 1. Résolution officielle et reproductible du DRC SRAM (ou architecture mémoire
    alternative à refaire qualifier) ; aucune dérogation implicite.
 2. Revue des hypothèses horloge/IO/coins et de la couverture CDC/électrique.
-3. Allocation effective des deux tiles au bon projet, référence de carte LPC et
-   validation du nom/auteur public ; autorisation explicite de publication.
+3. Allocation des deux tiles et publication désormais réalisées pour AstraPIO ;
+   référence de carte LPC et revue finale du dossier restent nécessaires.
 4. Rejouer le flow officiel et la netlist sur le commit publié, vérifier la
    révision réellement déposée avant l'échéance du shuttle.
