@@ -50,6 +50,19 @@ def assess_magic(returncode, report):
     return result
 
 
+def assess_magic_staged(returncode, report, log):
+    """Require completion evidence, not merely a successful Tcl process exit."""
+    result = assess_magic(returncode, report)
+    result["stages"] = re.findall(r"^ASTRA_STAGE (\w+) (BEGIN|END) (\S+)$", log, re.M)
+    complete = re.findall(r"^ASTRA_DRC_COMPLETE (\d+)$", log, re.M)
+    listed = re.search(r"^ASTRA_STAGE list_results END \d+ms$", log, re.M)
+    if result["status"] in ("pass", "violations") and (
+        not listed or complete != [str(result["errors"])]
+    ):
+        result["status"] = "invalid_report"
+    return result
+
+
 def assess_precheck(returncode, report):
     result = {"status": "invalid_report", "returncode": returncode, "tests": 0}
     if report:

@@ -63,3 +63,50 @@ python3 -m unittest discover -s test -p test_release_policy.py
 
 Parser tests exercise synthetic process/report outcomes; they do not claim any
 physical DRC success. The CI probes operate on real, hash-verified layout files.
+
+## Follow-up: instrumented Magic version comparison (18 September 2026)
+
+The first x86-64 diagnostic run `35343378810` timed out after 180 seconds for
+each of the three Magic probes. The unchanged Tiny Tapeout precheck passed all
+10 tests with the corrected Ciel PDK. Those results are independent: the Magic
+timeouts remain failures, not zero-error results.
+
+Local ARM64 stage instrumentation then established:
+
+- A nonempty 2 um Metal1 square completes with zero errors.
+- The original standalone SRAM imports successfully, selects `drc(full)`, and
+  crashes (exit 139) during `drc catchup`.
+- Thus PDK startup alone is not the reproducer. The last generic log line did
+  not identify the failing operation accurately enough.
+- The deliberately invalid 0.1 um Metal1 witness also returns zero with the
+  local ARM64 8.3.623 build, even after explicitly covering its full bounding
+  box. This is an unresolved checker/harness defect, not a valid physical pass.
+  The CI treats failure to detect the negative witness as a blocking failure.
+
+`magic-version-diagnostic.yaml` now runs on this diagnostic branch. The original
+container comparison remains available manually; its checks have not been
+relaxed. The new comparison builds unmodified upstream Magic sources on Ubuntu
+24.04 with the same dependencies and `CFLAGS='-O2 -g'`:
+
+- 8.3.623: `fd12c39c37f26a0fe6e04698b1011e31b8bd3229`.
+- 8.3.684: `4f53bb3091d1e4a9b2009a58f157a8a4331d4c84`.
+
+The controlled comparison changes Magic's source version, not the PDK or GDS.
+The native 8.3.623 build is also compared with the previous Nix/container build;
+differences between those builds cannot be attributed to source version alone.
+
+Each version checks five independent cases: a valid Metal1 square, a deliberately
+invalid narrow Metal1 witness, both provider SRAM versions separately, and the
+unchanged submitted AstraPIO GDS. The negative witness must produce actual DRC
+violations. Both SRAMs and AstraPIO must have zero errors to pass. A timeout,
+crash, missing report, or missing completion marker fails. There are no SRAM
+exclusions, rule edits, or replacement macro geometry. Stage times, CPU time,
+maximum resident memory, raw violation coordinates, and hashes are archived.
+
+Motivating upstream changes (hypotheses, not yet proven causes):
+
+- [DRC exception signed-char fix](https://github.com/RTimothyEdwards/magic/commit/e789f18523a1faa63060cf992d04a7b982653b19).
+- [Removal of reentrant event processing during DRC](https://github.com/RTimothyEdwards/magic/commit/06eab7feb6d8c6533d7d75d939fb1d4f25e809cc).
+
+A successful diagnostic would still require qualification in the official shuttle
+environment. It is not permission to omit any fabrication check.

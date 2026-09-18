@@ -2,7 +2,7 @@
 
 import unittest
 
-from tools.sram_diagnostic import assess_magic, assess_precheck
+from tools.sram_diagnostic import assess_magic, assess_magic_staged, assess_precheck
 
 
 class MagicResultTest(unittest.TestCase):
@@ -48,6 +48,22 @@ class PrecheckResultTest(unittest.TestCase):
         ):
             with self.subTest(code=code, report=report):
                 self.assertNotEqual(assess_precheck(code, report)["status"], "pass")
+
+
+class InstrumentedMagicTest(unittest.TestCase):
+    def test_completed_check_is_required(self):
+        complete = "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_COMPLETE 0\n"
+        self.assertEqual(assess_magic_staged(0, "TOTAL\t0\n", complete)["status"], "pass")
+        for log in ("", "ASTRA_STAGE drc_catchup BEGIN 123\n",
+                    "ASTRA_STAGE list_results END 2ms\n",
+                    "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_COMPLETE 1\n"):
+            with self.subTest(log=log):
+                self.assertNotEqual(assess_magic_staged(0, "TOTAL\t0\n", log)["status"], "pass")
+
+    def test_stage_progress_does_not_hide_crash_or_violations(self):
+        log = "ASTRA_STAGE list_results END 2ms\nASTRA_DRC_COMPLETE 2\n"
+        self.assertEqual(assess_magic_staged(1, "2\tCnt.c\nTOTAL\t2\n", log)["status"], "violations")
+        self.assertEqual(assess_magic_staged(139, None, log)["status"], "process_error")
 
 
 if __name__ == "__main__":
