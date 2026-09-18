@@ -10,7 +10,7 @@ def record(kind, payload=b"", dtype=0):
     return struct.pack(">HBB", len(payload) + 4, kind, dtype) + payload
 
 
-def fixture(prefix=""):
+def fixture(prefix="", with_metal=False):
     data = bytearray()
     for name, shapes in TARGETS.items():
         encoded = (prefix + name).encode()
@@ -22,11 +22,31 @@ def fixture(prefix=""):
             data += record(0x0E, struct.pack(">h", 0), 2)
             data += record(0x10, struct.pack(">10i", x0, y0, x1, y0, x1, y1, x0, y1, x0, y0), 3)
             data += record(0x11)
+        if with_metal and name == CORNER:
+            data += record(0x08)
+            data += record(0x0D, struct.pack(">h", 8), 2)
+            data += record(0x0E, struct.pack(">h", 0), 2)
+            data += record(0x10, struct.pack(">10i", -145, -105, 325, -105,
+                                            325, 105, -145, 105, -145, -105), 3)
+            data += record(0x11)
         data += record(0x07)
     return bytes(data)
 
 
 class ContactProbeTest(unittest.TestCase):
+    def test_metal_repair_only_extends_known_right_edge(self):
+        source = fixture(with_metal=True)
+        result, edits = recenter(source, "both", repair_corner_metal=True)
+        self.assertEqual(len(edits), 5)
+        metal = [e for e in edits if e["layer"] == [8, 0]]
+        self.assertEqual(len(metal), 1)
+        entry = metal[0]
+        points = struct.unpack(">10i", bytes.fromhex(entry["after_hex"]))
+        self.assertEqual(points, (-145, -105, 335, -105, 335, 105, -145, 105, -145, -105))
+        for data, variant in ((fixture(), "both"), (source, "delay"), (result, "both")):
+            with self.assertRaises(ValueError):
+                recenter(data, variant, repair_corner_metal=True)
+
     def test_individual_experiments_only_touch_target_cell(self):
         for variant, name, count in (("delay", DELAY, 3), ("corner", CORNER, 1)):
             source = fixture()

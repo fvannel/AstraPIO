@@ -22,10 +22,6 @@ jobs:
       matrix:
         include:
           - target: old-macro
-            contact-probe: delay
-          - target: old-macro
-            contact-probe: corner
-          - target: old-macro
             contact-probe: both
           - target: submitted-gds
             contact-probe: both
@@ -86,13 +82,13 @@ jobs:
 
       - name: Test explicitly experimental contact positions with unchanged rules
         run: |
-          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}' --import-mode jq-prefixed --contact-probe '${{ matrix.contact-probe }}'
+          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}' --import-mode jq-prefixed --contact-probe '${{ matrix.contact-probe }}' --repair-corner-metal
 
       - name: Preserve all evidence including failures
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: contact-probe-${{ matrix.contact-probe }}-${{ matrix.target }}-${{ github.run_attempt }}
+          name: contact-metal-${{ matrix.contact-probe }}-${{ matrix.target }}-${{ github.run_attempt }}
           path: |
             work/magic-comparison/evidence
             work/magic-build-logs

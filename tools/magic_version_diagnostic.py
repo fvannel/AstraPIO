@@ -28,9 +28,12 @@ def parse_args(argv=None):
     parser.add_argument("--target", choices=("all", "old-macro", "new-macro", "submitted-gds"), default="all")
     parser.add_argument("--import-mode", choices=("official", "jq-prefixed"), default="official")
     parser.add_argument("--contact-probe", choices=("none", "delay", "corner", "both"), default="none")
+    parser.add_argument("--repair-corner-metal", action="store_true")
     args = parser.parse_args(argv)
     if args.contact_probe != "none" and args.target not in ("old-macro", "submitted-gds"):
         parser.error("Contact experiments require one explicit, frozen target")
+    if args.repair_corner_metal and args.contact_probe not in ("corner", "both"):
+        parser.error("Metal experiment requires a corner contact experiment")
     return args
 
 
@@ -105,12 +108,13 @@ def main():
         if gdstk.gds_units(gds) != (1e-6, 1e-9):
             raise ValueError("Contact experiment requires verified nanometre database units")
         prefix = "JQ_" if name == "submitted-gds" else ""
-        changed, edits = recenter(gds.read_bytes(), args.contact_probe, prefix)
+        changed, edits = recenter(gds.read_bytes(), args.contact_probe, prefix, args.repair_corner_metal)
         experimental = inputs / (name + "-EXPERIMENTAL-" + args.contact_probe + ".gds")
         experimental.write_bytes(changed)
         immutable[experimental] = sha256(experimental)
         manifest = {"scope": "EXPERIMENT ONLY; provider characterization is not requalified",
-                    "variant": args.contact_probe, "source_sha256": sha256(gds),
+                    "variant": args.contact_probe, "repair_corner_metal": args.repair_corner_metal,
+                    "source_sha256": sha256(gds),
                     "output_sha256": sha256(experimental), "edits": edits,
                     "unchanged_outside_record_payloads": True,
                     "guidance": "https://github.com/IHP-GmbH/IHP-Open-PDK/issues/794",

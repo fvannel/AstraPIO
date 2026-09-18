@@ -18,7 +18,7 @@ TARGETS = {
 }
 
 
-def recenter(data, variant, prefix=""):
+def recenter(data, variant, prefix="", repair_corner_metal=False):
     """Change only exact known XY records in a verified 1 nm-unit GDS.
 
     Caller must verify the input hash and units. Reject missing/duplicate
@@ -27,6 +27,8 @@ def recenter(data, variant, prefix=""):
     """
     if variant not in ("delay", "corner", "both"):
         raise ValueError("Unknown contact experiment")
+    if repair_corner_metal and variant == "delay":
+        raise ValueError("Metal repair requires the corner contact experiment")
     wanted = {prefix + name: shapes for name, shapes in TARGETS.items()
               if variant == "both" or name == (DELAY if variant == "delay" else CORNER)}
     output = bytearray(data)
@@ -53,35 +55,40 @@ def recenter(data, variant, prefix=""):
             layer = struct.unpack(">h", payload)[0]
         elif record == 0x0E:
             datatype = struct.unpack(">h", payload)[0]
-        elif record == 0x10 and cell in wanted and element == 0x08 and (layer, datatype) == (6, 0):
+        elif record == 0x10 and cell in wanted and element == 0x08 and (
+                (layer, datatype) == (6, 0) or
+                (repair_corner_metal and cell == prefix + CORNER and (layer, datatype) == (8, 0))):
             if value_type != 3 or len(payload) % 8:
                 raise ValueError("Unexpected XY encoding")
             values = struct.unpack(">" + "i" * (len(payload) // 4), payload)
             points = list(zip(values[::2], values[1::2]))
             bbox = (min(values[::2]), min(values[1::2]),
                     max(values[::2]), max(values[1::2]))
-            for expected, (dx, dy) in wanted[cell]:
+            candidates = wanted[cell] if layer == 6 else [((-145, -105, 325, 105), (10, 0))]
+            for expected, (dx, dy) in candidates:
                 if bbox != expected:
                     continue
                 rectangle = {(bbox[0], bbox[1]), (bbox[2], bbox[1]),
                              (bbox[2], bbox[3]), (bbox[0], bbox[3])}
                 if len(points) != 5 or points[0] != points[-1] or set(points) != rectangle:
                     raise ValueError("Target is not an exact rectangular contact")
-                key = (cell, bbox)
+                key = (cell, layer, bbox)
                 if key in matched:
                     raise ValueError("Duplicate target contact")
                 matched.add(key)
-                after = [(x + dx, y + dy) for x, y in points]
+                after = ([(x + dx, y + dy) for x, y in points] if layer == 6 else
+                         [(x + 10 if x == 325 else x, y) for x, y in points])
                 encoded = struct.pack(">" + "i" * len(values), *(v for p in after for v in p))
                 output[offset + 4:offset + size] = encoded
-                changed.append({"cell": cell, "layer": [6, 0], "bbox_before_nm": bbox,
-                                "translation_nm": [dx, dy], "offset": offset + 4,
+                changed.append({"cell": cell, "layer": [layer, 0], "bbox_before_nm": bbox,
+                                "operation": "translation" if layer == 6 else "extend_right_edge",
+                                "delta_nm": [dx, dy], "offset": offset + 4,
                                 "length": len(payload), "before_hex": payload.hex(),
                                 "after_hex": encoded.hex()})
         elif record == 0x11:
             element = None
         offset += size
-    if len(matched) != sum(len(shapes) for shapes in wanted.values()):
+    if len(matched) != sum(len(shapes) for shapes in wanted.values()) + int(repair_corner_metal):
         raise ValueError("Not all exact contact targets were found")
     restored = bytearray(output)
     for entry in changed:
