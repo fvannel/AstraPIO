@@ -76,8 +76,10 @@ le projet n'est pas encore inclus pour fabrication. Voir `docs/reservation.md`.
 Les workflows de tests et documentation peuvent s'exécuter sur GitHub.
 L'utilisateur a autorisé une première révision provisoire : le workflow GDS
 manuel est désormais autorisé, sans désactiver ni ignorer ses contrôles.
-La première tentative au portail a été refusée faute d'artefact `tt_submission` ;
-son statut est suivi dans `docs/reservation.md`. Un GDS existant,
+Le premier workflow GDS officiel a échoué sur 60767 erreurs Magic DRC.
+Le portail a refusé le dépôt faute d'artefact `tt_submission` : **aucune révision
+n'a été créée**. Voir [tentative et preuves](docs/first-revision-attempt.md).
+Un GDS existant,
 des tests verts ou une simulation à 50 MHz ne signifient pas « prêt à fabriquer ».
 
 Template officiel IHP, commit `6598bef4d3159f19fe471a2a2225df52e6f5ad25` :

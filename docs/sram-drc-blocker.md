@@ -50,6 +50,19 @@ IHP de référence dans le precheck Tiny Tapeout est ici celui de KLayout.
 
 ## Question à faire valider avant soumission
 
+### Suivi amont trouvé le 18 septembre
+
+Le ticket ouvert [IHP #793](https://github.com/IHP-GmbH/IHP-Open-PDK/issues/793)
+recense exactement les trois catégories KLayout observées ici : `Cnt.c.digibnd`,
+`Sdiod.d`, `Sdiod.e`. [IHP #1024](https://github.com/IHP-GmbH/IHP-Open-PDK/issues/1024)
+documente également des divergences Magic/KLayout pour `Cnt.c` dans les SRAM.
+[IHP #689](https://github.com/IHP-GmbH/IHP-Open-PDK/issues/689) discute la règle
+sous la couche SRAM sans fournir de procédure approuvée pour notre shuttle.
+Ces tickets ouverts confirment un sujet connu, **pas une dérogation**.
+
+Le workflow officiel GitHub a ensuite reproduit les 60767 erreurs Magic DRC
+et n'a pas produit d'archive de soumission ; voir `first-revision-attempt.md`.
+
 « La macro 256×8 du PDK c4b8… est-elle autorisée sur TTIHP26b ? Avec le deck fourni,
 son GDS amont inchangé produit 1768 violations Sdiod.d/Sdiod.e/Cnt.c.digibnd.
 Quelle révision ou procédure **officielle** faut-il appliquer ? »

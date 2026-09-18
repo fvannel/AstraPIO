@@ -5,7 +5,10 @@ du nom technique. Les résultats physiques ci-dessous correspondent à l'instant
 `buffered-v2` et au commit `22e40dc`, avant ce changement de métadonnées.
 L'inscription administrative et les coupons sont suivis séparément dans `reservation.md`.
 
-**Décision : ne pas soumettre.** Le circuit fonctionne dans les tests numériques
+**Décision technique : ne pas valider pour fabrication.** Une première révision
+provisoire a été autorisée et tentée, mais le portail l'a refusée après l'échec
+du workflow officiel ; voir `first-revision-attempt.md`.
+Le circuit fonctionne dans les tests numériques
 et possède un GDS routé dans deux tiles. Le contrôle DRC officiel de la SRAM
 échoue ; les hypothèses d'horloge et l'intégration de carte ne sont pas qualifiées.
 Un succès de simulation ou un GDS produit n'annule pas ces blocages.
