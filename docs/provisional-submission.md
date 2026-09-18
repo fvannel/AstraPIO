@@ -1,6 +1,11 @@
 # Première soumission provisoire — autorisation et périmètre
 
-18 septembre 2026. L'utilisateur demande explicitement la première soumission
+**Résultat vérifié le 18 septembre 2026 à 11:48 Zurich : première révision
+enregistrée**, [PR n°122](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/122)
+ouverte pour le commit `487ee6c`, deux tiles 1×2. Le bilan et les limites sont
+en fin de document. L'acceptation du shuttle et la qualification restent distinctes.
+
+Historique : le 18 septembre 2026, l'utilisateur demande explicitement la première soumission
 après avoir été informé du contrôle Magic non bloquant et de l'absence de
 validation finale pour fabrication. La soumission n'est pas encore confirmée
 au moment de ce commit ; le résultat sera enregistré après réponse du portail.
@@ -120,3 +125,54 @@ Les tests refusent encore un mélange de préfixes, une cellule de base différe
 ou une géométrie modifiée. La boucle est ensuite rejouée sur le rapport réel.
 Cette normalisation aurait dû faire partie du test initial : un nom généré
 par le flow n'est pas une identité géométrique stable.
+
+## Première révision effectivement enregistrée — 11:47:43 Zurich
+
+Le [run 35328977063](https://github.com/fvannel/AstraPIO/actions/runs/35328977063)
+sur `487ee6cf5936a1e0e0b7fc0d2b341f32f04f2790` a terminé avec les quatre jobs
+GDS, precheck sous politique provisoire, tests après routage et viewer réussis.
+Les workflows tests et documentation de ce même commit ont également réussi.
+Les 22 tests après routage passent sans échec ni test ignoré, sans SDF.
+LVS, DRC de routage, antennes et connexions passent. Marges minimales sous
+contraintes documentées : setup 9,167120655 ns ; hold 0,079353859 ns.
+
+Le vrai precheck officiel reste en échec : 1768 violations SRAM et neuf autres
+contrôles réussis. Le garde-fou reconnaît exactement les signatures autorisées,
+malgré le préfixe généré `JQ_`. Les rapports restent inchangés et l'annotation
+**OFFICIAL PRECHECK FAILED / NOT qualified for fabrication** reste visible.
+Les seize tests de politique passent ; un replay complémentaire vérifie aussi
+les 676 préfixes autorisés. La démarche de diagnostic a isolé le nom généré
+comme cause de la régression, avant correction et validation par les tests.
+
+L'archive officielle `tt_submission` porte l'identifiant `10540429315`.
+SHA256 ZIP : `ef3f1f887cb5037cf7dc928cdb889ae535271ce8cb808020d69795eefe11e81d`.
+SHA256 GDS : `9368dfb687cbaf7a24e27f5b2ca6ca83eac38f7453b46e7047a7975839f3c240`.
+Le même GDS complet a été rejoué avec le deck principal IHP corrigé
+`5e6d592e4002946a4616f798c357f0f3c06cf3b6` : **zéro violation**. Ce contrôle
+complémentaire n'est pas une dérogation officielle ni un signoff full-chip.
+Les [rapports de ce commit](evidence/sram-drc/487ee6c/) sont conservés à côté
+des preuves antérieures ; le log identifie le fichier GDS complet testé.
+Magic reste à 60767 erreurs, non bloquantes selon l'autorisation donnée.
+
+Le bouton de soumission a été actionné après la fin du workflow. Après
+rechargement, le portail 5799 affiche une ligne de révision créée à **11:47:43**,
+commit **487ee6cf**, **1×2 tiles**, **PR #122**, **Open**. La PR correspond bien
+au même commit et au même run. Aucun artefact de substitution ni résultat de
+contrôle falsifié n'a été envoyé. La PR n'a pas été fusionnée par l'agent ;
+les contrôles et la décision des responsables Tiny Tapeout restent indépendants.
+
+### Contrôles indépendants du shuttle — résultat à 11:53 Zurich
+
+Le [run central 35331395000](https://github.com/TinyTapeout/tinytapeout-ihp-26b/actions/runs/35331395000)
+réussit **Check user project submission**, mais échoue sur **Run precheck** :
+1768 violations SRAM, les mêmes trois catégories que dans le workflow projet.
+Ce contrôle n'a pas été modifié ni rendu non bloquant par l'agent. La PR reste
+ouverte, non fusionnée. Une décision des responsables Tiny Tapeout sur le cas
+SRAM reste nécessaire ; aucun accord ou waiver de leur part n'est présumé.
+
+L'OAS récupéré dans la PR a été comparé octet par octet avec celui de l'archive
+officielle : identique. SHA256 OAS :
+`71028836b8ede8e5b10a84d0bbb2b8e5c5fe4fda56bb13c786f57f00a4ec6fd0`.
+Le `commit_id.json` reçu confirme le commit `487ee6c`, le run `35328977063`
+et le projet `5799`. La première soumission est donc effective, même si son
+acceptation pour fabrication n'est pas acquise.

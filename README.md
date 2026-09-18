@@ -71,22 +71,28 @@ branche `main`, remote `origin`. Les deux coupons ont été utilisés
 le 18 septembre : le compte affiche deux tiles et deux DevKits sur TTIHP26b.
 Aucun code n'est enregistré dans les fichiers. Le projet
 [AstraPIO n°5799](https://app.tinytapeout.com/projects/5799) est créé sur TTIHP26b,
-avec ses deux tiles **affectées** (1×2). Aucune révision GDS n'est soumise :
-le projet n'est pas encore inclus pour fabrication. Voir `docs/reservation.md`.
+avec ses deux tiles **affectées** (1×2). La **première révision est soumise**
+depuis le 18 septembre 2026 à 11:47 Zurich :
+[PR Tiny Tapeout n°122](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/122),
+commit `487ee6c`, statut ouvert. Elle n'est pas encore acceptée pour fabrication.
+Voir `docs/reservation.md`.
 Les workflows de tests et documentation peuvent s'exécuter sur GitHub.
 L'utilisateur a autorisé une première révision provisoire : le workflow GDS
 manuel est désormais autorisé. Après recherche des précédents SRAM, l'utilisateur
 a explicitement autorisé Magic DRC **non bloquant**, avec conservation de ses
 erreurs et du precheck officiel inchangé. Il ne s'agit pas d'un accord de fabrication.
 Le premier workflow GDS officiel a échoué sur 60767 erreurs Magic DRC.
-Le portail a refusé le dépôt faute d'artefact `tt_submission` : **aucune révision
-n'a été créée**. Voir [tentative et preuves](docs/first-revision-attempt.md).
+Le portail avait refusé ce premier dépôt faute d'artefact `tt_submission` :
+aucune révision n'avait alors été créée. Voir [tentative et preuves](docs/first-revision-attempt.md).
 Le run suivant a produit l'archive et passé les 22 tests après routage, mais
 le portail a refusé son precheck SRAM rouge. L'utilisateur a maintenant autorisé
 une exception non bloquante limitée aux 1768 violations SRAM exactes déjà
 documentées ; les règles et rapports officiels sont conservés. Tous les autres
-échecs restent bloquants. Une nouvelle tentative est préparée selon la
-[procédure provisoire documentée](docs/provisional-submission.md).
+échecs restent bloquants. Cette politique a permis la soumission de `487ee6c` :
+22/22 tests après routage réussis, rapports DRC officiels en échec conservés,
+zéro violation avec le deck principal IHP corrigé sur le même GDS.
+La [procédure provisoire documentée](docs/provisional-submission.md) décrit les
+preuves et les réserves ; cette soumission ne vaut pas dérogation Tiny Tapeout/IHP.
 Un GDS existant,
 des tests verts ou une simulation à 50 MHz ne signifient pas « prêt à fabriquer ».
 

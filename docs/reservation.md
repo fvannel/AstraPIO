@@ -1,6 +1,14 @@
 # AstraPIO — réservation administrative TTIHP26b
 
-État au 18 septembre 2026, vers 08:10 Europe/Zurich.
+**Actualisation au 18 septembre 2026, 11:48 Europe/Zurich : première révision
+enregistrée**, commit `487ee6cf5936a1e0e0b7fc0d2b341f32f04f2790`, deux tiles 1×2.
+Le portail affiche la [PR n°122](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/122)
+au statut **Open**, créée à 11:47:43. Ce n'est ni une inclusion fusionnée dans
+le shuttle ni une qualification pour fabrication. Les exceptions DRC restent
+explicites ; voir [résultat de soumission](provisional-submission.md).
+
+Les sections suivantes conservent l'historique administratif au 18 septembre
+2026 vers 08:10, avant la première révision.
 
 L'utilisateur demande de procéder maintenant à l'inscription et à la saisie des
 codes sur la plateforme, sans attendre la résolution des défauts de fabrication.
