@@ -1,8 +1,16 @@
-# AstraPIO compact
+# AstraPIO — timed-I/O experiment
 
 General-purpose, dual-context programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 
-**Active branch: compact ISA/ABI 0x0300. Experimental; fabrication qualification pending.**
+**This branch adds an experimental shared timed-I/O engine to compact ABI
+0x0300. It is NOT physically qualified and has NOT replaced the submitted chip.**
+
+The extension captures a configurable 1..24-bit prefix, replaces that prefix
+on a simultaneously regenerated pulse stream, then relays the remaining bits.
+Timing and GPIO routing are programmable; WS2812B V5 is one tested profile.
+Atomic host updates, an RX mailbox and error reporting are included. The two
+existing programmable contexts and their ISA remain available concurrently.
+See [experiment architecture and evidence](docs/timed-pio-v4.md).
 
 - Two contexts with deterministic four-clock scheduling.
 - One shared 16 × 16-bit latch program store (32 bytes), using unchanged IHP standard cells; no SRAM macro.
@@ -20,8 +28,8 @@ Install the dependencies in `test/requirements.txt`, Icarus Verilog **13**, and 
 
 The manual GDS workflow runs the official Tiny Tapeout physical flow, precheck and gate simulation. It does not merge, publish a viewer or submit a shuttle revision. A successful functional test or synthesis-area estimate is not physical signoff.
 
-## Current result
+## Submitted fallback (different RTL)
 
 The [official compact build at `946648f`](https://github.com/fvannel/AstraPIO/actions/runs/35385953304) completes routing in **1×2 tiles**, with zero Magic/KLayout DRC, LVS, XOR and antenna violations. All ten official prechecks pass. Eleven compact integration tests pass on the exact routed netlist locally (the official build ran the first ten). Final standard-cell utilization is **90.42%**. The PDK and all blocking checks remain unchanged.
 
-This is a validated development candidate, not a new shuttle submission. See the [validation ledger](docs/compact-validation.md) for timing assumptions, remaining release review, artifacts and limitations.
+That compact commit was submitted as [shuttle PR 142](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/142). Its central submission check and official precheck passed; the PR remains open. It does not contain this timed extension. See the [validation ledger](docs/compact-validation.md) for timing assumptions, artifacts and limitations. A failed or oversized experiment must not replace this fallback.

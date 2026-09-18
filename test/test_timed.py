@@ -183,10 +183,12 @@ async def randomized_legal_waveforms_and_lengths(dut):
         tail = rng.getrandbits(tail_length)
         pulses = []
         task = cocotb.start_soon(watch_output(dut, pulses))
+        input_start = float(get_sim_time(unit="ns"))
         await send_bits(dut, (prefix << tail_length) | tail, length+tail_length,
                         period=period, high0=h0, high1=h1)
         await Timer(2, unit="us")
         check_pulses(pulses, (replacement << tail_length) | tail, length+tail_length)
+        assert 680 <= pulses[0][0]-input_start <= 700
         assert await host.read(0x69) | (await host.read(0x6A) << 16) == prefix
         assert await host.read(0x6B) & 0xE0 == 0
         task.cancel()
@@ -313,3 +315,28 @@ async def malformed_frame_requires_new_idle(dut):
     assert await host.read(0x6A) == 0xAF
     assert await host.read(0x6B) & 0xE0 == 0
     task.cancel()
+
+
+@cocotb.test()
+async def every_clock_phase_at_input_timing_limits(dut):
+    host = await setup(dut)
+    await configure(host)
+    await stage(host, 0xAA55AA)
+    await host.write(0x61, 7)
+    for phase in range(20):
+        await host.write(0x61, 0x507)
+        await ClockCycles(dut.clk, 1)
+        await Timer(310_000+phase, unit="ns")
+        pulses = []
+        task = cocotb.start_soon(watch_output(dut, pulses))
+        input_start = float(get_sim_time(unit="ns"))
+        # Zero at its longest and one at its shortest legal V5 high.
+        await send_bits(dut, 0xFFFF000000FFFFFFAA5555AA, 96,
+                        period=1250, high0=380, high1=580)
+        await Timer(2, unit="us")
+        check_pulses(pulses, 0xAA55AA0000FFFFFFAA5555AA, 96)
+        assert 680 <= pulses[0][0]-input_start <= 700
+        assert await host.read(0x69) == 0xFF00
+        assert await host.read(0x6A) == 0xFF
+        assert await host.read(0x6B) & 0xE0 == 0
+        task.cancel()

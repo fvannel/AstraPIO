@@ -9,9 +9,9 @@
   "platform_project_id": 5799,
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
-  "rtl_simulation_passed": false,
-  "distinct_pin_level_test_scenarios": 20,
-  "simulation_scope": "Timed experiment: eleven existing compact scenarios and nine timed pin-level scenarios. Current extension tested at RTL only; no routed-netlist or SDF qualification. Historical compact routed results below apply only to fallback 946648ff.",
+  "rtl_simulation_passed": true,
+  "distinct_pin_level_test_scenarios": 21,
+  "simulation_scope": "Timed experiment: 21 Icarus RTL integration scenarios (11 compact + 10 timed), including 24 prefix lengths and 20 clock phases. First synthesized netlist at 7950624 passes the preceding 20 scenarios, functional without SDF. Optimized RTL has no routed-netlist or timing qualification. Portable C drivers pass sanitized bus-boundary tests. Historical compact physical results below apply only to fallback 946648ff.",
   "hardware_workflows_enabled": false,
   "publication_authorized": true,
   "submission_authorized": true,
@@ -40,7 +40,7 @@
   "sdf_simulation_performed": false,
   "release_blockers": [
     "Final clock/board interface review: 20 ns clock, 0.25 ns uncertainty, 4 ns IO delays and 6 fF output load are block constraints, not board qualification; explicit 5 percent audit has only 4.63 ps worst hold margin",
-    "Timed extension initial synthesis uses 62670.132 square micrometers before 16 ICGs and routing, exceeding the 60109.3 square micrometer core. Area optimization is required; no new revision is authorized while this persists. Existing compact PR142 central checks passed; it remains unmerged fallback."
+    "Timed extension optimized synthesis best so far: AREA 2 uses 61733.259 square micrometers excluding 16 ICGs. Adding their LEF area gives 62168.715, exceeding the 60109.3 square micrometer core even before clock tree/routing buffers. Placement diagnostics pending. Existing compact PR142 central checks passed; it remains unmerged fallback."
   ],
   "historical_sram_candidate": {
     "project_name": "AstraPIO",

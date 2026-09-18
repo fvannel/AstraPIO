@@ -64,6 +64,7 @@ int main(void) {
         fault.fail_at = fail;
         assert(pio_timed_stage(&f, 1) == PIO_EIO);
         assert(fault.calls == fail);
+        assert(fault.commit_count == (fail == 8 ? 1u : 0u));
     }
     return 0;
 }

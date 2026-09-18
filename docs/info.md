@@ -1,4 +1,11 @@
-# AstraPIO compact
+# AstraPIO — timed-I/O experiment
+
+**Branch warning:** this development revision adds one shared configurable
+timed pulse-I/O engine beside the two compact PIO contexts. It is not physically
+qualified or submitted. The already submitted compact fallback is commit
+`946648ff` / shuttle PR 142, whose central checks passed. Its results do not
+qualify this extension. See `docs/timed-pio-v4.md` for the new register page,
+scope, tests and area limitations. The compact subsystem is described below.
 
 Experimental general-purpose programmable digital IO coprocessor, **not yet qualified for fabrication**. This is the compact ABI 0x0300 redesign; earlier SRAM-based submissions and results describe a different implementation.
 
@@ -30,4 +37,4 @@ uio0..7: eight bidirectional PIO pins. Context 0 controls outputs 0..6; context 
 
 This branch is for development and independent CI. No SRAM waiver, DRC filtering or nonblocking signoff exception is permitted. Placement/routing, timing including latch/clock-gate paths, DRC, LVS and official precheck must all pass before a new revision can be considered.
 
-The compact candidate at commit `946648f` completed the official flow in 1×2 tiles on 2026-09-18: Magic/KLayout DRC, LVS, XOR, antenna checks, nominal-RC timing at three cell corners, ten official prechecks and ten routed functional tests passed. The latest eleven-test suite also passes locally on that exact routed netlist. Final release and board timing review remain separate; no new platform revision has been submitted from this branch. Detailed evidence is in `docs/compact-validation.md`.
+The compact candidate at commit `946648f` completed the official flow in 1×2 tiles on 2026-09-18: Magic/KLayout DRC, LVS, XOR, antenna checks, nominal-RC timing at three cell corners, ten official prechecks and ten routed functional tests passed. The latest eleven-test suite also passes locally on that exact routed netlist. That compact candidate was submitted as PR 142; this timed extension has not been submitted. Board timing review remains separate. Detailed fallback evidence is in `docs/compact-validation.md`.
