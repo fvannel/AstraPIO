@@ -90,6 +90,8 @@ async def prefix_replacement_and_unbroken_tail(dut):
     task.cancel()
     check_pulses(pulses, (0x012345 << 48) | tail, 72)
     assert await host.read(0x69) == 0x3456
+    assert await host.read(0x6A) == 0x12
+    assert await host.read(0x6B) & 0xE0 == 0
 
 
 @cocotb.test()
@@ -106,8 +108,6 @@ async def uninitialized_payload_cannot_be_committed(dut):
     await host.write(0x68, 0x56)
     await host.write(0x61, 0x600)
     assert await host.read(0x6B) & 0x38 == 8
-    assert await host.read(0x6A) == 0x12
-    assert await host.read(0x6B) & 0xE0 == 0
-    assert await host.read(0x6A) == 0x12
+    assert await host.read(0x6A) == 0
     assert int(dut.uo_out.value) & 4 == 0
-    assert await host.read(0x69) == 0x3456
+    assert await host.read(0x69) == 0

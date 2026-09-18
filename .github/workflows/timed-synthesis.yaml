@@ -26,13 +26,13 @@ jobs:
           python tt/tt_tool.py --ihp --create-user-config
       - name: Synthesis only — no GDS or submission artifact
         run: |
-          python -m librelane --dockerized --docker-no-tty --pdk ihp-sg13g2 --run-tag timed-synth --to Yosys.Synthesis src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag timed-synth --to Yosys.Synthesis src/config_merged.json
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: timed-synthesis-evidence
           path: |
-            runs/timed-synth
+            src/runs/timed-synth
             src/config_merged.json
             src/user_config.json
           if-no-files-found: error
