@@ -1,7 +1,7 @@
 # Tests
 
 The default integration suite runs `test_compact.py` (11 legacy ABI v3 scenarios)
-and `test_timed.py` (10 timed-extension scenarios). Only Tiny Tapeout pins are
+and `test_timed.py` (11 timed-extension scenarios). Only Tiny Tapeout pins are
 used; no internal RTL state is accessed. Timed tests include 24 prefix lengths,
 all 20 one-nanosecond input clock phases, strict pulse widths/low times,
 concurrent PIO execution and host traffic, atomic commits, frozen RX words,

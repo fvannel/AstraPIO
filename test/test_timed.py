@@ -340,3 +340,31 @@ async def every_clock_phase_at_input_timing_limits(dut):
         assert await host.read(0x6A) == 0xFF
         assert await host.read(0x6B) & 0xE0 == 0
         task.cancel()
+
+
+@cocotb.test()
+async def partial_frame_and_midframe_ack_cannot_publish_torn_word(dut):
+    host = await setup(dut)
+    await configure(host)
+    await stage(host, 0x123456)
+    await host.write(0x61, 7)
+    await Timer(310, unit="us")
+    await send_bits(dut, 0xA5, 8)
+    assert await host.read(0x6B) & 4 == 0
+    await Timer(310, unit="us")
+    await send_bits(dut, 0x112233, 24)
+    assert await host.read(0x69) == 0x2233
+    assert await host.read(0x6A) == 0x11
+    await Timer(310, unit="us")
+    stream = cocotb.start_soon(send_bits(dut, 0xABCDEF, 24))
+    await Timer(6, unit="us")
+    await host.write(0x61, 0x107)  # The second frame was already declared dropped.
+    await stream
+    assert await host.read(0x6B) & 0x44 == 0x40
+    assert await host.read(0x69) == 0  # No suffix masquerading as a complete word.
+    await host.write(0x61, 0x407)
+    await Timer(310, unit="us")
+    await send_bits(dut, 0xABCDEF, 24)
+    assert await host.read(0x69) == 0xCDEF
+    assert await host.read(0x6A) == 0xAB
+    assert await host.read(0x6B) & 0xE0 == 0
