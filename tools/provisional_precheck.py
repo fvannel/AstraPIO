@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -22,6 +23,15 @@ EXPECTED_CATEGORIES = Counter({"'Sdiod.d'": 796, "'Sdiod.e'": 796,
 # Hash of sorted (category, cell, multiplicity, sorted geometry values).
 # The tested GDS's SHA256 and original reports are recorded in the docs.
 EXPECTED_SIGNATURE = "6e3e0f139182f47cd77e9cb095f350294e30e247d211040dfba8d281229a5aad"
+
+
+def canonical_sram_cell(cell):
+    """Ignore ONLY the generated two-letter namespace, not the cell/orientation."""
+    match = re.fullmatch(r"[A-Z]{2}_((?:RM|RSC)_IHPSG13_[A-Za-z0-9_:]+)", cell or "")
+    if not match:
+        raise ValueError("Violation is not in a recognized namespaced IHP SRAM cell")
+    # Keep the baseline's spelling so its recorded fingerprint remains valid.
+    return "RT_" + match.group(1)
 
 
 def evaluate(junit, drc, outcome):
@@ -55,7 +65,10 @@ def evaluate(junit, drc, outcome):
         raise ValueError("Failure is not the documented SRAM DRC result")
     if Counter(i.findtext("category") for i in items) != EXPECTED_CATEGORIES:
         raise ValueError("DRC counts/categories differ from the authorized baseline")
-    signatures = sorted((i.findtext("category"), i.findtext("cell"),
+    cells = [i.findtext("cell") or "" for i in items]
+    if len({cell[:3] for cell in cells}) != 1:
+        raise ValueError("Mixed SRAM namespaces do not match the authorized baseline")
+    signatures = sorted((i.findtext("category"), canonical_sram_cell(i.findtext("cell")),
                          i.findtext("multiplicity"),
                          tuple(sorted(v.text or "" for v in i.findall("values/value"))))
                         for i in items)

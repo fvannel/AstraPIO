@@ -25,6 +25,26 @@ class ProvisionalPrecheckTest(unittest.TestCase):
         items[:] = list(reversed(items))
         self.assertEqual(self.check(), "authorized_sram_exception")
 
+    def test_generated_sram_namespace_changes_between_identical_builds(self):
+        # Real run 35326459266 differs from the baseline ONLY by RT_ -> YH_.
+        # Exercise the complete report, including every geometry and orientation.
+        for cell in self.drc.findall("items/item/cell"):
+            self.assertTrue(cell.text.startswith("RT_"))
+            cell.text = "YH_" + cell.text[3:]
+        self.assertEqual(self.check(), "authorized_sram_exception")
+
+    def test_mixed_sram_namespaces_are_blocking(self):
+        cell = self.drc.find("items/item/cell")
+        cell.text = "YH_" + cell.text[3:]
+        with self.assertRaises(ValueError):
+            self.check()
+
+    def test_real_cell_name_change_stays_blocking(self):
+        cell = self.drc.find("items/item/cell")
+        cell.text += "_CHANGED"
+        with self.assertRaises(ValueError):
+            self.check()
+
     def test_other_check_failure_is_blocking(self):
         ET.SubElement(self.junit.find(".//testcase"), "error", message="new failure")
         with self.assertRaises(ValueError):

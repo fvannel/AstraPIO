@@ -89,11 +89,12 @@ Le workflow exécute toujours la même action officielle et le même deck éping
 Une étape de politique séparée ne tolère que le résultat déjà analysé : les neuf
 autres contrôles passent, le DRC signale exactement 1768 erreurs, et les signatures
 triées (catégorie, cellule, multiplicité, géométrie) correspondent exactement au
-rapport du run `35322726665`. Leur SHA256 canonique est
+rapport du run `35322726665`, après normalisation du seul préfixe généré à deux
+lettres des cellules SRAM (voir le diagnostic ci-dessous). Leur SHA256 canonique est
 `6e3e0f139182f47cd77e9cb095f350294e30e247d211040dfba8d281229a5aad`.
 Les rapports originaux servant de fixture sont dans `test/fixtures/precheck/`.
 Une erreur différente, un rapport absent, un test omis ou une modification de
-géométrie d'erreur bloque encore le workflow. Treize tests vérifient ce garde-fou.
+géométrie d'erreur bloque encore le workflow. Seize tests vérifient ce garde-fou.
 
 Une annotation et un résumé signalent explicitement **OFFICIAL PRECHECK FAILED**
 et **NOT qualified for fabrication**. Aucun rapport n'est réécrit en succès.
@@ -101,3 +102,21 @@ Un workflow global vert signifie ici seulement que la politique de soumission
 provisoire autorisée a été respectée, pas que le DRC officiel a réussi.
 Cette autorisation du propriétaire ne vaut pas dérogation Tiny Tapeout/IHP.
 Le nouveau résultat du portail reste à vérifier après génération.
+
+## Régression du garde-fou corrigée : préfixe des cellules générées
+
+Le run `35326459266` sur `4751cf6` a reproduit 1768 violations, mais mon premier
+garde-fou les a refusées : toutes les cellules SRAM avaient un préfixe `YH_`
+au lieu de `RT_`. Deux reproductions locales ont confirmé l'échec. En changeant
+uniquement ce préfixe en mémoire, les 1768 signatures deviennent exactement
+identiques, y compris cellules de base, orientations, multiplicité et géométries.
+Le GDS de ce run passe aussi le deck IHP corrigé à zéro.
+
+Un test de régression sur le rapport complet a échoué avant correction.
+Le garde-fou normalise maintenant uniquement ce préfixe à deux lettres majuscules,
+uniquement devant les noms `RM_IHPSG13_...` et `RSC_IHPSG13_...`, et exige un seul
+espace de noms dans tout le rapport. Le reste de la signature reste identique.
+Les tests refusent encore un mélange de préfixes, une cellule de base différente
+ou une géométrie modifiée. La boucle est ensuite rejouée sur le rapport réel.
+Cette normalisation aurait dû faire partie du test initial : un nom généré
+par le flow n'est pas une identité géométrique stable.
