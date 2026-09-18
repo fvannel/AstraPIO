@@ -73,9 +73,11 @@ Aucun code n'est enregistré dans les fichiers. Le projet
 [AstraPIO n°5799](https://app.tinytapeout.com/projects/5799) est créé sur TTIHP26b,
 avec ses deux tiles **affectées** (1×2). Aucune révision GDS n'est soumise :
 le projet n'est pas encore inclus pour fabrication. Voir `docs/reservation.md`.
-Les workflows de tests et documentation peuvent s'exécuter sur GitHub ; les
-workflows matériels restent manuels et verrouillés tant que le statut n'autorise
-pas leur lancement. Un GDS existant,
+Les workflows de tests et documentation peuvent s'exécuter sur GitHub.
+L'utilisateur a autorisé une première révision provisoire : le workflow GDS
+manuel est désormais autorisé, sans désactiver ni ignorer ses contrôles.
+La première tentative au portail a été refusée faute d'artefact `tt_submission` ;
+son statut est suivi dans `docs/reservation.md`. Un GDS existant,
 des tests verts ou une simulation à 50 MHz ne signifient pas « prêt à fabriquer ».
 
 Template officiel IHP, commit `6598bef4d3159f19fe471a2a2225df52e6f5ad25` :

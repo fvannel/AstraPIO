@@ -19,6 +19,8 @@ jobs:
         uses: TinyTapeout/tt-gds-action@ttihp26b
         with:
           pdk: ihp-sg13g2
+          tools-ref: 01d5d2814fa9dd61e9d211e0b235a4a592a9316a
+          librelane-version: '3.0.5'
 
   precheck:
     needs: gds
@@ -26,6 +28,8 @@ jobs:
     steps:
       - name: Run Tiny Tapeout Precheck
         uses: TinyTapeout/tt-gds-action/precheck@ttihp26b
+        with:
+          tools-ref: 01d5d2814fa9dd61e9d211e0b235a4a592a9316a
 
   gl_test:
     needs: gds

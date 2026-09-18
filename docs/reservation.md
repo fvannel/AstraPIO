@@ -34,10 +34,20 @@ Sources : [allocations du compte](https://app.tinytapeout.com/),
 
 ## Suite
 
-Résoudre le blocage SRAM avec Tiny Tapeout/IHP et faire qualifier les hypothèses
-de timing, puis rejouer le flow et les contrôles sur le commit final avant de
-créer une révision de fabrication. Le dépôt, le projet et l'affectation sont
-confirmés ; l'inclusion du GDS reste une étape séparée.
+L'utilisateur a maintenant donné son accord pour la première révision provisoire.
+La première tentative via « Submit a new revision » a été refusée : aucun
+artefact `tt_submission` pour le commit `9d86c4a`, le workflow GDS n'ayant pas
+encore été exécuté. Aucune révision n'a été créée lors de cette tentative.
+
+Le workflow GDS officiel du run est autorisé et lancé avec les versions locales
+documentées (tt-support-tools `01d5d28`, LibreLane 3.0.5). Les contrôles restent
+actifs ; aucun `continue-on-error`, faux succès ni artefact de remplacement
+n'est ajouté. Soumettre via le portail si l'artefact officiel devient disponible,
+puis vérifier l'état réel de la révision. Un éventuel échec doit rester visible.
+
+Le blocage SRAM et les hypothèses de timing devront être résolus avant de
+considérer le design qualifié. Dépôt, projet et affectation sont confirmés ;
+l'inclusion du GDS reste une étape séparée.
 
 Un paiement complémentaire, une acceptation de nouvelles conditions ou un choix
 de dépôt public non résolu nécessitera une validation spécifique. Ne pas déclarer
