@@ -117,3 +117,20 @@ Motivating upstream changes (hypotheses, not yet proven causes):
 
 A successful diagnostic would still require qualification in the official shuttle
 environment. It is not permission to omit any fabrication check.
+
+## Authorized follow-up: 600-second probes
+
+Run `35355536605` completed the old-SRAM check on both native Magic versions:
+24 identical detailed markers (12 general `Cnt.c`, 12 SRAM `Cnt.c`) in 174.1 s
+and 158.2 s. The newer SRAM finished `drc catchup` but timed out while listing
+the detailed results, with a nonzero global error count already recorded. The
+full submitted GDS timed out during `drc catchup`.
+
+The user authorized ten-minute probes. The active workflow now runs two
+independent jobs with the same pinned Magic 8.3.684 build, PDK, inputs and Tcl
+checker: one for the newer SRAM and one for the unchanged submitted GDS. Each
+job reruns both controls, permits at most 600 seconds per probe, and retains
+the strict failure policy. No old-SRAM recheck is needed for this timeout
+experiment. The runner's default remains the complete 180-second comparison;
+the workflow explicitly selects `--timeout-seconds 600 --target ...` and records
+these parameters in the evidence. No rules, exclusions or layout edits are used.

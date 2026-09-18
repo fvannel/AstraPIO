@@ -1,8 +1,11 @@
 """The diagnostic must never turn a crash or absent report into a DRC pass."""
 
 import unittest
+import contextlib
+import io
 
 from tools.sram_diagnostic import assess_magic, assess_magic_staged, assess_precheck
+from tools.magic_version_diagnostic import parse_args
 
 
 class MagicResultTest(unittest.TestCase):
@@ -71,6 +74,28 @@ class InstrumentedMagicTest(unittest.TestCase):
             if count is not None:
                 log += f"ASTRA_DRC_GLOBAL {count}\n"
             self.assertNotEqual(assess_magic_staged(0, "TOTAL\t0\n", log)["status"], "pass")
+
+
+class DiagnosticBudgetTest(unittest.TestCase):
+    BASE = ["--work", "work/probe", "--binary", "magic", "--source", "source",
+            "--version", "8.3.684", "--ref", "pinned-ref"]
+
+    def test_default_comparison_is_preserved(self):
+        args = parse_args(self.BASE)
+        self.assertEqual(args.timeout_seconds, 180)
+        self.assertEqual(args.target, "all")
+
+    def test_ten_minute_targeted_probe(self):
+        args = parse_args(self.BASE + ["--timeout-seconds", "600", "--target", "submitted-gds"])
+        self.assertEqual(args.timeout_seconds, 600)
+        self.assertEqual(args.target, "submitted-gds")
+
+    def test_unbounded_budget_and_unknown_target_are_rejected(self):
+        for extra in (["--timeout-seconds", "0"], ["--timeout-seconds", "3600"],
+                      ["--target", "unknown"]):
+            with self.subTest(extra=extra), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit):
+                    parse_args(self.BASE + extra)
 
 
 if __name__ == "__main__":

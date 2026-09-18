@@ -10,21 +10,28 @@ import subprocess
 import sys
 import urllib.request
 
-from tools.diagnostic.make_control import write_control
 from tools.sram_diagnostic import (
     HASHES, MACRO, OLD_PDK, PDK_VERSION, TOP, assess_magic_staged,
     invoke, read_optional, sha256, verify,
 )
 
 
-def main():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--work", required=True, type=Path)
     parser.add_argument("--binary", required=True, type=Path)
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--version", required=True)
     parser.add_argument("--ref", required=True)
-    args = parser.parse_args()
+    parser.add_argument("--timeout-seconds", type=int, choices=(180, 600), default=180)
+    parser.add_argument("--target", choices=("all", "old-macro", "new-macro", "submitted-gds"), default="all")
+    return parser.parse_args(argv)
+
+
+def main():
+    args = parse_args()
+    from tools.diagnostic.make_control import write_control
+
     root = Path(__file__).resolve().parents[1]
     work = args.work.resolve()
     work.relative_to(root)
@@ -67,11 +74,14 @@ def main():
                   "magic_version": version, "magic_source": source_ref,
                   "platform": platform.platform(), "machine": platform.machine(),
                   "pdk": PDK_VERSION, "inputs": checked,
+                  "timeout_seconds": args.timeout_seconds, "target": args.target,
                   "submission_run": 35328977063, "submission_artifact": 10540429315}
     (out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
     cases = controls + [("old-macro", old_macro, MACRO, "pass"),
                         ("new-macro", new_macro, MACRO, "pass"),
                         ("submitted-gds", submitted, TOP, "pass")]
+    if args.target != "all":
+        cases = [case for case in cases if case[0].startswith("control-") or case[0] == args.target]
     results = {}
     for name, gds, top, expected in cases:
         case = out / name
@@ -80,12 +90,12 @@ def main():
                         ASTRA_REPORT=str(case / "counts.tsv"),
                         ASTRA_RAW_REPORT=str(case / "violations.tcl"),
                         ASTRA_FLATGLOB=str(tech / "read_sram_gds.tcl"))
-        print(f"BEGIN Magic {version}: {name} (expected {expected})", flush=True)
+        print(f"BEGIN Magic {version}: {name} (expected {expected}, limit {args.timeout_seconds}s)", flush=True)
         command = ["/usr/bin/time", "-v", "-o", str(case / "resources.txt"),
-                   "timeout", "--kill-after=10", "180", str(binary), "-dnull", "-noconsole",
+                   "timeout", "--kill-after=10", str(args.timeout_seconds), str(binary), "-dnull", "-noconsole",
                    "-rcfile", str(tech / "ihp-sg13g2.magicrc"),
                    str(root / "tools/diagnostic/check_magic.tcl")]
-        code = invoke(command, case, case_env, case / "magic.log", timeout=220)
+        code = invoke(command, case, case_env, case / "magic.log", timeout=args.timeout_seconds + 40)
         result = assess_magic_staged(code, read_optional(case / "counts.tsv"),
                                      (case / "magic.log").read_text())
         result["expected_status"] = expected
