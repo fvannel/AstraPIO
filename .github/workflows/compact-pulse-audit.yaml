@@ -59,7 +59,10 @@ jobs:
             grep -q "ASTRA_PULSE_END $corner" "work/compact-audit/reports/$corner.log"
             grep -q "ASTRA_ALL_VIOLATORS_END $corner" "work/compact-audit/reports/$corner.log"
             awk '/ASTRA_PULSE_BEGIN/{capture=1;next} /ASTRA_PULSE_VIOLATORS_BEGIN/{capture=0} capture' "work/compact-audit/reports/$corner.log" | grep -q 'slack (MET)'
-            if grep -Ei 'VIOLATED|ASTRA_AUDIT_ERROR|^Error:|\[ERROR' "work/compact-audit/reports/$corner.log"; then
+            # Non-verbose timing tables use numeric slack without "VIOLATED".
+            # Zero-slack latch borrowing entries are valid; negative slack is not.
+            awk '/ASTRA_ALL_VIOLATORS_BEGIN/{capture=1;next} /ASTRA_ALL_VIOLATORS_END/{capture=0} capture && $NF ~ /^-?[0-9]+([.][0-9]+)?$/ && $NF + 0 < 0 {bad=1; print} END {exit bad}' "work/compact-audit/reports/$corner.log"
+            if grep -Ei 'VIOLATED|ASTRA_AUDIT_ERROR|^Error:|\[ERROR|^Warning:|\[WARNING' "work/compact-audit/reports/$corner.log"; then
               exit 1
             fi
           done
