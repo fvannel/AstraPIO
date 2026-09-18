@@ -1,4 +1,8 @@
 {
+  "project_name": "AstraPIO",
+  "reservation_authorized": true,
+  "reservation_status": "pending_github_sign_in",
+  "coupons_redeemed_by_agent": false,
   "stage": "rtl_implemented",
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,

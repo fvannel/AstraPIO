@@ -1,6 +1,6 @@
 ## How it works
 
-General-purpose digital programmable I/O coprocessor for an LPC546xx host.
+AstraPIO is a general-purpose digital programmable I/O coprocessor for an LPC546xx host.
 **Engineering prototype: NOT ready for submission.** The current SRAM macro
 fails the shuttle's official DRC; see the repository verification report.
 

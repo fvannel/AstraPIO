@@ -1,6 +1,6 @@
 # Tiny Tapeout project information
 project:
-  title:        "Programmable IO Coprocessor (development)"
+  title:        "AstraPIO"
   author:       "Fabien" # Confirm public attribution before publishing.
   discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
   description:  "General-purpose programmable IO prototype; not ready for tapeout"

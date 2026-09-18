@@ -1,10 +1,10 @@
-# PIO ASIC — coprocesseur numérique programmable
+# AstraPIO — coprocesseur numérique programmable
 
 ## État : RTL v2 testé, fabrication bloquée
 
 Deux contextes PIO, un hôte **LPC546xx**, une SRAM de **256 octets** et une cible
 **TTIHP26b, deux tiles 1×2**. Le placement/routage a produit un GDS dans cette
-surface. **Ne pas soumettre** : la SRAM officielle échoue au DRC du run, des
+surface. **Ne pas valider pour fabrication** : la SRAM officielle échoue au DRC du run, des
 hypothèses de timing restent à qualifier et le statut détaillé fait autorité.
 Voir [vérification](docs/verification.md) et [blocage SRAM](docs/sram-drc-blocker.md).
 
@@ -57,6 +57,14 @@ Le flow physique local est lancé avec `sh tools/harden_local.sh nom-essai` apr�
 installation des versions indiquées dans la documentation ; il archive ses entrées.
 
 ## Publication et soumission
+
+Dénomination choisie par l'utilisateur le 18 septembre 2026 : **AstraPIO**.
+Le nom technique `tt_um_fabien_pio` reste inchangé pour préserver la correspondance
+avec le GDS testé. Le changement de titre ne modifie pas le circuit.
+L'utilisateur a demandé de procéder immédiatement à l'inscription sur la plateforme
+et à l'utilisation des coupons pour sécuriser la réservation. Cette démarche
+administrative ne constitue pas une validation de fabrication ; voir
+[état de réservation](docs/reservation.md).
 
 Dépôt Git local, branche `main`, sans remote. Aucun coupon utilisé ou enregistré,
 aucune publication ni soumission externe. Les workflows distants restent manuels

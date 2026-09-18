@@ -1,5 +1,10 @@
 # Vérification — candidat v2, 18 septembre 2026
 
+Le nom public a ensuite été changé en **AstraPIO**, sans changement du RTL ni
+du nom technique. Les résultats physiques ci-dessous correspondent à l'instantané
+`buffered-v2` et au commit `22e40dc`, avant ce changement de métadonnées.
+L'inscription administrative et les coupons sont suivis séparément dans `reservation.md`.
+
 **Décision : ne pas soumettre.** Le circuit fonctionne dans les tests numériques
 et possède un GDS routé dans deux tiles. Le contrôle DRC officiel de la SRAM
 échoue ; les hypothèses d'horloge et l'intégration de carte ne sont pas qualifiées.

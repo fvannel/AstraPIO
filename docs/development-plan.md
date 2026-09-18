@@ -2,6 +2,12 @@
 
 ## Autorité et périmètre
 
+Mise à jour du 18 septembre : l'utilisateur demande maintenant l'inscription
+immédiate sur la plateforme et la saisie des coupons pour la réservation, sous
+le nom AstraPIO. Cette autorisation remplace l'interdiction initiale correspondante
+ci-dessous, mais ne résout pas les blocages techniques de fabrication. État courant :
+`reservation.md`. Les codes restent exclus des fichiers.
+
 Développer un PIO numérique généraliste dans exactement deux tiles IHP, avec
 mémoire de programme, tampons de données, SPI hôte et protocoles applicatifs
 programmables. WS2812 reste un programme de validation. Aucun dépôt distant,
