@@ -134,3 +134,10 @@ the strict failure policy. No old-SRAM recheck is needed for this timeout
 experiment. The runner's default remains the complete 180-second comparison;
 the workflow explicitly selects `--timeout-seconds 600 --target ...` and records
 these parameters in the evidence. No rules, exclusions or layout edits are used.
+
+The first 600-second attempt (`35359481929`) failed before physical probes:
+the workflow variable `MAGIC_VERSION` conflicted with Magic's upstream make
+variable (which expects `8.3`, with the revision appended separately). The
+strict version check correctly rejected `8.3.684.684`. The workflow now uses
+task-prefixed `ASTRA_MAGIC_VERSION` / `ASTRA_MAGIC_REF`; a regression guard
+prevents reintroducing this collision. The version assertion remains unchanged.

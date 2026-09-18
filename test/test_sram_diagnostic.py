@@ -3,6 +3,7 @@
 import unittest
 import contextlib
 import io
+from pathlib import Path
 
 from tools.sram_diagnostic import assess_magic, assess_magic_staged, assess_precheck
 from tools.magic_version_diagnostic import parse_args
@@ -96,6 +97,12 @@ class DiagnosticBudgetTest(unittest.TestCase):
             with self.subTest(extra=extra), contextlib.redirect_stderr(io.StringIO()):
                 with self.assertRaises(SystemExit):
                     parse_args(self.BASE + extra)
+
+    def test_workflow_does_not_override_magics_build_variables(self):
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github/workflows/magic-version-diagnostic.yaml").read_text()
+        self.assertNotRegex(workflow, r"(?m)^\s+MAGIC_VERSION:")
+        self.assertIn("ASTRA_MAGIC_VERSION:", workflow)
 
 
 if __name__ == "__main__":

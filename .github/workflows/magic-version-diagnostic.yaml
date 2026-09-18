@@ -23,8 +23,8 @@ jobs:
         target: [new-macro, submitted-gds]
     env:
       PDK_VERSION: 5e6d592e4002946a4616f798c357f0f3c06cf3b6
-      MAGIC_VERSION: 8.3.684
-      MAGIC_REF: 4f53bb3091d1e4a9b2009a58f157a8a4331d4c84
+      ASTRA_MAGIC_VERSION: 8.3.684
+      ASTRA_MAGIC_REF: 4f53bb3091d1e4a9b2009a58f157a8a4331d4c84
     steps:
       - uses: actions/checkout@v6
         with:
@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: RTimothyEdwards/magic
-          ref: ${{ env.MAGIC_REF }}
+          ref: ${{ env.ASTRA_MAGIC_REF }}
           path: work/magic-source
           persist-credentials: false
 
@@ -77,13 +77,13 @@ jobs:
 
       - name: Run controls and selected layout with a ten-minute limit
         run: |
-          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$MAGIC_VERSION" --ref "$MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}'
+          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}'
 
       - name: Preserve all evidence including failures
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: magic-${{ env.MAGIC_VERSION }}-${{ matrix.target }}-600s-x86_64-${{ github.run_attempt }}
+          name: magic-${{ env.ASTRA_MAGIC_VERSION }}-${{ matrix.target }}-600s-x86_64-${{ github.run_attempt }}
           path: |
             work/magic-comparison/evidence
             work/magic-build-logs
