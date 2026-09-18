@@ -8,6 +8,11 @@ le nom AstraPIO. Cette autorisation remplace l'interdiction initiale corresponda
 ci-dessous, mais ne résout pas les blocages techniques de fabrication. État courant :
 `reservation.md`. Les codes restent exclus des fichiers.
 
+Mise à jour suivante du 18 septembre : les coupons sont utilisés et le compte
+dispose de deux tiles et deux DevKits sur TTIHP26b. L'utilisateur autorise
+explicitement la création d'un nouveau dépôt GitHub et l'envoi des sources
+d'AstraPIO pour poursuivre l'inscription. Le verrou de fabrication reste actif.
+
 Développer un PIO numérique généraliste dans exactement deux tiles IHP, avec
 mémoire de programme, tampons de données, SPI hôte et protocoles applicatifs
 programmables. WS2812 reste un programme de validation. Aucun dépôt distant,

@@ -17,7 +17,8 @@
   "simulation_scope": "Byte-oriented ISA/ABI v2, two contexts, shared SRAM, streams and programmable applications; bounded tests, not exhaustive",
   "streaming_implemented": true,
   "hardware_workflows_enabled": false,
-  "publication_authorized": false,
+  "publication_authorized": true,
+  "platform_draft_creation_authorized": true,
   "submission_authorized": false,
   "ready_for_submission": false,
   "physical_validation_passed": false,
@@ -32,7 +33,7 @@
     "Official SRAM macro-only KLayout DRC reproduces 1768 errors; requires official resolution",
     "Clock uncertainty, mixed SRAM/standard-cell fast temperatures and board IO need qualification",
     "Full signoff review remains required; nominal-RC timing is not board or silicon qualification",
-    "Exact LPC546xx board, live project allocation, public attribution and publication approval are missing"
+    "Exact LPC546xx board, project-to-allocation linkage and final submission review remain required"
   ],
   "target_shuttle": "ttihp26b",
   "target_tiles": "1x2",

@@ -18,9 +18,12 @@ Il a explicitement choisi le nom **AstraPIO**. Deux tiles 1×2 sont visées.
 - La page « Your projects » indique qu'aucun projet n'existe sur ce shuttle
   pour ce compte : aucun projet AstraPIO créé ni rattachement au design réalisé.
 - La création demande obligatoirement une URL GitHub. Le dépôt local n'a pas
-  encore de remote ; la publication du dépôt public doit être autorisée.
-- Aucun code n'est conservé dans les fichiers. Dépôt distant non créé,
-  GDS non téléversé, aucune fabrication validée.
+  de projet Tiny Tapeout correspondant à ce stade.
+- L'utilisateur a ensuite autorisé la publication. Le dépôt public
+  [fvannel/AstraPIO](https://github.com/fvannel/AstraPIO) est créé et configuré
+  comme remote `origin` ; l'envoi des sources est en cours.
+- Aucun code n'est conservé dans les fichiers. GDS non téléversé,
+  aucune fabrication validée.
 
 Sources : [allocations du compte](https://app.tinytapeout.com/),
 [page coupons](https://app.tinytapeout.com/redeem),
@@ -28,8 +31,7 @@ Sources : [allocations du compte](https://app.tinytapeout.com/),
 
 ## Suite
 
-Obtenir l'autorisation de publier AstraPIO sur le compte GitHub choisi, ou une
-URL de dépôt existant à utiliser. Puis créer le projet Tiny Tapeout avec cette
+Terminer l'envoi des sources, puis créer le projet Tiny Tapeout avec cette
 URL et vérifier le rattachement des deux tiles. L'allocation sur le compte est
 confirmée ; la soumission du design reste une étape séparée.
 
