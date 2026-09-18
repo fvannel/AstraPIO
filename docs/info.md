@@ -3,7 +3,9 @@
 AstraPIO is a general-purpose digital programmable I/O coprocessor for an LPC546xx host.
 **Provisional engineering submission: NOT qualified for fabrication.** The pinned
 shuttle DRC reports known SRAM errors. Magic is explicitly nonblocking for this
-provisional revision; the official precheck and its failures remain visible.
+provisional revision. The user also authorized a narrow nonblocking exception
+for the exact known SRAM precheck violations; its failed reports remain visible.
+All other precheck failures are fatal. This is NOT a Tiny Tapeout/foundry waiver.
 An unchanged earlier GDS passes the corrected upstream IHP KLayout main deck.
 See `docs/provisional-submission.md` and the verification report for scope and evidence.
 

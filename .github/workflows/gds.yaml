@@ -26,10 +26,31 @@ jobs:
     needs: gds
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout provisional submission policy
+        uses: actions/checkout@v6
+
       - name: Run Tiny Tapeout Precheck
+        id: official_precheck
+        # User-authorized provisional revision only. Reports stay unchanged.
+        # The next step still rejects every failure outside the known SRAM case.
+        continue-on-error: true
         uses: TinyTapeout/tt-gds-action/precheck@ttihp26b
         with:
           tools-ref: 01d5d2814fa9dd61e9d211e0b235a4a592a9316a
+
+      - name: Enforce narrow provisional SRAM exception (NOT fabrication signoff)
+        if: always()
+        env:
+          OFFICIAL_PRECHECK_OUTCOME: ${{ steps.official_precheck.outcome }}
+        run: python3 tools/provisional_precheck.py tt/precheck/reports "$OFFICIAL_PRECHECK_OUTCOME"
+
+      - name: Preserve unmodified precheck evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: provisional_precheck_evidence
+          path: tt/precheck/reports
+          if-no-files-found: error
 
   gl_test:
     needs: gds

@@ -1,0 +1,32 @@
+<testsuites>
+  <testsuite name="Tiny Tapeout Prechecks">
+    <testcase name="KLayout pin label overlapping drawing" time="1.71" />
+    <testcase name="KLayout SG13G2 DRC" time="16.47">
+      <error message="Klayout sg13g2 failed with 1768 DRC violations">Traceback (most recent call last):
+  File "/home/runner/work/AstraPIO/AstraPIO/tt/precheck/precheck.py", line 576, in main
+    check["check"]()
+  File "/home/runner/work/AstraPIO/AstraPIO/tt/precheck/precheck.py", line 512, in &lt;lambda&gt;
+    "check": lambda: klayout_sg13g2(gds_file),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/AstraPIO/AstraPIO/tt/precheck/precheck.py", line 125, in klayout_sg13g2
+    return klayout_drc(
+           ^^^^^^^^^^^^
+  File "/home/runner/work/AstraPIO/AstraPIO/tt/precheck/precheck.py", line 117, in klayout_drc
+    klayout_custom_drc(check, script, script_vars, ["report", "report_file"])
+  File "/home/runner/work/AstraPIO/AstraPIO/tt/precheck/precheck.py", line 98, in klayout_custom_drc
+    check_drc_report(check, report_file)
+  File "/home/runner/work/AstraPIO/AstraPIO/tt/precheck/precheck.py", line 80, in check_drc_report
+    raise PrecheckFailure(
+precheck_failure.PrecheckFailure: Klayout sg13g2 failed with 1768 DRC violations
+</error>
+    </testcase>
+    <testcase name="KLayout zero area" time="1.8" />
+    <testcase name="KLayout Checks" time="0.03" />
+    <testcase name="Pin check" time="0.04" />
+    <testcase name="Boundary check" time="0.03" />
+    <testcase name="Layer check" time="0.03" />
+    <testcase name="Cell name check" time="0.01" />
+    <testcase name="Analog pin check" time="0.0" />
+    <testcase name="Verilog syntax check" time="13.58" />
+  </testsuite>
+</testsuites>
