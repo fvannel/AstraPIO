@@ -133,10 +133,19 @@ Full physical artifacts and checker reports are attached to the linked GitHub ru
 
 ## Release status
 
-No merge into `main`, no Pages deployment, no new platform revision. The SRAM
+On explicit user authorization, the platform submitted the exact validated
+commit `946648ff304834c2c34deca6c4b14031f191dd39` at **2026-09-18 21:02:37 UTC**
+as [shuttle PR #142](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/142).
+It downloaded artifact `10564986385` from run `35385953304` and automatically
+closed the old SRAM PR #122. The received `commit_id.json` identifies the correct
+commit; the received OAS and routed netlist SHA-256 hashes match the validated
+artifacts above byte-for-byte. The [central submission checks](https://github.com/TinyTapeout/tinytapeout-ihp-26b/actions/runs/35394701844)
+were in progress at this observation; this is submission, not acceptance/merge.
+
+No merge into `main` and no Pages deployment were performed. The SRAM
 implementation remains on `diagnostic/sram-magic` at `f7f5ca6`.
 The compact candidate now passes the official physical and functional flow,
-plus the stricter supplemental timing/pulse-width audit. Final release review
-(including the small fast hold margin), authorization and exact LPC546xx
+plus the stricter supplemental timing/pulse-width audit. Final fabrication review
+(including the small fast hold margin) and exact LPC546xx
 board/clock integration remain separate. This is not silicon qualification or
 SDF-annotated simulation, and no old SRAM pass is reused as compact evidence.

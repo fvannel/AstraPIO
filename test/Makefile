@@ -9,7 +9,7 @@ endif
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(abspath $(CURDIR)/../src)
-PROJECT_SOURCES = project.v pio_spi.v pio_core.v pio_program.v pio_queues.v pio_fifo.v
+PROJECT_SOURCES = project.v pio_spi.v pio_core.v pio_program.v pio_queues.v pio_fifo.v pio_timed.v
 PDK_ROOT ?= $(abspath ../work/pdk)
 COMPILE_ARGS += -DFUNCTIONAL
 VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v

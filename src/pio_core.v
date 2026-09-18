@@ -9,6 +9,9 @@ module pio_core (
     output wire read_valid,
     output reg [15:0] read_data,
     input wire [12:0] pins_in,
+    input wire [13:0] reserved_pins,
+    output wire [12:0] sampled_inputs,
+    output wire [13:0] claimed_pins,
     output reg [13:0] pins_out,
     output reg [7:0] pins_oe,
     output wire irq
@@ -27,6 +30,8 @@ module pio_core (
     reg fetched_valid;
     reg [15:0] instruction;
     (* async_reg = "true" *) reg [12:0] input_meta, input_sync;
+    assign sampled_inputs = input_sync;
+    assign claimed_pins = ownership[0] | ownership[1];
     wire turn = phase[1];
     wire execute_slot = phase[0];
     wire context_page = address[7:4] == 4'h1 || address[7:4] == 4'h2;
@@ -128,7 +133,7 @@ module pio_core (
                 end else if (context_page) begin
                     case (address[3:0])
                         4'h0: begin
-                            if (running == 0 && (selected_context ?
+                            if (running == 0 && (write_data[13:0] & reserved_pins) == 0 && (selected_context ?
                                 ((write_data & 16'hc07f) == 0) : ((write_data & 16'hff80) == 0))) begin
                                 output_mask[selected_context] <= selected_context ? write_data[13:7] : write_data[6:0];
                                 pins_out <= pins_out & ~ownership[selected_context];
