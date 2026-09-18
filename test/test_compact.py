@@ -2,7 +2,7 @@
 import random
 import cocotb
 from cocotb.triggers import ClockCycles, FallingEdge, Timer, with_timeout
-from test import setup
+from spi_host import setup
 
 
 async def load_shared(host, words):
