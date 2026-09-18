@@ -27,7 +27,11 @@ def parse_args(argv=None):
     parser.add_argument("--timeout-seconds", type=int, choices=(180, 600), default=180)
     parser.add_argument("--target", choices=("all", "old-macro", "new-macro", "submitted-gds"), default="all")
     parser.add_argument("--import-mode", choices=("official", "jq-prefixed"), default="official")
-    return parser.parse_args(argv)
+    parser.add_argument("--contact-probe", choices=("none", "delay", "corner", "both"), default="none")
+    args = parser.parse_args(argv)
+    if args.contact_probe != "none" and args.target not in ("old-macro", "submitted-gds"):
+        parser.error("Contact experiments require one explicit, frozen target")
+    return args
 
 
 def main():
@@ -94,6 +98,27 @@ def main():
                         ("submitted-gds", submitted, TOP, "pass")]
     if args.target != "all":
         cases = [case for case in cases if case[0].startswith("control-") or case[0] == args.target]
+    if args.contact_probe != "none":
+        import gdstk
+        from tools.diagnostic.contact_probe import recenter
+        name, gds, top, expected = cases[-1]
+        if gdstk.gds_units(gds) != (1e-6, 1e-9):
+            raise ValueError("Contact experiment requires verified nanometre database units")
+        prefix = "JQ_" if name == "submitted-gds" else ""
+        changed, edits = recenter(gds.read_bytes(), args.contact_probe, prefix)
+        experimental = inputs / (name + "-EXPERIMENTAL-" + args.contact_probe + ".gds")
+        experimental.write_bytes(changed)
+        immutable[experimental] = sha256(experimental)
+        manifest = {"scope": "EXPERIMENT ONLY; provider characterization is not requalified",
+                    "variant": args.contact_probe, "source_sha256": sha256(gds),
+                    "output_sha256": sha256(experimental), "edits": edits,
+                    "unchanged_outside_record_payloads": True,
+                    "guidance": "https://github.com/IHP-GmbH/IHP-Open-PDK/issues/794",
+                    "commercial_rule_evidence": "https://github.com/IHP-GmbH/IHP-Open-PDK/pull/819"}
+        (out / "contact-experiment.json").write_text(json.dumps(manifest, indent=2) + "\n")
+        provenance["contact_experiment"] = manifest
+        (out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+        cases[-1] = (name, experimental, top, expected)
     results = {}
     for name, gds, top, expected in cases:
         case = out / name
@@ -120,7 +145,9 @@ def main():
     (out / "inputs-unchanged.json").write_text(json.dumps(
         {str(path.relative_to(root)): digest for path, digest in immutable.items()}, indent=2) + "\n")
     lines = [f"# Magic {version} — independent diagnostic", "",
-             "Unchanged rules and GDS; no merge, submission, exclusions or checker bypass.",
+             "Unchanged rules; no merge, submission, exclusions or checker bypass.",
+             f"Contact experiment: {args.contact_probe}. Original inputs remain unchanged.",
+             "A modified contact layout is NOT a fabrication-qualified provider macro.",
              f"Import mode: {args.import_mode}. Effective import script archived with its hash.",
              "The negative control is intentionally invalid; real layouts must have zero errors.", "",
              "| Circuit | Status | Errors | Expected |", "|---|---|---|---|"]

@@ -1,4 +1,4 @@
-name: Magic import comparison (not a release)
+name: SRAM contact experiment (not a release)
 
 on:
   push:
@@ -21,12 +21,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: submitted-gds
-            import-mode: official
-          - target: submitted-gds
-            import-mode: jq-prefixed
           - target: old-macro
-            import-mode: jq-prefixed
+            contact-probe: delay
+          - target: old-macro
+            contact-probe: corner
+          - target: old-macro
+            contact-probe: both
+          - target: submitted-gds
+            contact-probe: both
     env:
       PDK_VERSION: 5e6d592e4002946a4616f798c357f0f3c06cf3b6
       ASTRA_MAGIC_VERSION: 8.3.684
@@ -40,6 +42,7 @@ jobs:
         run: |
           python3 -m unittest discover -s test -p test_release_policy.py
           python3 -m unittest discover -s test -p test_sram_diagnostic.py
+          python3 -m unittest discover -s test -p test_contact_probe.py
 
       - name: Get unmodified pinned Magic sources
         uses: actions/checkout@v6
@@ -81,17 +84,18 @@ jobs:
           gcc --version
           "$GITHUB_WORKSPACE/work/magic-install/bin/magic" --version
 
-      - name: Compare imports with unchanged rules and a ten-minute limit
+      - name: Test explicitly experimental contact positions with unchanged rules
         run: |
-          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}' --import-mode '${{ matrix.import-mode }}'
+          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}' --import-mode jq-prefixed --contact-probe '${{ matrix.contact-probe }}'
 
       - name: Preserve all evidence including failures
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: magic-import-${{ matrix.import-mode }}-${{ matrix.target }}-${{ github.run_attempt }}
+          name: contact-probe-${{ matrix.contact-probe }}-${{ matrix.target }}-${{ github.run_attempt }}
           path: |
             work/magic-comparison/evidence
             work/magic-build-logs
+            work/magic-comparison/inputs/*EXPERIMENTAL*.gds
           if-no-files-found: error
           retention-days: 30

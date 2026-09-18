@@ -88,6 +88,13 @@ class DiagnosticBudgetTest(unittest.TestCase):
         self.assertEqual(args.timeout_seconds, 180)
         self.assertEqual(args.target, "all")
         self.assertEqual(args.import_mode, "official")
+        self.assertEqual(args.contact_probe, "none")
+
+    def test_contact_experiment_requires_explicit_frozen_target(self):
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            parse_args(self.BASE + ["--contact-probe", "both"])
+        args = parse_args(self.BASE + ["--contact-probe", "both", "--target", "old-macro"])
+        self.assertEqual(args.contact_probe, "both")
 
     def test_ten_minute_targeted_probe(self):
         args = parse_args(self.BASE + ["--timeout-seconds", "600", "--target", "submitted-gds"])
