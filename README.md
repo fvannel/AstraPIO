@@ -19,3 +19,9 @@ The historical SRAM implementation and its evidence remain on branch `diagnostic
 Install the dependencies in `test/requirements.txt`, Icarus Verilog **13**, and the exact IHP standard-cell Verilog models. Icarus 12 does not correctly drive the delayed signals in these latch models; CI uses the same verified version-13 package as the official Tiny Tapeout gate simulation. Set `PDK_ROOT` to the parent of `ihp-sg13g2` (locally defaults to `work/pdk`). Run `make test`. The tests include host tooling, the C driver, FIFO and latch-store unit benches, and pin-level SPI/GPIO application tests.
 
 The manual GDS workflow runs the official Tiny Tapeout physical flow, precheck and gate simulation. It does not merge, publish a viewer or submit a shuttle revision. A successful functional test or synthesis-area estimate is not physical signoff.
+
+## Current result
+
+The [official compact build at `946648f`](https://github.com/fvannel/AstraPIO/actions/runs/35385953304) completes routing in **1×2 tiles**, with zero Magic/KLayout DRC, LVS, XOR and antenna violations. All ten official prechecks pass. Eleven compact integration tests pass on the exact routed netlist locally (the official build ran the first ten). Final standard-cell utilization is **90.42%**. The PDK and all blocking checks remain unchanged.
+
+This is a validated development candidate, not a new shuttle submission. See the [validation ledger](docs/compact-validation.md) for timing assumptions, remaining release review, artifacts and limitations.

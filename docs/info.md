@@ -29,3 +29,5 @@ uio0..7: eight bidirectional PIO pins. Context 0 controls outputs 0..6; context 
 ## Qualification status
 
 This branch is for development and independent CI. No SRAM waiver, DRC filtering or nonblocking signoff exception is permitted. Placement/routing, timing including latch/clock-gate paths, DRC, LVS and official precheck must all pass before a new revision can be considered.
+
+The compact candidate at commit `946648f` completed the official flow in 1×2 tiles on 2026-09-18: Magic/KLayout DRC, LVS, XOR, antenna checks, nominal-RC timing at three cell corners, ten official prechecks and ten routed functional tests passed. The latest eleven-test suite also passes locally on that exact routed netlist. Final release and board timing review remain separate; no new platform revision has been submitted from this branch. Detailed evidence is in `docs/compact-validation.md`.

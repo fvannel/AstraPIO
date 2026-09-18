@@ -11,7 +11,7 @@
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,
   "distinct_pin_level_test_scenarios": 11,
-  "simulation_scope": "Compact ABI 0x0300; eleven pin-level scenarios plus exact depth-two byte FIFO and latch-store units. Exact shuttle PDK functional models with Icarus 13. Same eleven integration scenarios also passed local synthesized-netlist simulation (10+1 separate runs). No routed/SDF simulation yet.",
+  "simulation_scope": "Compact ABI 0x0300; eleven pin-level scenarios plus exact depth-two byte FIFO and latch-store units. Exact shuttle PDK functional models with Icarus 13. Eleven scenarios pass RTL, local synthesis (10+1), and the frozen official routed netlist (11 together). Official routed CI ran the first ten. All simulations are functional, without SDF delay annotation.",
   "hardware_workflows_enabled": true,
   "publication_authorized": true,
   "submission_authorized": false,
@@ -19,16 +19,16 @@
   "magic_drc_nonblocking_authorized": false,
   "provisional_sram_precheck_nonblocking_authorized": false,
   "next_revision_policy": "Strict DRC, LVS, timing, official precheck; no waived checks. Diagnostic branch only; no merge, Pages deployment or shuttle submission.",
-  "physical_validation_passed": false,
-  "placement_routing_completed": false,
-  "lvs_passed": false,
-  "official_precheck_passed": false,
-  "routed_netlist_functional_simulation_passed": false,
+  "physical_validation_passed": true,
+  "physical_validation_scope": "Official flow on exact shuttle PDK: routed 1x2 candidate, strict Magic/KLayout DRC, LVS, XOR, antenna/electrical checks and three nominal-RC PVT timing corners. Supplemental pulse-width and all-category timing audit also passes with explicit 0.95/1.05 derating. Not final fabrication/board signoff.",
+  "placement_routing_completed": true,
+  "lvs_passed": true,
+  "official_precheck_passed": true,
+  "routed_netlist_functional_simulation_passed": true,
+  "sdf_simulation_performed": false,
   "release_blockers": [
-    "Post-CTS detailed placement failed in first two official runs; now testing smaller characterized clock-tree root buffers, no waived checks",
-    "Full routed timing including ICG/latch paths, DRC/LVS and official precheck with exact shuttle PDK required",
-    "Latest test-only additions need independent CI; full routed-netlist regression and timing qualification remain required",
-    "Final board interface and release review required"
+    "Final clock/board interface review: 20 ns clock, 0.25 ns uncertainty, 4 ns IO delays and 6 fF output load are block constraints, not board qualification; explicit 5 percent audit has only 4.63 ps worst hold margin",
+    "Merge and new Tiny Tapeout revision require final review and authorization; old SRAM revision remains unchanged"
   ],
   "historical_sram_candidate": {
     "project_name": "AstraPIO",
@@ -135,11 +135,11 @@
     "inserted_hold_buffers": 242
   },
   "independent_rtl_ci": {
-    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385953714",
-    "commit": "946648ff304834c2c34deca6c4b14031f191dd39",
+    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35386869845",
+    "commit": "93fb972ac4e152720d945df81d4bd6808fc65165",
     "conclusion": "success",
-    "pin_level_scenarios": 10,
-    "scope": "Includes RX snapshot fix; extra ALU scenario and exact FIFO unit parameters subsequently added"
+    "pin_level_scenarios": 11,
+    "scope": "Isolated compact harness; ALU and RX arbitration regressions; exact depth-two FIFO unit"
   },
   "second_compact_physical_run": {
     "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385308221",
@@ -149,10 +149,39 @@
     "post_cts_utilization": 0.892783,
     "inserted_hold_buffers": 237
   },
+  "supplemental_routed_timing_audit": {
+    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35388975455",
+    "conclusion": "success",
+    "corners_passed": 3,
+    "scope": "Frozen official routed netlist and nominal SPEF, exact PDK libraries, explicit early/late derating 0.95/1.05; pulse width and all setup/hold/recovery/removal/gating/electrical violators reviewed",
+    "worst_hold_slack_ns": 0.004630,
+    "minimum_pulse_width_margin_ns": 9.616928,
+    "negative_slack_entries": 0,
+    "zero_slack_latch_entries_per_corner": 256,
+    "official_derating_caveat": "LibreLane 3.0.5 base.sdc integer 5/100 evaluates to zero with the exported environment; official early/late factors are 1/1. Supplemental audit explicitly applies 0.95/1.05 without altering the official flow.",
+    "image_digest": "sha256:ecabd075d0ddf6a2bd1cd4a32109c7dbb861ec007f7e4e423a9a081f8d23b8e2"
+  },
   "third_compact_physical_run": {
     "url": "https://github.com/fvannel/AstraPIO/actions/runs/35385953304",
     "commit": "946648ff304834c2c34deca6c4b14031f191dd39",
-    "conclusion": "in_progress",
-    "change": "Characterized CTS root buffer sg13g2_buf_4; all safety/timing constraints retained"
+    "conclusion": "success",
+    "change": "Characterized CTS root buffer sg13g2_buf_4; all safety/timing constraints retained",
+    "final_stdcell_area_um2": 54352.2,
+    "core_area_um2": 60109.3,
+    "final_utilization": 0.904223,
+    "magic_drc_errors": 0,
+    "klayout_drc_errors": 0,
+    "lvs_errors": 0,
+    "xor_differences": 0,
+    "antenna_violations": 0,
+    "setup_violations": 0,
+    "hold_violations": 0,
+    "worst_hold_slack_ns": 0.03324596247956773,
+    "precheck_tests_passed": 10,
+    "official_routed_functional_tests_passed": 10,
+    "latest_local_routed_functional_tests_passed": 11,
+    "gds_sha256": "5682f15e50ffecc84bb0cb396894b23e05485676d072f01f3bfa060015303bea",
+    "oas_sha256": "91b608d6e358193e903890a2a6155c93fe872a3d127b52e021788364a2cd2616",
+    "netlist_sha256": "a1dcabf881ddd007d66cd62011873539d04906e3c6f2a8339f759aaf57e35a88"
   }
 }

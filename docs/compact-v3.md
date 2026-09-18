@@ -2,7 +2,8 @@
 
 Experimental replacement for the SRAM-based ABI 0x0200. The old implementation
 is preserved on `diagnostic/sram-magic` at `f7f5ca6`. This revision has **no SRAM
-macro** and is not fabrication-qualified until its own physical results pass.
+macro**. Its official physical flow and supplemental timing audit now pass;
+final release/board review remains necessary, as detailed in the validation ledger.
 
 ## Architecture and capacity
 
