@@ -10,8 +10,8 @@
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,
-  "distinct_pin_level_test_scenarios": 5,
-  "simulation_scope": "Compact ABI 0x0300; five pin-level scenarios using exact old-PDK standard-cell functional models. Not SDF or exhaustive.",
+  "distinct_pin_level_test_scenarios": 8,
+  "simulation_scope": "Compact ABI 0x0300; eight pin-level scenarios and separate FIFO/program-memory units using unchanged shuttle PDK models with Icarus 13. Not SDF or exhaustive.",
   "hardware_workflows_enabled": true,
   "publication_authorized": true,
   "submission_authorized": false,
@@ -25,8 +25,9 @@
   "official_precheck_passed": false,
   "routed_netlist_functional_simulation_passed": false,
   "release_blockers": [
-    "New architecture requires full placement/routing, timing including ICG/latch paths, DRC/LVS and official precheck with exact shuttle PDK",
-    "Expand integration testing and migrate host/examples; no existing SRAM result qualifies this candidate",
+    "Post-CTS detailed placement failed in first official run; testing clock-tree clustering, no waived checks",
+    "Full routed timing including ICG/latch paths, DRC/LVS and official precheck with exact shuttle PDK required",
+    "Independent RTL CI must pass with official Icarus 13; routed-netlist regression still required",
     "Final board interface and release review required"
   ],
   "historical_sram_candidate": {
@@ -123,5 +124,14 @@
     "target_shuttle": "ttihp26b",
     "target_tiles": "1x2",
     "template_commit": "6598bef4d3159f19fe471a2a2225df52e6f5ad25"
+  },
+  "first_compact_physical_run": {
+    "url": "https://github.com/fvannel/AstraPIO/actions/runs/35384252570",
+    "commit": "f5e8497821ddf3d7e1f3f984ee3d6d47e17a31fe",
+    "conclusion": "failed_post_cts_detailed_placement",
+    "post_cts_stdcell_area_um2": 53833.2,
+    "core_area_um2": 60109.3,
+    "post_cts_utilization": 0.89559,
+    "inserted_hold_buffers": 242
   }
 }

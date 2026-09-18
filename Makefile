@@ -11,6 +11,8 @@ check:
 unit:
 	$(MAKE) -C test/units
 	$(PYTHON) tools/check_results.py test/units/results.xml
+	$(MAKE) -C test/program
+	$(PYTHON) tools/check_results.py test/program/results.xml
 
 host-test:
 	mkdir -p work/host-test

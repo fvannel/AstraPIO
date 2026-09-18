@@ -1,7 +1,7 @@
 """AstraPIO compact ABI v3 integration tests, through SPI/GPIO pins only."""
 import random
 import cocotb
-from cocotb.triggers import ClockCycles, Timer
+from cocotb.triggers import ClockCycles, FallingEdge, Timer, with_timeout
 from test import setup
 
 
@@ -147,3 +147,97 @@ async def instruction_bounds_fault_and_restart(dut):
     await host.write(6,1)
     await host.write(3,3)
     assert await host.read(6) == 0
+
+
+@cocotb.test()
+async def spi_loopback_two_programs_in_shared_store(dut):
+    host = await setup(dut, half=131)
+    from pioasm import assemble
+    program = assemble('''LDI 3
+DIR
+txbyte: PULL
+LDX 8
+txbit: OUTBIT 0
+SET 1,1
+SET 1,0
+DJNZ txbit
+JMP txbyte
+rxbyte: LDX 8
+rxbit: WAIT 1,1
+INBIT 0
+WAIT 1,0
+DJNZ rxbit
+PUSH
+JMP rxbyte''')
+    assert len(program) == 16
+    await load_shared(host, program)
+    await host.write(0x10,3)
+    await host.write(0x21,9)
+    async def board_wires():
+        while True:
+            await FallingEdge(dut.clk)
+            dut.uio_in.value = int(dut.uio_out.value) & 3
+    task = cocotb.start_soon(board_wires())
+    await host.write(3,3)
+    for value in (0,255,0x55,0xAA,0x80,1,0xA6,0x39):
+        await host.write(0x14,value)
+        assert await host.read(0x25) == 0x8000 | value
+    assert await host.read(6) == 0
+    task.cancel()
+
+
+@cocotb.test()
+async def uart_waveform_and_streaming_refill(dut):
+    host = await setup(dut)
+    from pathlib import Path
+    from pioasm import assemble
+    words = assemble((Path(__file__).resolve().parents[1]/'examples/compact/uart_tx.pio').read_text())
+    await load_shared(host, words)
+    await host.write(0x10,1)
+    payload = [0xA6,0x00,0xFF]
+    for byte in payload[:2]: await host.write(0x14,byte)
+    async def receiver():
+        while not int(dut.uio_out.value)&1: await FallingEdge(dut.clk)
+        decoded = []
+        for _ in payload:
+            while int(dut.uio_out.value)&1: await FallingEdge(dut.clk)
+            await Timer(4320, unit='ns')
+            assert int(dut.uio_out.value)&1 == 0
+            value = 0
+            for bit in range(8):
+                await Timer(8640, unit='ns')
+                value |= (int(dut.uio_out.value)&1) << bit
+            await Timer(8640, unit='ns')
+            assert int(dut.uio_out.value)&1 == 1
+            decoded.append(value)
+        return decoded
+    task = cocotb.start_soon(receiver())
+    await host.write(3,1)
+    await host.write(0x14,payload[2])
+    assert await with_timeout(task,400,'us') == payload
+    assert await host.read(6) == 0
+
+
+@cocotb.test()
+async def reset_disable_and_queue_flush_isolation(dut):
+    host = await setup(dut)
+    await load_shared(host,[0x1001,0x4000,0x3000,0x5003])
+    await host.write(0x10,1)
+    await host.write(0x24,0xAB)
+    await host.write(0x14,0xCD)
+    await host.write(3,1)
+    assert int(dut.uio_oe.value) == 1
+    await host.write(4,1)
+    assert (await host.read(0x16)>>12)&3 == 0
+    assert (await host.read(0x26)>>12)&3 == 1
+    assert int(dut.uio_oe.value) == 1  # RESTART retains pad state.
+    dut.ena.value = 0
+    await Timer(1,unit='ns')
+    assert int(dut.uio_oe.value) == 0
+    assert int(dut.uo_out.value) == 0
+    await ClockCycles(dut.clk,5)
+    dut.ena.value = 1
+    await ClockCycles(dut.clk,5)
+    assert await host.read(0x0A) == 0
+    assert await host.read(3) == 0
+    assert (await host.read(0x26)>>12)&3 == 0

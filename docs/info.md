@@ -1,40 +1,31 @@
+# AstraPIO compact
+
+Experimental general-purpose programmable digital IO coprocessor, **not yet qualified for fabrication**. This is the compact ABI 0x0300 redesign; earlier SRAM-based submissions and results describe a different implementation.
+
 ## How it works
 
-AstraPIO is a general-purpose digital programmable I/O coprocessor for an LPC546xx host.
-**Provisional engineering submission: NOT qualified for fabrication.** The pinned
-shuttle DRC reports known SRAM errors. Magic is explicitly nonblocking for this
-provisional revision. The user also authorized a narrow nonblocking exception
-for the exact known SRAM precheck violations; its failed reports remain visible.
-All other precheck failures are fatal. This is NOT a Tiny Tapeout/foundry waiver.
-An unchanged earlier GDS passes the corrected upstream IHP KLayout main deck.
-See `docs/provisional-submission.md` and the verification report for scope and evidence.
+Two contexts share one programmable 16-word, 16-bit instruction store made from IHP standard-cell latches. Each context has independent execution state and two-byte transmit and receive queues. A fixed scheduler provides one instruction slot per context every four chip clocks. There is no SRAM macro in this version.
 
-Two contexts share a byte-oriented execution engine and a 256-byte IHP SRAM.
-Each context has 48 16-bit instructions, an 8-bit accumulator, 4-bit loop counter,
-relative delay, and 16-byte TX and RX FIFOs. A fixed six-clock schedule per context
-supports GPIO, shifts, branches, level waits, events, interrupts and peer transfer.
-It is not RP2040-ISA compatible. There are no protocol-specific hardware blocks.
-
-Mode-0 host SPI uses one 32-bit transaction per CS: command, address, 16-bit data.
-SCK half-period, CS setup, hold and inactive gap must each be at least six ASIC
-clock periods. Program upload and output mask configuration require both contexts
-stopped. Output bank 0 is uio[0:6]; bank 1 is uio[7] plus uo[2:7]. Input indices
-0…7 map to uio, 8…12 to ui[3:7]. See `docs/isa-v2.md` for the exact contract.
-
-50 MHz is the constrained engineering target, not a characterized silicon rating.
-Physical clock assumptions, electrical closure and external validation are release gates.
+The host uses SPI mode 0, MSB first: command byte (02 write / 03 read), register address byte, then a 16-bit payload. Both contexts must be stopped to change the shared program. Probe identity 5049 and ABI 0300 before using the driver. SPI high/low periods and CS setup/hold/gap each require at least six ASIC clocks. MISO is not tri-stated.
 
 ## How to test
 
-Run `make test`. Additional modes exercise the actual PDK SRAM model, Verilator,
-and the placed/routed gate netlist. Pin-level tests cover SPI aborts, reset,
-program bounds, randomized arithmetic and streaming, event coordination,
-UART, application SPI, and programmable WS2812-like capture/transform/transmit.
-These are bounded digital tests, not exhaustive verification or an electrical test.
+Reset, confirm ID/ABI/capacity registers (00/01/0F), load and read back the shared code, set context entry addresses and GPIO masks, then run. Compact examples cover byte transformation, SPI output and UART 8N1 output. The tests also connect the two contexts through simulated board wires for an SPI loopback.
+
+See the repository's `docs/compact-v3.md` for the full map, ISA, latch-write sequencing and verification scope. Legacy WS2812 examples do not fit this 16-word shared memory unchanged. No broad WS2812 compatibility is claimed for this revision.
 
 ## External hardware
 
-LPC546xx board, stable ASIC clock and suitable voltage translation as required.
-MISO is an output-only pin: use a dedicated SPI bus or an external isolation gate.
-Do not directly connect 5 V LED data or other sources without verifying board
-voltage limits. Reset/disable releases uio; stop/halt/fault intentionally retain it.
+A host MCU (intended LPC546xx), clock source and wiring for the selected programmable protocol. The exact LPC546xx board transport/DMA and board timing remain to be qualified. No external memory is required for the compact examples.
+
+## Pin use
+
+ui0/1/2: host SCK/MOSI/CS_n; ui3..7: five dedicated PIO inputs.
+
+uo0/1: MISO/IRQ; uo2..7: six dedicated PIO outputs.
+
+uio0..7: eight bidirectional PIO pins. Context 0 controls outputs 0..6; context 1 controls output 7 and the six dedicated outputs. All pad outputs/directions are released on reset or deselection.
+
+## Qualification status
+
+This branch is for development and independent CI. No SRAM waiver, DRC filtering or nonblocking signoff exception is permitted. Placement/routing, timing including latch/clock-gate paths, DRC, LVS and official precheck must all pass before a new revision can be considered.
