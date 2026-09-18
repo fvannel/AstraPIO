@@ -29,11 +29,14 @@ def parse_args(argv=None):
     parser.add_argument("--import-mode", choices=("official", "jq-prefixed"), default="official")
     parser.add_argument("--contact-probe", choices=("none", "delay", "corner", "both"), default="none")
     parser.add_argument("--repair-corner-metal", action="store_true")
+    parser.add_argument("--flatten-probe", choices=("no", "yes"), default="no")
     args = parser.parse_args(argv)
     if args.contact_probe != "none" and args.target not in ("old-macro", "submitted-gds"):
         parser.error("Contact experiments require one explicit, frozen target")
     if args.repair_corner_metal and args.contact_probe not in ("corner", "both"):
         parser.error("Metal experiment requires a corner contact experiment")
+    if args.flatten_probe == "yes" and args.target == "all":
+        parser.error("Flattening requires one explicit target")
     return args
 
 
@@ -123,6 +126,17 @@ def main():
         provenance["contact_experiment"] = manifest
         (out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
         cases[-1] = (name, experimental, top, expected)
+    if args.flatten_probe == "yes":
+        from tools.diagnostic.flatten_probe import flatten_verified
+        name, gds, top, expected = cases[-1]
+        flattened = inputs / (name + "-FLAT-WITNESS.gds")
+        audit = flatten_verified(gds, flattened, top)
+        audit.update(source_sha256=sha256(gds), flat_sha256=sha256(flattened))
+        immutable[flattened] = sha256(flattened)
+        (out / "flatten-audit.json").write_text(json.dumps(audit, indent=2) + "\n")
+        provenance["flatten_experiment"] = audit
+        (out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+        cases[-1] = (name, flattened, top, expected)
     results = {}
     for name, gds, top, expected in cases:
         case = out / name
@@ -151,6 +165,7 @@ def main():
     lines = [f"# Magic {version} — independent diagnostic", "",
              "Unchanged rules; no merge, submission, exclusions or checker bypass.",
              f"Contact experiment: {args.contact_probe}. Original inputs remain unchanged.",
+             f"Flat witness: {args.flatten_probe}. A separate geometry audit is mandatory.",
              "A modified contact layout is NOT a fabrication-qualified provider macro.",
              f"Import mode: {args.import_mode}. Effective import script archived with its hash.",
              "The negative control is intentionally invalid; real layouts must have zero errors.", "",

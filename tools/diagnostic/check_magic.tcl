@@ -35,7 +35,10 @@ astra_step drc_catchup {drc catchup}
 astra_step report_window {box grow c 100um}
 set global_count [astra_step global_count {drc listall count total}]
 puts stdout "ASTRA_DRC_GLOBAL $global_count"
+puts stdout "ASTRA_DRC_CELLS [drc listall count]"
+puts stdout "ASTRA_DRC_TOP [drc list count total]"
 set results [astra_step list_results {drc listall why}]
+puts stdout "ASTRA_DRC_GLOBAL_AFTER_WHY [drc listall count total]"
 set raw [open $env(ASTRA_RAW_REPORT) w]
 puts $raw $results
 close $raw

@@ -22,9 +22,21 @@ jobs:
       matrix:
         include:
           - target: old-macro
+            contact-probe: none
+            flatten: 'yes'
+            metal: ''
+          - target: old-macro
             contact-probe: both
+            flatten: 'no'
+            metal: --repair-corner-metal
+          - target: old-macro
+            contact-probe: both
+            flatten: 'yes'
+            metal: --repair-corner-metal
           - target: submitted-gds
             contact-probe: both
+            flatten: 'yes'
+            metal: --repair-corner-metal
     env:
       PDK_VERSION: 5e6d592e4002946a4616f798c357f0f3c06cf3b6
       ASTRA_MAGIC_VERSION: 8.3.684
@@ -64,8 +76,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential tcl-dev tk-dev libx11-dev libxext-dev libxt-dev libcairo2-dev libreadline-dev libncurses-dev libglu1-mesa-dev libgl1-mesa-dev flex bison zlib1g-dev time
-          python -m pip install 'ciel==2.4.0' 'numpy==1.26.4' 'gdstk==0.9.52'
+          python -m pip install 'ciel==2.4.0' 'numpy==1.26.4' 'gdstk==0.9.52' 'klayout==0.30.8'
           python -c 'import gdstk, numpy; print(gdstk.__version__, numpy.__version__)'
+          python -m unittest discover -s test -p test_flatten_probe.py
           python -m tools.magic_version_diagnostic --help
           ciel enable --pdk-root "$GITHUB_WORKSPACE/work/magic-comparison/pdk" --pdk ihp-sg13g2 "$PDK_VERSION"
 
@@ -82,13 +95,13 @@ jobs:
 
       - name: Test explicitly experimental contact positions with unchanged rules
         run: |
-          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}' --import-mode jq-prefixed --contact-probe '${{ matrix.contact-probe }}' --repair-corner-metal
+          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}' --import-mode jq-prefixed --contact-probe '${{ matrix.contact-probe }}' --flatten-probe '${{ matrix.flatten }}' ${{ matrix.metal }}
 
       - name: Preserve all evidence including failures
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: contact-metal-${{ matrix.contact-probe }}-${{ matrix.target }}-${{ github.run_attempt }}
+          name: flat-${{ matrix.flatten }}-${{ matrix.contact-probe }}-${{ matrix.target }}-${{ github.run_attempt }}
           path: |
             work/magic-comparison/evidence
             work/magic-build-logs
