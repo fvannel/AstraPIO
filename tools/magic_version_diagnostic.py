@@ -14,6 +14,7 @@ from tools.sram_diagnostic import (
     HASHES, MACRO, OLD_PDK, PDK_VERSION, TOP, assess_magic_staged,
     invoke, read_optional, sha256, verify,
 )
+from tools.diagnostic.import_patterns import PROVIDER_IMPORT_SHA256, render_import_script
 
 
 def parse_args(argv=None):
@@ -25,6 +26,7 @@ def parse_args(argv=None):
     parser.add_argument("--ref", required=True)
     parser.add_argument("--timeout-seconds", type=int, choices=(180, 600), default=180)
     parser.add_argument("--target", choices=("all", "old-macro", "new-macro", "submitted-gds"), default="all")
+    parser.add_argument("--import-mode", choices=("official", "jq-prefixed"), default="official")
     return parser.parse_args(argv)
 
 
@@ -70,11 +72,21 @@ def main():
         controls.append((name, gds, "astra_metal_control", "violations" if negative else "pass"))
     for name in ("read_sram_gds.tcl", "ihp-sg13g2.tech", "ihp-sg13g2-drc.tech", "ihp-sg13g2.magicrc"):
         checked[name] = {"sha256": sha256(tech / name)}
+    provider_import = tech / "read_sram_gds.tcl"
+    verify(provider_import, PROVIDER_IMPORT_SHA256)
+    import_script = out / "effective-import.tcl"
+    import_script.write_text(render_import_script(provider_import.read_text(), args.import_mode))
+    checked["effective-import.tcl"] = {"sha256": sha256(import_script)}
+    immutable = {path: sha256(path) for path in
+                 (submitted, old_macro, new_macro, import_script,
+                  *(tech / name for name in ("read_sram_gds.tcl", "ihp-sg13g2.tech",
+                                             "ihp-sg13g2-drc.tech", "ihp-sg13g2.magicrc")))}
     provenance = {"scope": "Magic version diagnostic; not signoff or submission",
                   "magic_version": version, "magic_source": source_ref,
                   "platform": platform.platform(), "machine": platform.machine(),
                   "pdk": PDK_VERSION, "inputs": checked,
                   "timeout_seconds": args.timeout_seconds, "target": args.target,
+                  "import_mode": args.import_mode,
                   "submission_run": 35328977063, "submission_artifact": 10540429315}
     (out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
     cases = controls + [("old-macro", old_macro, MACRO, "pass"),
@@ -89,8 +101,8 @@ def main():
         case_env = dict(env, ASTRA_INPUT=str(gds), ASTRA_TOP=top,
                         ASTRA_REPORT=str(case / "counts.tsv"),
                         ASTRA_RAW_REPORT=str(case / "violations.tcl"),
-                        ASTRA_FLATGLOB=str(tech / "read_sram_gds.tcl"))
-        print(f"BEGIN Magic {version}: {name} (expected {expected}, limit {args.timeout_seconds}s)", flush=True)
+                        ASTRA_FLATGLOB=str(import_script))
+        print(f"BEGIN Magic {version}: {name} (import {args.import_mode}, expected {expected}, limit {args.timeout_seconds}s)", flush=True)
         command = ["/usr/bin/time", "-v", "-o", str(case / "resources.txt"),
                    "timeout", "--kill-after=10", str(args.timeout_seconds), str(binary), "-dnull", "-noconsole",
                    "-rcfile", str(tech / "ihp-sg13g2.magicrc"),
@@ -103,8 +115,13 @@ def main():
         results[name] = result
         (out / "results.json").write_text(json.dumps(results, indent=2) + "\n")
         print(f"END {name}: {result['status']}, errors={result['errors']}", flush=True)
+    for path, expected_hash in immutable.items():
+        verify(path, expected_hash)
+    (out / "inputs-unchanged.json").write_text(json.dumps(
+        {str(path.relative_to(root)): digest for path, digest in immutable.items()}, indent=2) + "\n")
     lines = [f"# Magic {version} — independent diagnostic", "",
              "Unchanged rules and GDS; no merge, submission, exclusions or checker bypass.",
+             f"Import mode: {args.import_mode}. Effective import script archived with its hash.",
              "The negative control is intentionally invalid; real layouts must have zero errors.", "",
              "| Circuit | Status | Errors | Expected |", "|---|---|---|---|"]
     lines.extend(f"| {name} | {r['status']} | {r['errors']} | {r['expected_status']} |"

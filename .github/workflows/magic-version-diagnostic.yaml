@@ -1,4 +1,4 @@
-name: Magic 10-minute diagnostic (not a release)
+name: Magic import comparison (not a release)
 
 on:
   push:
@@ -20,7 +20,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [new-macro, submitted-gds]
+        include:
+          - target: submitted-gds
+            import-mode: official
+          - target: submitted-gds
+            import-mode: jq-prefixed
+          - target: old-macro
+            import-mode: jq-prefixed
     env:
       PDK_VERSION: 5e6d592e4002946a4616f798c357f0f3c06cf3b6
       ASTRA_MAGIC_VERSION: 8.3.684
@@ -75,15 +81,15 @@ jobs:
           gcc --version
           "$GITHUB_WORKSPACE/work/magic-install/bin/magic" --version
 
-      - name: Run controls and selected layout with a ten-minute limit
+      - name: Compare imports with unchanged rules and a ten-minute limit
         run: |
-          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}'
+          python -m tools.magic_version_diagnostic --work work/magic-comparison --binary work/magic-install/bin/magic --source work/magic-source --version "$ASTRA_MAGIC_VERSION" --ref "$ASTRA_MAGIC_REF" --timeout-seconds 600 --target '${{ matrix.target }}' --import-mode '${{ matrix.import-mode }}'
 
       - name: Preserve all evidence including failures
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: magic-${{ env.ASTRA_MAGIC_VERSION }}-${{ matrix.target }}-600s-x86_64-${{ github.run_attempt }}
+          name: magic-import-${{ matrix.import-mode }}-${{ matrix.target }}-${{ github.run_attempt }}
           path: |
             work/magic-comparison/evidence
             work/magic-build-logs

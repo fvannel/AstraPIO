@@ -141,3 +141,36 @@ variable (which expects `8.3`, with the revision appended separately). The
 strict version check correctly rejected `8.3.684.684`. The workflow now uses
 task-prefixed `ASTRA_MAGIC_VERSION` / `ASTRA_MAGIC_REF`; a regression guard
 prevents reintroducing this collision. The version assertion remains unchanged.
+
+## Follow-up: controlled import-prefix comparison
+
+Run `35359736958` completed both 600-second probes: the newer macro reports
+24 Cnt.c markers, and the unchanged full GDS reports 6,999 markers in 494.92 s.
+All full-GDS marker rectangles lie within the placed SRAM bounding box, and its
+24 Cnt.c markers exactly match the placed standalone old-macro markers.
+
+Ranked hypotheses for the next experiment:
+
+1. `JQ_` cell-name prefixes defeat the provider's anchored flatten-at-import
+   patterns. Adding the equivalent prefixed patterns should remove most overlap
+   markers, without changing geometry or DRC rules.
+2. Additional SRAM integration issues remain; some of the extra categories
+   persist even with the matching import patterns.
+3. The 24 Cnt.c markers are independent rule-deck discrepancies and persist in
+   both import modes. The old macro is a separate control for that prediction.
+
+The workflow compares `official` and `jq-prefixed` import modes on the exact same
+submitted GDS, and checks the old standalone macro with `jq-prefixed` as a third
+job. Each job retains both metal witnesses, pinned Magic 8.3.684, the same Ciel
+PDK and the 600-second limit. `official` remains the runner's default. The
+experimental script preserves the upstream script and only appends four
+`gds flatglob` patterns: `JQ_lvsres_*`, `JQ_VIA_M1_*`, `JQ_VIA_M2_*`, `JQ_RSC_*`.
+The two existing suffix patterns already recognize prefixed names. The upstream
+file is hash-checked and never edited; the effective copy is archived. All input
+GDS, import and technology file hashes are checked again after the probes.
+
+This is a diagnostic import change, not an official checker change, PDK patch,
+rule waiver, or release fix. All positive DRC counts still fail the workflow.
+The exact source documentation explains why these cell families require
+flattening to avoid layer ambiguities:
+[provider SRAM import script](https://github.com/IHP-GmbH/IHP-Open-PDK/blob/5e6d592e4002946a4616f798c357f0f3c06cf3b6/ihp-sg13g2/libs.tech/magic/read_sram_gds.tcl).

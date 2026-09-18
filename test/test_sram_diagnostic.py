@@ -3,10 +3,12 @@
 import unittest
 import contextlib
 import io
+import fnmatch
 from pathlib import Path
 
 from tools.sram_diagnostic import assess_magic, assess_magic_staged, assess_precheck
 from tools.magic_version_diagnostic import parse_args
+from tools.diagnostic.import_patterns import render_import_script
 
 
 class MagicResultTest(unittest.TestCase):
@@ -85,15 +87,20 @@ class DiagnosticBudgetTest(unittest.TestCase):
         args = parse_args(self.BASE)
         self.assertEqual(args.timeout_seconds, 180)
         self.assertEqual(args.target, "all")
+        self.assertEqual(args.import_mode, "official")
 
     def test_ten_minute_targeted_probe(self):
         args = parse_args(self.BASE + ["--timeout-seconds", "600", "--target", "submitted-gds"])
         self.assertEqual(args.timeout_seconds, 600)
         self.assertEqual(args.target, "submitted-gds")
 
+    def test_import_experiment_must_be_explicit(self):
+        args = parse_args(self.BASE + ["--import-mode", "jq-prefixed"])
+        self.assertEqual(args.import_mode, "jq-prefixed")
+
     def test_unbounded_budget_and_unknown_target_are_rejected(self):
         for extra in (["--timeout-seconds", "0"], ["--timeout-seconds", "3600"],
-                      ["--target", "unknown"]):
+                      ["--target", "unknown"], ["--import-mode", "skip-sram"]):
             with self.subTest(extra=extra), contextlib.redirect_stderr(io.StringIO()):
                 with self.assertRaises(SystemExit):
                     parse_args(self.BASE + extra)
@@ -103,6 +110,41 @@ class DiagnosticBudgetTest(unittest.TestCase):
         workflow = (root / ".github/workflows/magic-version-diagnostic.yaml").read_text()
         self.assertNotRegex(workflow, r"(?m)^\s+MAGIC_VERSION:")
         self.assertIn("ASTRA_MAGIC_VERSION:", workflow)
+
+
+class ImportPatternsTest(unittest.TestCase):
+    ORIGINAL = ("# Provider import setup\n\n"
+                "gds flatglob lvsres_*\ngds flatglob *_CELL_SUB\n"
+                "gds flatglob VIA_M1_*\ngds flatglob VIA_M2_*\n"
+                "gds flatglob RSC_*\ngds flatglob *_CELL_CORNER\n")
+
+    def test_reference_import_is_byte_identical(self):
+        self.assertEqual(render_import_script(self.ORIGINAL, "official"), self.ORIGINAL)
+
+    def test_only_four_prefix_patterns_are_added(self):
+        result = render_import_script(self.ORIGINAL, "jq-prefixed")
+        self.assertTrue(result.startswith(self.ORIGINAL))
+        added = [line for line in result[len(self.ORIGINAL):].splitlines()
+                 if line and not line.startswith("#")]
+        self.assertEqual(added, ["gds flatglob JQ_lvsres_*", "gds flatglob JQ_VIA_M1_*",
+                                 "gds flatglob JQ_VIA_M2_*", "gds flatglob JQ_RSC_*"])
+
+    def test_actual_prefixed_cell_names_match_without_general_flattening(self):
+        official = [line.split()[2] for line in self.ORIGINAL.splitlines() if line.startswith("gds ")]
+        adapted = [line.split()[2] for line in render_import_script(self.ORIGINAL, "jq-prefixed").splitlines()
+                   if line.startswith("gds ")]
+        for name in ("JQ_RSC_IHPSG13_CDLYX1", "JQ_lvsres_1", "JQ_VIA_M1_1"):
+            self.assertFalse(any(fnmatch.fnmatchcase(name, pattern) for pattern in official))
+            self.assertTrue(any(fnmatch.fnmatchcase(name, pattern) for pattern in adapted))
+        for name in ("tt_um_fabien_pio", "sg13g2_inv_1", "RM_IHPSG13_1P_256x8_c3_bm_bist"):
+            self.assertFalse(any(fnmatch.fnmatchcase(name, pattern) for pattern in adapted))
+
+    def test_unexpected_provider_commands_or_unknown_mode_fail_closed(self):
+        for text in (self.ORIGINAL + "drc off\n", self.ORIGINAL.replace("RSC_*", "*")):
+            with self.assertRaises(ValueError):
+                render_import_script(text, "jq-prefixed")
+        with self.assertRaises(ValueError):
+            render_import_script(self.ORIGINAL, "skip-sram")
 
 
 if __name__ == "__main__":
