@@ -1,6 +1,6 @@
 # AstraPIO — réservation administrative TTIHP26b
 
-État au 18 septembre 2026, vers 07:04 Europe/Zurich.
+État au 18 septembre 2026, vers 07:06 Europe/Zurich.
 
 L'utilisateur demande de procéder maintenant à l'inscription et à la saisie des
 codes sur la plateforme, sans attendre la résolution des défauts de fabrication.
@@ -10,20 +10,28 @@ Il a explicitement choisi le nom **AstraPIO**. Deux tiles 1×2 sont visées.
 
 - Le portail affiche l'expiration de la réservation collective SwissChips au
   **18 septembre 2026 à 22:00 UTC+2** et la clôture du shuttle au 21 septembre à 22:00.
-- La page de création demande une connexion GitHub. La session du navigateur
-  intégré n'est pas connectée ; la page de connexion est laissée ouverte à l'utilisateur.
-- Aucun projet AstraPIO créé à ce stade, aucun code saisi ou consommé par l'agent,
-  aucune allocation individuelle confirmée. Aucun code n'est conservé dans le dépôt.
-- Dépôt distant non créé, GDS non téléversé, aucune fabrication validée.
+- Après connexion GitHub par l'utilisateur, les deux coupons ont été validés
+  puis utilisés sur TTIHP26b. Chacun a déclenché une confirmation explicite
+  d'ajout d'un tile et d'un PCB. Les coupons utilisés ne sont plus réutilisables.
+- La page « Your allocations » confirme **2 tiles** et **2 DevKits** sur
+  **Tiny Tapeout IHP 26b**. Aucun paiement supplémentaire n'a été effectué.
+- La page « Your projects » indique qu'aucun projet n'existe sur ce shuttle
+  pour ce compte : aucun projet AstraPIO créé ni rattachement au design réalisé.
+- La création demande obligatoirement une URL GitHub. Le dépôt local n'a pas
+  encore de remote ; la publication du dépôt public doit être autorisée.
+- Aucun code n'est conservé dans les fichiers. Dépôt distant non créé,
+  GDS non téléversé, aucune fabrication validée.
 
-Source : [TTIHP26b](https://app.tinytapeout.com/shuttles/ttihp26b).
+Sources : [allocations du compte](https://app.tinytapeout.com/),
+[page coupons](https://app.tinytapeout.com/redeem),
+[TTIHP26b](https://app.tinytapeout.com/shuttles/ttihp26b).
 
 ## Suite
 
-Après connexion par l'utilisateur : vérifier d'abord ses projets existants pour
-éviter un doublon, puis créer ou compléter AstraPIO et appliquer les codes selon
-les options réellement proposées. Vérifier une confirmation explicite des deux
-tiles et des PCB inclus. Ne pas supposer qu'une tentative de saisie suffit.
+Obtenir l'autorisation de publier AstraPIO sur le compte GitHub choisi, ou une
+URL de dépôt existant à utiliser. Puis créer le projet Tiny Tapeout avec cette
+URL et vérifier le rattachement des deux tiles. L'allocation sur le compte est
+confirmée ; la soumission du design reste une étape séparée.
 
 Un paiement complémentaire, une acceptation de nouvelles conditions ou un choix
 de dépôt public non résolu nécessitera une validation spécifique. Ne pas déclarer

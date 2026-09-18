@@ -66,8 +66,11 @@ et à l'utilisation des coupons pour sécuriser la réservation. Cette démarche
 administrative ne constitue pas une validation de fabrication ; voir
 [état de réservation](docs/reservation.md).
 
-Dépôt Git local, branche `main`, sans remote. Aucun coupon utilisé ou enregistré,
-aucune publication ni soumission externe. Les workflows distants restent manuels
+Dépôt Git local, branche `main`, sans remote. Les deux coupons ont été utilisés
+le 18 septembre : le compte affiche deux tiles et deux DevKits sur TTIHP26b.
+Aucun code n'est enregistré dans les fichiers. Aucun projet créé sur la plateforme,
+aucune publication GitHub ni soumission du GDS à ce stade : une URL de dépôt est
+requise pour créer AstraPIO. Les workflows distants restent manuels
 et verrouillés tant que le statut n'autorise pas leur lancement. Un GDS existant,
 des tests verts ou une simulation à 50 MHz ne signifient pas « prêt à fabriquer ».
 
