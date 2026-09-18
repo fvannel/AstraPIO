@@ -18,6 +18,8 @@ host-test:
 	mkdir -p work/host-test
 	$(CC) -std=c11 -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined firmware/pio_host.c test/test_host.c -o work/host-test/test_host
 	./work/host-test/test_host
+	$(CC) -std=c11 -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined firmware/pio_host.c firmware/pio_timed.c test/test_host_timed.c -o work/host-test/test_host_timed
+	./work/host-test/test_host_timed
 
 test: check unit host-test
 	$(MAKE) -C test

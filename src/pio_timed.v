@@ -15,7 +15,7 @@ module pio_timed (
 );
     reg enabled, output_enabled, replace_prefix;
     reg [3:0] input_pin, output_pin;
-    reg [15:0] idle_limit, low_count;
+    reg [15:0] idle_limit, idle_left;
     reg [5:0] sample_delay, launch_delay, high_zero, high_one;
     reg [4:0] prefix_length, remaining;
     reg armed, in_frame, capture_frame, input_previous, sampling;
@@ -38,8 +38,8 @@ module pio_timed (
         !(write_data[0] && write_data[1] && write_data[2] && !active_valid && !pending && !write_data[9]) &&
         !(write_data[9] && (pending || !(&shadow_initialized)));
     wire stop = write_enable && address == 1 && control_ok && !write_data[0];
-    wire sample_now = enabled && sampling && age == sample_delay-1'b1;
-    wire launch_now = enabled && sampling && age == launch_delay-1'b1;
+    wire sample_now = enabled && sampling && age == sample_delay;
+    wire launch_now = enabled && sampling && age == launch_delay;
     wire outgoing_bit = replace_prefix && remaining != 0 ? active_word[remaining-1'b1] : sampled_bit;
 
     always @* begin
@@ -67,7 +67,7 @@ module pio_timed (
             enabled <= 0; output_enabled <= 0; replace_prefix <= 0;
             input_pin <= 0; output_pin <= 8; idle_limit <= 15000;
             sample_delay <= 25; launch_delay <= 32; high_zero <= 16; high_one <= 32;
-            prefix_length <= 24; remaining <= 0; low_count <= 0;
+            prefix_length <= 24; remaining <= 0; idle_left <= 0;
             armed <= 0; in_frame <= 0; capture_frame <= 0;
             input_previous <= 0; sampling <= 0; age <= 0;
             rx_valid <= 0; host_error <= 0; overrun <= 0; timing_error <= 0;
@@ -108,13 +108,15 @@ module pio_timed (
                 endcase
             end
             if (!enabled || stop) begin
-                low_count <= 0; armed <= 0; in_frame <= 0;
+                idle_left <= idle_limit; armed <= 0; in_frame <= 0;
                 sampling <= 0; remaining <= 0; capture_frame <= 0;
                 dout <= 0; pulse_left <= 0;
             end else begin
-                if (din) low_count <= 0;
-                else if (low_count < idle_limit) low_count <= low_count + 1'b1;
-                if (!din && low_count == idle_limit-1'b1) begin
+                // Countdown avoids a 16-bit magnitude comparator and a second
+                // subtractor. Zero holds the qualification until a new edge.
+                if (din) idle_left <= idle_limit;
+                else if (idle_left != 0) idle_left <= idle_left - 1'b1;
+                if (!din && idle_left == 1) begin
                     armed <= 1; in_frame <= 0; sampling <= 0; remaining <= 0;
                     dout <= 0; pulse_left <= 0;
                 end else begin
@@ -124,7 +126,7 @@ module pio_timed (
                             sampling <= 0; dout <= 0; pulse_left <= 0;
                         end
                         else begin
-                            sampling <= 1; age <= 0;
+                            sampling <= 1; age <= 1;
                             if (armed) begin
                                 armed <= 0; in_frame <= 1; remaining <= prefix_length;
                                 capture_frame <= !rx_valid;
