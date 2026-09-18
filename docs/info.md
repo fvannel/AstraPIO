@@ -1,8 +1,11 @@
 ## How it works
 
 AstraPIO is a general-purpose digital programmable I/O coprocessor for an LPC546xx host.
-**Engineering prototype: NOT ready for submission.** The current SRAM macro
-fails the shuttle's official DRC; see the repository verification report.
+**Provisional engineering submission: NOT qualified for fabrication.** The pinned
+shuttle DRC reports known SRAM errors. Magic is explicitly nonblocking for this
+provisional revision; the official precheck and its failures remain visible.
+An unchanged earlier GDS passes the corrected upstream IHP KLayout main deck.
+See `docs/provisional-submission.md` and the verification report for scope and evidence.
 
 Two contexts share a byte-oriented execution engine and a 256-byte IHP SRAM.
 Each context has 48 16-bit instructions, an 8-bit accumulator, 4-bit loop counter,

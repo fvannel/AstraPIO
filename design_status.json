@@ -26,8 +26,11 @@
   "publication_authorized": true,
   "platform_draft_creation_authorized": true,
   "submission_authorized": true,
-  "submission_authorization_scope": "First provisional revision, preserving all validation failures; not fabrication signoff",
-  "provisional_revision_status": "blocked_no_tt_submission_artifact",
+  "submission_authorization_scope": "First provisional revision with explicitly authorized nonblocking Magic DRC; preserve official precheck failures; not fabrication signoff",
+  "magic_drc_nonblocking_authorized": true,
+  "magic_drc_executed_with_reports": true,
+  "official_precheck_unmodified": true,
+  "provisional_revision_status": "authorized_nonblocking_magic_build_pending",
   "official_gds_run_url": "https://github.com/fvannel/AstraPIO/actions/runs/35311159552",
   "official_gds_run_commit": "a2bd076e76adf3fc3acbecdbb4394a236044a5c4",
   "official_gds_run_conclusion": "failure",
@@ -44,7 +47,7 @@
   "official_drc_error_count": 1768,
   "physical_candidate": "work/hardening-buffered-v2",
   "release_blockers": [
-    "Official SRAM macro-only KLayout DRC reproduces 1768 errors; requires official resolution",
+    "Pinned shuttle KLayout deck reports 1768 SRAM errors; corrected upstream IHP deck gives zero on the prior unchanged GDS, but shuttle precheck remains unchanged",
     "Clock uncertainty, mixed SRAM/standard-cell fast temperatures and board IO need qualification",
     "Full signoff review remains required; nominal-RC timing is not board or silicon qualification",
     "Exact LPC546xx board and final submission review remain required; project allocation is confirmed"

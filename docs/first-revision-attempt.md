@@ -1,5 +1,8 @@
 # Première révision AstraPIO — tentative bloquée
 
+Rapport historique du premier essai. Une nouvelle tentative avec Magic non
+bloquant a ensuite été autorisée explicitement ; voir `provisional-submission.md`.
+
 18 septembre 2026. **Aucune révision créée sur le portail.** Les deux tiles
 restent affectées au [projet AstraPIO 5799](https://app.tinytapeout.com/projects/5799).
 L'accord de l'utilisateur portait sur une première révision provisoire, pas sur

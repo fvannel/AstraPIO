@@ -75,10 +75,13 @@ avec ses deux tiles **affectées** (1×2). Aucune révision GDS n'est soumise :
 le projet n'est pas encore inclus pour fabrication. Voir `docs/reservation.md`.
 Les workflows de tests et documentation peuvent s'exécuter sur GitHub.
 L'utilisateur a autorisé une première révision provisoire : le workflow GDS
-manuel est désormais autorisé, sans désactiver ni ignorer ses contrôles.
+manuel est désormais autorisé. Après recherche des précédents SRAM, l'utilisateur
+a explicitement autorisé Magic DRC **non bloquant**, avec conservation de ses
+erreurs et du precheck officiel inchangé. Il ne s'agit pas d'un accord de fabrication.
 Le premier workflow GDS officiel a échoué sur 60767 erreurs Magic DRC.
 Le portail a refusé le dépôt faute d'artefact `tt_submission` : **aucune révision
 n'a été créée**. Voir [tentative et preuves](docs/first-revision-attempt.md).
+Une nouvelle tentative est préparée selon la [procédure provisoire documentée](docs/provisional-submission.md).
 Un GDS existant,
 des tests verts ou une simulation à 50 MHz ne signifient pas « prêt à fabriquer ».
 

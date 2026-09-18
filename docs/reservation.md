@@ -35,6 +35,13 @@ Sources : [allocations du compte](https://app.tinytapeout.com/),
 
 ## Suite
 
+**Mise à jour :** après recherche des précédents et essai du deck IHP corrigé,
+l'utilisateur a explicitement demandé la première soumission provisoire avec
+Magic DRC non bloquant. Cette seule politique change ; le precheck officiel
+reste inchangé. La génération est à relancer et aucune nouvelle révision n'est
+encore confirmée au moment de ce commit. Voir `provisional-submission.md`.
+Les paragraphes suivants décrivent les tentatives précédentes.
+
 L'utilisateur a maintenant donné son accord pour la première révision provisoire.
 La première tentative via « Submit a new revision » a été refusée : aucun
 artefact `tt_submission` pour le commit `9d86c4a`, le workflow GDS n'ayant pas
