@@ -200,6 +200,49 @@ async def uart_waveform_preserves_instruction_cadence(dut):
 
 
 @cocotb.test()
+async def spi_transmitter_preserves_all_bits_and_cycle_widths(dut):
+    from pioasm import assemble
+    from cocotb.utils import get_sim_time
+    host = await setup(dut)
+    words = assemble('''LDI 3
+DIR
+byte: PULL
+LDX 8
+bit: OUTBIT 0
+SET 1,1
+SET 1,0
+DJNZ bit
+JMP byte''', abi=4)
+    await load_program(host, words)
+    await host.write(0x10, 3)
+    payload = [0,255,0x55,0xAA,0x80,1,0xA6,0x39]
+    async def receiver():
+        decoded, value, count = [], 0, 0
+        prev, rise = 0, None
+        while len(decoded) < len(payload):
+            await FallingEdge(dut.clk)
+            level = int(dut.uio_out.value)
+            sck = (level >> 1) & 1
+            if sck and not prev:
+                assert int(dut.uio_oe.value) == 3
+                rise = float(get_sim_time(unit='ns'))
+                value = (value << 1) | (level & 1)
+                count += 1
+            elif prev and not sck:
+                assert float(get_sim_time(unit='ns')) - rise == 80
+                if count == 8:
+                    decoded.append(value)
+                    value, count = 0, 0
+            prev = sck
+        return decoded
+    task = cocotb.start_soon(receiver())
+    await host.write(3, 1)
+    for value in payload: await host.write(0x14, value)
+    assert await with_timeout(task,200,'us') == payload
+    assert await host.read(6) == 0
+
+
+@cocotb.test()
 async def reset_disable_and_queue_flush(dut):
     host = await setup(dut)
     await load_program(host, [0x1001,0x4000,0x3000,0x5003])

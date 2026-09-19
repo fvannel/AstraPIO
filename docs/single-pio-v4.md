@@ -76,12 +76,18 @@ between frames. It does not need to process each incoming bit.
 
 ## Verification scope
 
-21 pin-level RTL scenarios: 10 single-context + 11 timed, including 14 output
+22 pin-level RTL scenarios: 11 single-context + 11 timed, including 14 output
 indices, FIFO backpressure/aborted reads, program patterns/atomicity, illegal
-instructions, reset/deselect, UART cadence, host events and concurrent timed
+instructions, reset/deselect, SPI/UART cadence, host events and concurrent timed
 relay. Timed sweeps retain 24 prefix lengths, 20 input clock phases and atomic
 commit/late-host/malformed-frame tests. Two memory/FIFO unit benches, Python
 tool/policy tests and sanitized portable C bus-boundary tests supplement them.
 These are bounded tests, not exhaustive proof or board/silicon qualification.
 Physical placement, routing, DRC, LVS, unchanged official precheck, routed
 functional simulation and supplemental derated timing must pass anew.
+
+Initial global placement passes with both AREA 0 and AREA 2 (run 35435713981,
+RTL `eeaa97f`). AREA 2 has 51,657.8 µm² of pre-CTS cells (85.9398% of the
+60,109.3 µm² core); the placer's pin-density-adjusted utilization is 93.741%.
+These are not final routed utilization or timing results. AREA 2 is selected
+for the full official flow. All physical and precheck gates remain unchanged.
