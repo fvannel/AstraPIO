@@ -230,7 +230,7 @@ async def pin_ownership_and_safe_disable(dut):
 async def simultaneous_single_program_and_timed_relay(dut):
     from test_single import load_program
     host = await setup(dut)
-    await load_program(host, [0xF211, 0xF291, 0xF210, 0xF290, 0x5000])
+    await load_program(host, [0x371, 0x379, 0x361, 0x369, 0x310])
     await host.write(0x10, 0x202)
     await configure(host)
     await stage(host, 0xAA55FF)

@@ -22,8 +22,8 @@ static int transfer(void *ctx, const uint8_t tx[4], uint8_t rx[4]) {
 }
 int main(void) {
     mock m = {0}; pio_device d = {transfer, &m}; uint8_t b = 0;
-    uint16_t code[16]; for (unsigned i=0; i<16; i++) code[i] = (uint16_t)(0xa000+i);
-    m.reg[0]=0x5049; m.reg[1]=0x0400;
+    uint16_t code[16]; for (unsigned i=0; i<16; i++) code[i] = (uint16_t)(0x200+i);
+    m.reg[0]=0x5049; m.reg[1]=0x0500;
     assert(pio_probe(&d)==0);
     assert(pio_load(&d, code, 16)==0);
     assert(!memcmp(m.memory, code, sizeof code));
@@ -44,7 +44,10 @@ int main(void) {
     assert(pio_pop(&d,0,&b)==PIO_EEMPTY);
     m.reg[0x15]=0x809a; assert(pio_pop(&d,0,&b)==0 && b==0x9a);
     m.corrupt=1; assert(pio_load(&d,code,1)==PIO_EVERIFY); m.corrupt=0;
-    m.reg[1]=0x0300; assert(pio_load(&d,code,1)==PIO_EABI); m.reg[1]=0x0400;
+    m.reg[1]=0x0300; assert(pio_load(&d,code,1)==PIO_EABI);
+    m.reg[1]=0x0400; assert(pio_load(&d,code,1)==PIO_EABI); m.reg[1]=0x0500;
+    uint16_t bad_code[1]={0x400}; unsigned calls=m.calls;
+    assert(pio_load(&d,bad_code,1)==PIO_EINVAL && m.calls==calls);
     assert(pio_push(&d,1,0)==PIO_EINVAL);
     assert(pio_pop(&d,1,&b)==PIO_EINVAL);
     assert(pio_push_many(&d,1,bytes,3,&sent)==PIO_EINVAL && sent==0);

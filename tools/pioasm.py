@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assembler for AstraPIO ABI v3/v4; select --abi 4 for the single-context chip."""
+"""Assembler for AstraPIO ABI v3/v4/v5; --abi 5 uses native 10-bit words."""
 
 import argparse
 from pathlib import Path
@@ -11,9 +11,32 @@ EXT_SIMPLE = {"PULL": 0xF000, "PUSH": 0xF100, "SIGNAL": 0xF700,
               "AWAIT": 0xF710, "CLR_EVENT": 0xF720, "RECV": 0xF900}
 
 
+def _dense_word(word: int) -> int:
+    """Encode an assembler-produced v4 instruction; not arbitrary binary input."""
+    simple = {0x0000: 0, 0x4000: 1, 0x7000: 2, 0xB000: 3,
+              0xC000: 4, 0xD000: 5, 0xE000: 6, 0xF000: 7,
+              0xF100: 8, 0xF710: 9, 0xF720: 10, 0x2000: 11,
+              0x2100: 12, 0x3000: 13, 0x3100: 14}
+    if word in simple:
+        return 0x300 | simple[word]
+    opcode = word >> 12
+    if opcode in (1, 9, 10):
+        return ({1: 0, 9: 1, 10: 2}[opcode] << 8) | (word & 255)
+    if opcode in (5, 6):
+        return (0x310 if opcode == 5 else 0x320) | (word & 15)
+    if opcode == 8:
+        return 0x340 | ((word >> 4) & 16) | (word & 15)
+    extended = (word >> 8) & 15
+    if extended == 2:
+        return 0x360 | ((word & 1) << 4) | ((word >> 4) & 15)
+    if extended == 3:
+        return 0x380 | ((word >> 4) & 15)
+    return {4: 0x390, 5: 0x3A0, 6: 0x3B0, 8: 0x330}[extended] | (word & 15)
+
+
 def assemble(source: str, *, abi: int = 3) -> list[int]:
-    if abi not in (3, 4):
-        raise ValueError("supported ABIs: 3 (two contexts), 4 (single context)")
+    if abi not in (3, 4, 5):
+        raise ValueError("supported ABIs: 3 (two contexts), 4 (single), 5 (single/dense)")
     labels = {}
     instructions = []
     for number, line in enumerate(source.splitlines(), 1):
@@ -35,12 +58,12 @@ def assemble(source: str, *, abi: int = 3) -> list[int]:
         op, args = tokens[0].upper(), tokens[1:]
         try:
             if op in EXT_SIMPLE and not args:
-                if abi == 4 and op in ("SIGNAL", "RECV"):
+                if abi >= 4 and op in ("SIGNAL", "RECV"):
                     raise ValueError(f"{op} requires two contexts (ABI v3 only)")
                 word = EXT_SIMPLE[op]
             elif op in ("OUTBIT", "INBIT", "LDX", "DJNZ", "JBIT") and len(args) == 1:
                 value = labels[args[0]] if op in ("DJNZ", "JBIT") and args[0] in labels else int(args[0], 0)
-                limit = {"OUTBIT": 13 if abi == 4 else 6, "INBIT": 12, "LDX": 15, "DJNZ": 15, "JBIT": 15}[op]
+                limit = {"OUTBIT": 13 if abi >= 4 else 6, "INBIT": 12, "LDX": 15, "DJNZ": 15, "JBIT": 15}[op]
                 if not 0 <= value <= limit:
                     raise ValueError(f"operand must be 0..{limit}")
                 base = {"OUTBIT": 0xF300, "INBIT": 0xF400, "LDX": 0xF500,
@@ -48,7 +71,7 @@ def assemble(source: str, *, abi: int = 3) -> list[int]:
                 word = base | (value << 4 if op == "OUTBIT" else value)
             elif op == "SET" and len(args) == 2:
                 pin, level = (int(arg, 0) for arg in args)
-                limit = 13 if abi == 4 else 6
+                limit = 13 if abi >= 4 else 6
                 if not 0 <= pin <= limit or level not in (0, 1):
                     raise ValueError(f"SET expects output 0..{limit} and level 0 or 1")
                 word = 0xF200 | (pin << 4) | level
@@ -56,7 +79,7 @@ def assemble(source: str, *, abi: int = 3) -> list[int]:
                 word = SIMPLE[op] << 12
             elif op == "IN" and args == ["1"]:
                 word = 0x2100
-            elif op == "OUT" and args == ["1"] and abi == 4:
+            elif op == "OUT" and args == ["1"] and abi >= 4:
                 word = 0x3100
             elif op in IMMEDIATE and len(args) == 1:
                 value = labels[args[0]] if op in ("JMP", "JNZ") and args[0] in labels else int(args[0], 0)
@@ -73,15 +96,15 @@ def assemble(source: str, *, abi: int = 3) -> list[int]:
                 raise ValueError(f"unknown instruction or wrong argument count: {' '.join(tokens)}")
         except ValueError as exc:
             raise ValueError(f"line {number}: {exc}") from exc
-        words.append(word)
+        words.append(_dense_word(word) if abi == 5 else word)
     return words
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
-    parser.add_argument("--abi", type=int, choices=(3, 4), default=3,
-                        help="default 3 retains legacy programs; use 4 for the single-context chip")
+    parser.add_argument("--abi", type=int, choices=(3, 4, 5), default=3,
+                        help="default 3 retains legacy programs; use 5 for the dense single-context chip")
     args = parser.parse_args()
     try:
         for word in assemble(args.source.read_text(), abi=args.abi):

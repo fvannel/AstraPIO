@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
 `default_nettype none
-// Shared 16 x 16 program store, using characterized IHP standard cells only.
+// Sixteen-word program store, using characterized IHP standard cells only.
 // Capture a request at edge N. ICGs enable exactly one row at N+1; its latches
 // close at falling N+1. Data/address remain stable through edge N+2. No reset
 // on payload: the core's initialized length hides old/unknown words.
-module pio_program (
+module pio_program #(parameter WIDTH = 16) (
     input wire clk, rst_n, write_enable,
     input wire [3:0] write_address, read_address,
-    input wire [15:0] write_data,
-    output wire [15:0] read_data,
+    input wire [WIDTH-1:0] write_data,
+    output wire [WIDTH-1:0] read_data,
     output wire busy
 );
     reg pending, finishing;
     reg [3:0] saved_address;
-    reg [15:0] saved_data;
-    wire [15:0] words [0:15];
+    reg [WIDTH-1:0] saved_data;
+    wire [WIDTH-1:0] words [0:15];
     assign busy = pending | finishing;
     assign read_data = words[read_address];
     always @(posedge clk or negedge rst_n) begin
@@ -38,7 +38,7 @@ module pio_program (
         sg13g2_lgcp_1 gate_cell (
             .CLK(clk), .GATE(pending && saved_address == row), .GCLK(row_clock)
         );
-        for (bit_index = 0; bit_index < 16; bit_index = bit_index + 1) begin : bits
+        for (bit_index = 0; bit_index < WIDTH; bit_index = bit_index + 1) begin : bits
             sg13g2_dlhq_1 storage (
                 .GATE(row_clock), .D(saved_data[bit_index]), .Q(words[row][bit_index])
             );

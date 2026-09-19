@@ -1,4 +1,4 @@
-"""Single-context ABI v4 acceptance, using only SPI/GPIO pins."""
+"""Single-context ABI v5 acceptance, using only SPI/GPIO pins."""
 import cocotb
 import random
 from cocotb.triggers import ClockCycles, FallingEdge, Timer, with_timeout
@@ -16,10 +16,10 @@ async def load_program(host, words):
 async def single_context_identity_capacity_and_no_alias(dut):
     host = await setup(dut)
     assert await host.read(0) == 0x5049
-    assert await host.read(1) == 0x0400
+    assert await host.read(1) == 0x0500
     assert await host.read(2) == 1
     assert await host.read(0x0F) == 0x1002
-    words = [0x1000+i for i in range(15)] + [0xE000]
+    words = [i for i in range(15)] + [0x306]
     await load_program(host, words)
     assert await host.read(0x0A) == 16
     assert [await host.read(0x40+i) for i in range(16)] == words
@@ -41,8 +41,8 @@ async def program_integrity_and_spi_atomicity(dut):
     assert await host.read(0x0A) == 0 and await host.read(6) == 1
     await host.write(6, 1)
     rng = random.Random(0xC040)
-    for pattern in (0, 0xFFFF, 0x5555, 0xAAAA, None):
-        words = [rng.randrange(65536) if pattern is None else pattern ^ i for i in range(16)]
+    for pattern in (0, 0x3FF, 0x155, 0x2AA, None):
+        words = [rng.randrange(1024) if pattern is None else pattern ^ i for i in range(16)]
         await load_program(host, words)
         assert await host.read(0x0A) == 16
         assert [await host.read(0x40+i) for i in range(16)] == words
@@ -51,9 +51,9 @@ async def program_integrity_and_spi_atomicity(dut):
         await host.write(6, 1)
     from host_protocol import write_frame
     for bits in (1, 7, 8, 15, 16, 23, 31):
-        await host.transfer(write_frame(0x40, 0xBEEF), bits=bits)
+        await host.transfer(write_frame(0x40, 0x2EF), bits=bits)
         assert await host.read(0x40) == words[0]
-    await host.transfer(bytes.fromhex('9940beef'))
+    await host.transfer(bytes.fromhex('994002ef'))
     assert await host.read(0x40) == words[0]
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 5)
@@ -66,9 +66,9 @@ async def program_integrity_and_spi_atomicity(dut):
 async def all_output_pins_and_running_write_protection(dut):
     host = await setup(dut)
     await host.write(0x10, 0x3FFF)
-    await load_program(host, [0x8108,0x10FF,0x4000,0x3000,0x3100,0xD000,0xE000])
+    await load_program(host, [0x358,0x0FF,0x301,0x30D,0x30E,0x305,0x306])
     await host.write(3, 1)
-    for address, value in ((0x40,0xE000),(0x10,2),(0x11,1),(0x12,0xFF),(0x0A,0)):
+    for address, value in ((0x40,0x306),(0x10,2),(0x11,1),(0x12,0xFF),(0x0A,0)):
         await host.write(address, value)
         assert await host.read(6) == 1
         await host.write(6, 1)
@@ -85,11 +85,11 @@ async def all_output_pins_and_running_write_protection(dut):
     for pin in range(14):
         await host.write(4, 1)
         await host.write(0x10, 1 << pin)
-        await load_program(host, [0xF201 | (pin << 4),0xE000])
+        await load_program(host, [0x370 | pin,0x306])
         await host.write(3, 1)
         assert await host.read(7) == 1 << pin
         await host.write(4, 1)
-        await load_program(host, [0x1000,0xF300 | (pin << 4),0xE000])
+        await load_program(host, [0x000,0x380 | pin,0x306])
         await host.write(3, 1)
         assert await host.read(7) == 0 and await host.read(6) == 0
 
@@ -97,7 +97,7 @@ async def all_output_pins_and_running_write_protection(dut):
 @cocotb.test()
 async def streams_overflow_backpressure_and_aborted_read(dut):
     host = await setup(dut, half=139)
-    await load_program(host, [0xF000,0xA05A,0xF100,0x5000])
+    await load_program(host, [0x307,0x25A,0x308,0x310])
     for value in (0x12,0xE7): await host.write(0x14, value)
     await host.write(0x14, 0x99)
     assert await host.read(6) == 1 and (await host.read(0x16) >> 12) & 3 == 2
@@ -127,7 +127,7 @@ async def host_events_and_counted_input_loop(dut):
     host = await setup(dut)
     host.inputs = 1
     host.drive()
-    await load_program(host, [0xF710,0x1000,0xF505,0xF408,0xF603,0xF100,0xD000,0xE000])
+    await load_program(host, [0x309,0x000,0x3A5,0x398,0x3B3,0x308,0x305,0x306])
     await host.write(3, 1)
     assert await host.read(3) == 1 and await host.read(0x11) == 0
     assert await host.read(0x15) == 0
@@ -139,7 +139,7 @@ async def host_events_and_counted_input_loop(dut):
     await host.write(0x0E, 1)
     assert await host.read(0x0D) == 0
     await host.write(4, 1)
-    await load_program(host, [0xF720,0xE000])
+    await load_program(host, [0x30A,0x306])
     await host.write(0x0D, 1)
     await host.write(3, 1)
     assert await host.read(0x0D) == 0
@@ -148,8 +148,8 @@ async def host_events_and_counted_input_loop(dut):
 @cocotb.test()
 async def bounds_removed_instructions_and_restart(dut):
     host = await setup(dut)
-    for words in ([0]*16,[0x5010],[0xF610],[0xF810],[0x810D],[0xF40D],
-                  [0xF2E1],[0xF3F0],[0xF700],[0xF900],[0xFF00]):
+    for words in ([0x300]*16,[0x30F],[0x3C0],[0x3FF],[0x34D],[0x39D],
+                  [0x36E],[0x38F],[0x3D0],[0x3E0]):
         await host.write(4, 1)
         await load_program(host, words)
         await host.write(3, 1)
@@ -158,7 +158,7 @@ async def bounds_removed_instructions_and_restart(dut):
         await host.write(3, 1)
         assert await host.read(3) == 0
     await host.write(4, 1)
-    await load_program(host, [0xE000])
+    await load_program(host, [0x306])
     for address, value in ((0x11,16),(0x10,0x4000),(3,3),(4,3),(0x0C,2)):
         await host.write(address, value)
         assert await host.read(6) == 1
@@ -172,7 +172,7 @@ async def uart_waveform_preserves_instruction_cadence(dut):
     host = await setup(dut)
     from pathlib import Path
     from pioasm import assemble
-    words = assemble((Path(__file__).resolve().parents[1]/'examples/compact/uart_tx.pio').read_text())
+    words = assemble((Path(__file__).resolve().parents[1]/'examples/compact/uart_tx.pio').read_text(), abi=5)
     await load_program(host, words)
     await host.write(0x10, 1)
     payload = [0xA6,0,0xFF]
@@ -212,7 +212,7 @@ bit: OUTBIT 0
 SET 1,1
 SET 1,0
 DJNZ bit
-JMP byte''', abi=4)
+JMP byte''', abi=5)
     await load_program(host, words)
     await host.write(0x10, 3)
     payload = [0,255,0x55,0xAA,0x80,1,0xA6,0x39]
@@ -245,7 +245,7 @@ JMP byte''', abi=4)
 @cocotb.test()
 async def reset_disable_and_queue_flush(dut):
     host = await setup(dut)
-    await load_program(host, [0x1001,0x4000,0x3000,0x5003])
+    await load_program(host, [0x001,0x301,0x30D,0x313])
     await host.write(0x10, 1)
     await host.write(0x14, 0xCD)
     await host.write(3, 1)
@@ -266,7 +266,7 @@ async def reset_disable_and_queue_flush(dut):
 @cocotb.test()
 async def empty_snapshot_does_not_pop_late_byte(dut):
     host = await setup(dut,half=137)
-    await load_program(host,[0x8108,0x10C7,0xF100,0xE000])
+    await load_program(host,[0x358,0x0C7,0x308,0x306])
     await host.write(3,1)
     async def release_producer():
         await Timer(5500,unit='ns')
@@ -284,20 +284,20 @@ async def byte_alu_branches_and_both_input_banks(dut):
     rng = random.Random(0xA104)
     for value, mask in [(0,0),(255,0),(0x80,0x55)] + [(rng.randrange(256),rng.randrange(256)) for _ in range(7)]:
         await host.write(4,1)
-        await load_program(host,[0x1000|value,0xA000|mask,0xB000,0xC000,0x7000,0xF100,0xE000])
+        await load_program(host,[value,0x200|mask,0x303,0x304,0x302,0x308,0x306])
         await host.write(3,1)
         assert await host.read(0x15) == 0x8000 | ((((value ^ mask) & 0x7F) - 1) & 255)
         assert await host.read(6) == 0
     await host.write(4,1)
-    await load_program(host,[0x1000,0xF500,0x7000,0xF602,0xF100,0x1080,0xF809,
-                            0x10AA,0xE000,0x1000,0x600D,0x1055,0xF100,0xE000])
+    await load_program(host,[0x000,0x3A0,0x302,0x3B2,0x308,0x080,0x339,
+                            0x0AA,0x306,0x000,0x32D,0x055,0x308,0x306])
     await host.write(3,1)
     assert await host.read(0x15) == 0x80F0 and await host.read(0x15) == 0x8055
     await host.write(4,1)
     host.inputs = 0x1B
     host.drive()
     dut.uio_in.value = 0xA5
-    await load_program(host,[0x2000,0xF100,0x2100,0xF100,0xE000])
+    await load_program(host,[0x30B,0x308,0x30C,0x308,0x306])
     await host.write(3,1)
     assert await host.read(0x15) == 0x80A5 and await host.read(0x15) == 0x801B
     assert await host.read(6) == 0

@@ -9,13 +9,50 @@ from host_protocol import program_frames, read_frame, read_value, write_frame
 
 
 class ToolsTest(unittest.TestCase):
+    def test_dense_encoding_keeps_program_length_and_byte_constants(self):
+        source = 'LDI 255\nDELAY 255\nXOR 255\nOUT 1\nSET 13,1\nOUTBIT 13\nAWAIT\nHALT'
+        self.assertEqual(assemble(source, abi=5),
+                         [0x0FF, 0x1FF, 0x2FF, 0x30E, 0x37D, 0x38D, 0x309, 0x306])
+        self.assertEqual(assemble('NOP\n' * 15 + 'HALT', abi=5), [0x300]*15+[0x306])
+
+    def test_dense_codebook_is_complete_and_collision_free(self):
+        forms = []
+        for group, op in enumerate(('LDI', 'DELAY', 'XOR')):
+            forms.extend((f'{op} {v}', (group << 8) | v) for v in range(256))
+        simple = ['NOP','DIR','DEC','SHL','SHR','IRQ','HALT','PULL','PUSH',
+                  'AWAIT','CLR_EVENT','IN','IN 1','OUT','OUT 1']
+        forms.extend((op, 0x300 | i) for i, op in enumerate(simple))
+        for group, op, count in ((1,'JMP',16),(2,'JNZ',16),(3,'JBIT',16),
+                                  (8,'OUTBIT',14),(9,'INBIT',13),(10,'LDX',16),(11,'DJNZ',16)):
+            forms.extend((f'{op} {v}', 0x300 | group << 4 | v) for v in range(count))
+        for level in (0, 1):
+            forms.extend((f'WAIT {p},{level}', 0x340 | level << 4 | p) for p in range(13))
+            forms.extend((f'SET {p},{level}', 0x360 | level << 4 | p) for p in range(14))
+        words = []
+        for source, expected in forms:
+            with self.subTest(source=source):
+                word = assemble(source, abi=5)[0]
+                self.assertEqual(word, expected)
+                words.append(word)
+        self.assertEqual(len(set(words)), 944)
+        for source in ('SIGNAL','RECV','SET 14,1','INBIT 13','OUTBIT 14','JMP 16','LDI 256'):
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                assemble(source, abi=5)
+
+    def test_dense_upload_rejects_wrong_word_width_before_transport(self):
+        self.assertEqual(program_frames([0x306], abi=5),
+                         [bytes.fromhex(x) for x in ('02030000','02040001','020a0000','02400306')])
+        for word in (-1, 0x400, 0xE000):
+            with self.subTest(word=word), self.assertRaises(ValueError):
+                program_frames([word], abi=5)
+
     def test_single_context_abi(self):
         self.assertEqual(assemble('OUT 1\nSET 13,1\nOUTBIT 13\nAWAIT', abi=4),
                          [0x3100, 0xF2D1, 0xF3D0, 0xF710])
         for source in ('SET 14,1', 'OUTBIT 14', 'SIGNAL', 'RECV'):
             with self.subTest(source=source), self.assertRaises(ValueError):
                 assemble(source, abi=4)
-        for abi in (2, 5):
+        for abi in (2, 6):
             with self.assertRaises(ValueError): assemble('HALT', abi=abi)
             with self.assertRaises(ValueError): program_frames([0xE000], abi=abi)
         self.assertEqual(program_frames([0xE000], abi=4)[1], bytes.fromhex('02 04 00 01'))

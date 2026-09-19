@@ -19,7 +19,7 @@ int pio_probe(pio_device *d) {
     if (rc) return rc;
     if (value != 0x5049) return PIO_EABI;
     rc = pio_read(d, 1, &value);
-    return rc ? rc : value == 0x0400 ? PIO_OK : PIO_EABI;
+    return rc ? rc : value == 0x0500 ? PIO_OK : PIO_EABI;
 }
 int pio_stop(pio_device *d) { return pio_write(d, 3, 0); }
 
@@ -27,6 +27,9 @@ int pio_load(pio_device *d, const uint16_t *words, size_t count) {
     uint16_t value;
     int rc;
     if (!words || count == 0 || count > 16) return PIO_EINVAL;
+    for (size_t i = 0; i < count; ++i) {
+        if (words[i] > 0x3ffu) return PIO_EINVAL;
+    }
     if ((rc = pio_probe(d))) return rc;
     if ((rc = pio_stop(d))) return rc;
     if ((rc = pio_write(d, 4, 1))) return rc;

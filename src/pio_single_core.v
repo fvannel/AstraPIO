@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 `default_nettype none
-// ABI v4: one context, 16 program words, two-byte TX and RX queues.
+// ABI v5: one context, 16 native ten-bit words, two-byte TX and RX queues.
 // Preserve the v3 4-clock instruction cadence: fetch, execute, idle, idle.
 module pio_single_core (
     input wire clk, rst_n,
@@ -24,24 +24,24 @@ module pio_single_core (
     reg running, fault, irq_pending, event_flag, rx_irq_mask, host_error;
     reg [1:0] phase;
     reg fetched_valid;
-    reg [15:0] instruction;
+    reg [9:0] instruction;
     (* async_reg = "true" *) reg [12:0] input_meta, input_sync;
     assign sampled_inputs = input_sync;
     assign claimed_pins = output_mask;
     wire memory_busy;
-    wire [15:0] program_q;
+    wire [9:0] program_q;
     wire program_page = address[7:4] == 4'h4;
-    wire legal_program_write = !running && !memory_busy &&
+    wire legal_program_write = !running && !memory_busy && write_data[15:10] == 0 &&
         {1'b0,address[3:0]} <= program_length;
     wire restart = write_enable && address == 4 && write_data == 1;
     wire host_run = write_enable && address == 3 && write_data <= 1;
     wire control_this_slot = restart || host_run;
     wire slot = phase == 1 && fetched_valid && running && !control_this_slot;
     wire executing = slot && delay_slots == 0 && pc < program_length;
-    pio_program imem (
+    pio_program #(.WIDTH(10)) imem (
         .clk(clk), .rst_n(rst_n),
         .write_enable(write_enable && program_page && legal_program_write),
-        .write_address(address[3:0]), .write_data(write_data),
+        .write_address(address[3:0]), .write_data(write_data[9:0]),
         .read_address(running ? pc[3:0] : address[3:0]),
         .read_data(program_q), .busy(memory_busy)
     );
@@ -50,8 +50,8 @@ module pio_single_core (
     wire [7:0] tx_q, rx_q;
     wire [1:0] tx_level, rx_level;
     wire host_tx = write_enable && address == 8'h14;
-    wire pull = executing && instruction == 16'hf000 && !tx_empty && !restart;
-    wire push = executing && instruction == 16'hf100 && rx_ready && !restart;
+    wire pull = executing && instruction == 10'h307 && !tx_empty && !restart;
+    wire push = executing && instruction == 10'h308 && rx_ready && !restart;
     // There is no peer consumer: the SPI snapshot remains the RX head until
     // the transport commits a complete, valid read. Empty reads cannot pop.
     pio_fifo #(.WIDTH(8), .ADDR_BITS(1)) tx (
@@ -71,10 +71,10 @@ module pio_single_core (
         read_data = 0;
         if (program_page) begin
             if (!running && !memory_busy && {1'b0,address[3:0]} < program_length)
-                read_data = program_q;
+                read_data = {6'b0,program_q};
         end else case (address)
             8'h00: read_data = 16'h5049;
-            8'h01: read_data = 16'h0400;
+            8'h01: read_data = 16'h0500;
             8'h02: read_data = 1;
             8'h03: read_data = {15'b0,running};
             8'h05: read_data = {15'b0,irq_pending};
@@ -148,49 +148,53 @@ module pio_single_core (
                 else if (pc >= program_length) begin fault <= 1; running <= 0; end
                 else begin
                     pc <= pc + 1'b1;
-                    case (instruction[15:12])
-                        4'h0: begin end
-                        4'h1: accumulator <= instruction[7:0];
-                        4'h2: accumulator <= instruction[8] ? {3'b0,input_sync[12:8]} : input_sync[7:0];
-                        // OUT/OUT 1 retain seven-bit groups, now both owned by
-                        // the single context. DIR controls all eight uio pins.
-                        4'h3: if (instruction[8]) pins_out[13:7] <=
-                            (pins_out[13:7] & ~output_mask[13:7]) | (accumulator[6:0] & output_mask[13:7]);
-                            else pins_out[6:0] <= (pins_out[6:0] & ~output_mask[6:0]) | (accumulator[6:0] & output_mask[6:0]);
-                        4'h4: pins_oe <= (pins_oe & ~output_mask[7:0]) | (accumulator & output_mask[7:0]);
-                        4'h5, 4'h6: if (instruction[11:4] != 0) begin fault <= 1; running <= 0; end
-                            else if (instruction[15:12] == 5 || accumulator != 0) pc <= {1'b0,instruction[3:0]};
-                        4'h7: accumulator <= accumulator - 1'b1;
-                        4'h8: if (instruction[3:0] > 12) begin fault <= 1; running <= 0; end
-                            else if (input_sync[instruction[3:0]] != instruction[8]) pc <= pc;
-                        4'h9: delay_slots <= instruction[7:0];
-                        4'ha: accumulator <= accumulator ^ instruction[7:0];
-                        4'hb: accumulator <= {accumulator[6:0],1'b0};
-                        4'hc: accumulator <= {1'b0,accumulator[7:1]};
-                        4'hd: irq_pending <= 1;
-                        4'he: running <= 0;
-                        4'hf: casez (instruction)
-                            16'hf000: if (pull) accumulator <= tx_q; else pc <= pc;
-                            16'hf100: if (!push) pc <= pc;
-                            16'b1111_0010_????_000?, 16'b1111_0011_????_0000: begin
-                                if (instruction[7:4] > 13) begin fault <= 1; running <= 0; end
+                    // 00/01/10 carry an eight-bit literal. 11 selects a
+                    // four-bit operation plus four-bit pin/address/function.
+                    // Decode natively: no expanded 16-bit instruction register.
+                    case (instruction[9:8])
+                        2'b00: accumulator <= instruction[7:0];
+                        2'b01: delay_slots <= instruction[7:0];
+                        2'b10: accumulator <= accumulator ^ instruction[7:0];
+                        2'b11: case (instruction[7:4])
+                            4'h0: case (instruction[3:0])
+                                4'h0: begin end
+                                4'h1: pins_oe <= (pins_oe & ~output_mask[7:0]) | (accumulator & output_mask[7:0]);
+                                4'h2: accumulator <= accumulator - 1'b1;
+                                4'h3: accumulator <= {accumulator[6:0],1'b0};
+                                4'h4: accumulator <= {1'b0,accumulator[7:1]};
+                                4'h5: irq_pending <= 1;
+                                4'h6: running <= 0;
+                                4'h7: if (pull) accumulator <= tx_q; else pc <= pc;
+                                4'h8: if (!push) pc <= pc;
+                                4'h9: if (event_flag) event_flag <= 0; else pc <= pc;
+                                4'ha: event_flag <= 0;
+                                4'hb: accumulator <= input_sync[7:0];
+                                4'hc: accumulator <= {3'b0,input_sync[12:8]};
+                                4'hd: pins_out[6:0] <= (pins_out[6:0] & ~output_mask[6:0]) | (accumulator[6:0] & output_mask[6:0]);
+                                4'he: pins_out[13:7] <= (pins_out[13:7] & ~output_mask[13:7]) | (accumulator[6:0] & output_mask[13:7]);
+                                default: begin fault <= 1; running <= 0; end
+                            endcase
+                            4'h1, 4'h2, 4'h3: if (instruction[7:4] == 1 ||
+                                (instruction[7:4] == 2 && accumulator != 0) ||
+                                (instruction[7:4] == 3 && accumulator[7])) pc <= {1'b0,instruction[3:0]};
+                            4'h4, 4'h5: if (instruction[3:0] > 12) begin fault <= 1; running <= 0; end
+                                else if (input_sync[instruction[3:0]] != instruction[4]) pc <= pc;
+                            4'h6, 4'h7, 4'h8: begin
+                                if (instruction[3:0] > 13) begin fault <= 1; running <= 0; end
                                 else begin
                                     for (p = 0; p < 14; p = p + 1)
-                                        if (instruction[7:4] == p[3:0] && output_mask[p])
-                                            pins_out[p] <= instruction[8] ? accumulator[7] : instruction[0];
-                                    if (instruction[8]) accumulator <= {accumulator[6:0],1'b0};
+                                        if (instruction[3:0] == p[3:0] && output_mask[p])
+                                            pins_out[p] <= instruction[7] ? accumulator[7] : instruction[4];
+                                    if (instruction[7]) accumulator <= {accumulator[6:0],1'b0};
                                 end
                             end
-                            16'b1111_0100_0000_????: if (instruction[3:0] > 12) begin fault <= 1; running <= 0; end
+                            4'h9: if (instruction[3:0] > 12) begin fault <= 1; running <= 0; end
                                 else accumulator <= {accumulator[6:0],input_sync[instruction[3:0]]};
-                            16'b1111_0101_0000_????: counter <= instruction[3:0];
-                            16'b1111_0110_0000_????: begin
+                            4'ha: counter <= instruction[3:0];
+                            4'hb: begin
                                 counter <= counter - 1'b1;
                                 if (counter != 1) pc <= {1'b0,instruction[3:0]};
                             end
-                            16'hf710: if (event_flag) event_flag <= 0; else pc <= pc;
-                            16'hf720: event_flag <= 0;
-                            16'b1111_1000_0000_????: if (accumulator[7]) pc <= {1'b0,instruction[3:0]};
                             default: begin fault <= 1; running <= 0; end
                         endcase
                     endcase

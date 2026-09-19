@@ -28,9 +28,11 @@ def program_frames(words: list[int], *, abi: int = 3) -> list[bytes]:
     Callers must probe ABI (abi << 8) first and read back words/errors afterwards.
     Each transfer must honor the documented six-clock CS gap.
     """
-    if abi not in (3, 4):
-        raise ValueError("supported ABIs: 3, 4")
+    if abi not in (3, 4, 5):
+        raise ValueError("supported ABIs: 3, 4, 5")
     if not 1 <= len(words) <= 16:
         raise ValueError("shared program length must be 1..16")
-    return [write_frame(3, 0), write_frame(4, 1 if abi == 4 else 3), write_frame(0x0A, 0)] + [
+    if abi == 5 and any(not 0 <= word <= 0x3FF for word in words):
+        raise ValueError("ABI v5 program words must fit in ten bits")
+    return [write_frame(3, 0), write_frame(4, 1 if abi >= 4 else 3), write_frame(0x0A, 0)] + [
         write_frame(0x40 + index, word) for index, word in enumerate(words)]
