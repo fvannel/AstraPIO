@@ -18,7 +18,7 @@ module tt_um_fabien_pio (
 );
   // Isolated study selector. Zero is the unchanged ABI-5 behavior.
   // tools/micro_variant.py records and materializes each experiment separately.
-  localparam integer STUDY_FEATURES = 0;
+  localparam integer STUDY_FEATURES = 4;
 
   wire active = ena & rst_n;
   // Asynchronous assertion releases the pads immediately; internal reset

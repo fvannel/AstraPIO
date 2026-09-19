@@ -4,8 +4,8 @@ import random
 import os
 from cocotb.triggers import ClockCycles, FallingEdge, Timer, with_timeout
 from spi_host import setup
-from micro_variant import VARIANTS
-FEATURES = VARIANTS[os.environ.get('ASTRA_VARIANT', 'baseline')]
+from micro_variant import simulation_features
+FEATURES = simulation_features()
 ABI = 0x0600 if FEATURES else 0x0500
 
 

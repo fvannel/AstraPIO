@@ -6,9 +6,9 @@ from cocotb.triggers import ClockCycles, Timer, FallingEdge, with_timeout
 from cocotb.utils import get_sim_time
 from spi_host import setup
 from test_single import load_program
-from micro_variant import VARIANTS
+from micro_variant import simulation_features
 
-FEATURES = VARIANTS[os.environ.get("ASTRA_VARIANT", "baseline")]
+FEATURES = simulation_features()
 
 
 if FEATURES & 128:
@@ -236,6 +236,25 @@ if FEATURES & 4:
             assert await host.read(0x15) == 0x8000 | rx[index]
         assert await with_timeout(task, 200, 'us') == tx
         assert await host.read(6) == 0
+
+
+if FEATURES & 4:
+    @cocotb.test()
+    async def outmsb_all_pins_preserve_data_and_respect_ownership(dut):
+        host = await setup(dut)
+        for pin in range(14):
+            for owned in (False, True):
+                for value in (0x7F, 0x80):
+                    await host.write(4, 1)
+                    await host.write(0x10, (1 << pin) if owned else 0)
+                    await load_program(host, [0x0FF, 0x301, value, 0x3E0 | pin, 0x306])
+                    await host.write(3, 1)
+                    assert await host.read(0x12) == value
+                    expected = (1 << pin) if owned and value & 0x80 else 0
+                    assert await host.read(7) == expected
+                    assert int(dut.uio_out.value) == expected & 255
+                    assert int(dut.uo_out.value) >> 2 == expected >> 8
+                    assert await host.read(6) == 0
 
 
 if FEATURES & 2:

@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -9,6 +10,16 @@ from pathlib import Path
 VARIANTS = {"baseline": 0, "setdir": 1, "jin": 2, "outmsb": 4,
             "wrap": 8, "rx4": 16, "event": 32, "capture": 64,
             "burst": 128, "isa": 15}
+
+def simulation_features():
+    """Expected build contract, independent of DUT internals (also for GL)."""
+    if "ASTRA_VARIANT" in os.environ:
+        return VARIANTS[os.environ["ASTRA_VARIANT"]]
+    source = Path(__file__).resolve().parents[1] / "src/project.v"
+    matches = re.findall(r"localparam integer STUDY_FEATURES = (\d+);", source.read_text())
+    if len(matches) != 1:
+        raise ValueError("Missing or ambiguous experimental selector")
+    return int(matches[0])
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

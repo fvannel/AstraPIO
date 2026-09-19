@@ -1,7 +1,7 @@
 {
   "project_name": "AstraPIO",
   "stage": "rtl_implemented",
-  "architecture": "isolated_micro_adaptation_studies_not_qualified_for_release",
+  "architecture": "isolated_outmsb_micro_candidate_not_qualified_for_release",
   "target_shuttle": "ttihp26b",
   "target_tiles": "1x2",
   "pdk_version": "c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c",
@@ -9,13 +9,13 @@
   "platform_project_id": 5799,
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
-  "rtl_simulation_passed": false,
-  "distinct_pin_level_test_scenarios": 25,
-  "simulation_scope": "ABI v5 native ten-bit program and shared SPI: 25 local pin-level RTL scenarios pass, with original FIFO depths, sixteen instruction slots and timed payloads retained. All 80 reserved opcodes fault; upper six program-write bits reject truncation. Bounded cycle-by-cycle comparison against frozen v4 matches all 944 canonical operations in two accumulator states plus 100 random programs (1988 traces). Assembler checks all 944 encodings. C driver, FIFO, ten- and sixteen-bit latch-store tests pass. Older ABI-v4 and compact results below qualify only their named commits.",
-  "hardware_workflows_enabled": false,
+  "rtl_simulation_passed": true,
+  "distinct_pin_level_test_scenarios": 28,
+  "simulation_scope": "OUTMSB-only ABI 0600 candidate: 25 legacy pin tests plus exact capability/disabled-feature guards and 14-instruction full-duplex SPI pass together (27); separate all-14-output ownership and accumulator-preservation scenario also passes (28 distinct). This authorizes strict physical CI only, not a release. Default core differential test matches 1988 legacy traces. Host C ABI-6 support remains a release blocker.",
+  "hardware_workflows_enabled": true,
   "publication_authorized": true,
   "submission_authorized": false,
-  "submission_authorization_scope": "User authorizes autonomous timed-PIO development/tests/fixes and a new revision only if complete functional and strict physical validation succeeds. Existing submitted compact PR142 remains fallback.",
+  "submission_authorization_scope": "This study authorizes tests and qualitative evaluation only. No new Tiny Tapeout revision or merge is authorized by these flags.",
   "platform_revision_submitted": true,
   "platform_revision_submitted_at": "2026-09-18T21:02:37Z",
   "platform_revision_commit": "946648ff304834c2c34deca6c4b14031f191dd39",
@@ -29,8 +29,8 @@
   "shuttle_submission_oas_matches_official_artifact": true,
   "shuttle_submission_netlist_matches_official_artifact": true,
   "ready_for_submission": false,
-  "ready_for_submission_commit": "1b1c91183a4a9a5ea3516699845336175ffe6d96",
-  "new_revision_submission_blocker": "In-app browser rejects the platform's commit-entry dialog with Error: prompt() is not supported. Use Submit a previous commit in a browser supporting prompts. No new revision created.",
+  "ready_for_submission_commit": null,
+  "new_revision_submission_blocker": "Experimental OUTMSB candidate awaits unchanged full physical checks, explicit derated timing audit, routed functional tests, ABI-6 host support and a qualitative decision. No study revision has been submitted.",
   "magic_drc_nonblocking_authorized": false,
   "provisional_sram_precheck_nonblocking_authorized": false,
   "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. New timed experiment is on its own branch and cannot replace fallback until all gates pass. Main and Pages unchanged.",
@@ -42,7 +42,7 @@
   "routed_netlist_functional_simulation_passed": false,
   "sdf_simulation_performed": false,
   "release_blockers": [
-    "Qualified density-91 candidate awaits platform submission, central checks and shuttle acceptance. Browser prompt is unsupported; manual submission of exact 1b1c91183a4a9a5ea3516699845336175ffe6d96 is required. Existing compact PR142 remains accepted and unchanged."
+    "OUTMSB experiment is not released: full physical checks, explicit derated timing, routed new-feature tests and host ABI-6 support are required. Historical platform and baseline evidence below do not qualify the experimental source."
   ],
   "remaining_validation_limits": [
     "Board clock quality, voltage translation and LPC546xx transport/DMA remain to validate on hardware.",
