@@ -14,15 +14,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: baseline
-            setting: CTS_ROOT_BUFFER=sg13g2_buf_4
-            second: PL_TARGET_DENSITY_PCT=70
-          - name: root2-density97
-            setting: CTS_ROOT_BUFFER=sg13g2_buf_2
+          - name: clock4-density97
+            setting: CTS_CLK_BUFFERS=["sg13g2_buf_4", "sg13g2_buf_2"]
             second: PL_TARGET_DENSITY_PCT=97
-          - name: nf
-            setting: SYNTH_ABC_AREA_USE_NF=true
-            second: PL_TARGET_DENSITY_PCT=70
+          - name: root2-density98
+            setting: PL_TARGET_DENSITY_PCT=98
+            second: CTS_SINK_CLUSTERING_SIZE=25
+          - name: root2-density99
+            setting: PL_TARGET_DENSITY_PCT=99
+            second: CTS_SINK_CLUSTERING_SIZE=25
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -42,7 +42,7 @@ jobs:
           DIAGNOSTIC_SETTING: ${{ matrix.setting }}
           DIAGNOSTIC_SECOND: ${{ matrix.second }}
         run: |
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag single-cts --to OpenROAD.ResizerTimingPostCTS -c "$DIAGNOSTIC_SETTING" -c "$DIAGNOSTIC_SECOND" src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag single-cts --to OpenROAD.ResizerTimingPostCTS -c 'CTS_ROOT_BUFFER=sg13g2_buf_2' -c "$DIAGNOSTIC_SETTING" -c "$DIAGNOSTIC_SECOND" src/config_merged.json
       - uses: actions/upload-artifact@v7
         if: always()
         with:
