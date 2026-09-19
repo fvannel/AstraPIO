@@ -7,9 +7,9 @@ on:
       - tools/dense_timing_audit.tcl
   workflow_dispatch:
 env:
-  RUN_ID: '35440371045'
-  SOURCE_COMMIT: '83ef6b7d8e96dd90e14fa3d22ad8585309dd1a03'
-  NETLIST_SHA: '68601a53d42b98c47013c1ebe57f53303c69d4d89d95a011fd8e0ca608ac4357'
+  RUN_ID: '35442726541'
+  SOURCE_COMMIT: '1b1c91183a4a9a5ea3516699845336175ffe6d96'
+  NETLIST_SHA: '6d2dbfd333bb89544cf296e9ff408e8870b7151984e7962b098833fd15e3e948'
 permissions:
   contents: read
   actions: read
@@ -37,13 +37,13 @@ jobs:
       - uses: actions/download-artifact@v7
         with:
           name: GDS_logs
-          run-id: '35440371045'
+          run-id: '35442726541'
           github-token: ${{ github.token }}
           path: work/dense-audit/logs
       - uses: actions/download-artifact@v7
         with:
           name: tt_submission
-          run-id: '35440371045'
+          run-id: '35442726541'
           github-token: ${{ github.token }}
           path: work/dense-audit/submission
       - uses: actions/checkout@v6

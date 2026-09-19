@@ -183,6 +183,20 @@ Minimum pulse-width checks pass at all three corners. No criterion changed.
 The density-91 candidate must pass this same supplemental gate if its official
 flow succeeds. No hardware or margin change has been made in response yet.
 
+The density-91 official workflow `35442726541` also succeeds completely on
+2026-09-19. Its exact source remains `1b1c91183a4a9a5ea3516699845336175ffe6d96`,
+with the unchanged PDK/tool metadata verified. All ten prechecks and all 25
+routed-netlist functional scenarios pass with no failure, error or skip.
+Final Magic/KLayout DRC, LVS, XOR and antenna counts are zero. Standard-cell
+area is 56,841.5 um2 (94.5637% utilization). The standard-flow worst hold slack
+is 0.028291 ns and is not a substitute for the supplemental audit.
+Its netlist SHA256 is
+`6d2dbfd333bb89544cf296e9ff408e8870b7151984e7962b098833fd15e3e948`.
+The same three-corner audit is now frozen to these density-91 artifacts; only
+the input run/commit/netlist identifiers change. No checking criterion changes,
+and the failed density-90 audit remains part of the permanent evidence.
+No ABI-v5 revision has been submitted.
+
 An isolated flip-flop alternative was also measured, without changing the
 sixteen ten-bit words, instruction cadence or host contract. All 25 local
 pin-level scenarios, 1,988 differential traces and both storage-width unit
