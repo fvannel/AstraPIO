@@ -20,8 +20,9 @@
   "platform_revision_submitted_at": "2026-09-18T21:02:37Z",
   "platform_revision_commit": "946648ff304834c2c34deca6c4b14031f191dd39",
   "platform_revision_pr_url": "https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/142",
-  "platform_revision_pr_state": "OPEN",
-  "platform_revision_merged": false,
+  "platform_revision_pr_state": "MERGED",
+  "platform_revision_merged": true,
+  "platform_revision_merged_at": "2026-09-19T06:26:37Z",
   "shuttle_submission_checks_status": "success_for_existing_compact_revision_only",
   "shuttle_submission_checks_run_url": "https://github.com/TinyTapeout/tinytapeout-ihp-26b/actions/runs/35394701844",
   "shuttle_submission_precheck_passed": true,
@@ -32,7 +33,7 @@
   "provisional_sram_precheck_nonblocking_authorized": false,
   "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. New timed experiment is on its own branch and cannot replace fallback until all gates pass. Main and Pages unchanged.",
   "physical_validation_passed": false,
-  "physical_validation_scope": "Single-context variant passes global placement with AREA 0 and AREA 2; AREA 2 selected for full official build. Pre-CTS cell area 51657.8 square micrometers, utilization 85.9398%; placer's pin-density-adjusted utilization 93.741%. No routing, clock-tree/timing, DRC/LVS or official precheck result yet for this RTL. No result inherited from fallback.",
+  "physical_validation_scope": "Single-context global placement passes, but official run 35435903552 FAILS post-clock-tree detailed placement DPL-0036. 20 reported unplaced entries, 57059.25 square micrometers of cells after 360 signal-repair buffers and 153 clock buffers. No routed GDS or precheck. Controlled diagnostic variations underway; all checks remain blocking.",
   "placement_routing_completed": false,
   "lvs_passed": false,
   "official_precheck_passed": false,
@@ -40,7 +41,7 @@
   "sdf_simulation_performed": false,
   "release_blockers": [
     "Single-context variant requires new placement, routing, timing, DRC/LVS, official precheck and routed functional simulation. The second context is removed with user approval; 16 program words, depth-two queues and all three 24-bit timed payload registers are retained.",
-    "No routed timing/DRC/LVS/precheck proof exists for the extension. Board clock, voltage translation and LPC546xx transport remain unqualified. Existing compact PR142 central checks passed and it remains the unmerged fallback."
+    "No routed timing/DRC/LVS/precheck proof exists for the extension. Board clock, voltage translation and LPC546xx transport remain unqualified. Existing compact PR142 central checks passed and it was merged on 2026-09-19T06:26:37Z; preserve it until a new candidate qualifies."
   ],
   "single_context_validation": {
     "branch": "feature/single-pio-timed",
@@ -54,6 +55,9 @@
     "pre_cts_cell_utilization_percent": 85.9398,
     "effective_placement_utilization_percent": 93.741,
     "available_core_area_um2": 60109.258,
+    "first_official_run_url": "https://github.com/fvannel/AstraPIO/actions/runs/35435903552",
+    "first_official_result": "failure_DPL-0036_post_clock_tree_legalization",
+    "post_cts_cell_area_um2": 57059.25,
     "new_revision_submitted": false,
     "safety_overrides_added": false
   },
