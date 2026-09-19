@@ -62,5 +62,7 @@ jobs:
             test/units/results.xml
             test/program/results.xml
             test/program/results16.xml
+            test/program/results_ff10.xml
+            test/program/results_ff16.xml
             test/differential/results.xml
             test/output/*

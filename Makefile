@@ -15,6 +15,10 @@ unit:
 	$(PYTHON) tools/check_results.py test/program/results.xml
 	$(MAKE) -C test/program PROGRAM_WIDTH=16 COCOTB_RESULTS_FILE=results16.xml
 	$(PYTHON) tools/check_results.py test/program/results16.xml
+	$(MAKE) -C test/program PROGRAM_FF=1 COCOTB_RESULTS_FILE=results_ff10.xml
+	$(PYTHON) tools/check_results.py test/program/results_ff10.xml
+	$(MAKE) -C test/program PROGRAM_WIDTH=16 PROGRAM_FF=1 COCOTB_RESULTS_FILE=results_ff16.xml
+	$(PYTHON) tools/check_results.py test/program/results_ff16.xml
 
 host-test:
 	mkdir -p work/host-test

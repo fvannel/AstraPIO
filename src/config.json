@@ -1,5 +1,5 @@
 {
-  "//": "AstraPIO ABI v5, native ten-bit program and shared SPI. Density 91 passes post-CTS and initial global routing; full routing/signoff still required. Exact shuttle PDK and official base SDC; no check/timing exceptions.",
+  "//": "Isolated ABI-v5 flip-flop program payload experiment, not physically measured or qualified. Density 91 is retained for comparison. Exact shuttle PDK and official base SDC; no check/timing exceptions.",
   "PL_TARGET_DENSITY_PCT": 91,
   "PL_MAX_DISPLACEMENT_Y": 350,
   "CLOCK_PERIOD": 20,

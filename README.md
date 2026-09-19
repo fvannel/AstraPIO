@@ -1,5 +1,12 @@
 # AstraPIO — dense single-context timed-I/O experiment
 
+**Isolated storage experiment:** `codex/dense-pio10-flop-memory` replaces only
+the 16 × 10-bit program payload with synchronous flip-flops. The original
+request/busy timing and all capacities are retained. The latch implementation
+remains the default for the frozen reference. All 25 local pin-level scenarios
+and 1,988 bounded differential traces pass; this is not a formal proof.
+Physical benefit has not yet been measured.
+
 General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 
 **This branch implements ABI 0x0500: one PIO context plus a timed-I/O engine.
@@ -16,11 +23,12 @@ See [native ten-bit architecture and migration](docs/dense-pio-v5.md).
 **Current result:** all 25 pin-level scenarios pass locally in RTL, and 1,988
 bounded differential traces match the earlier core cycle by cycle. Encoding-only
 commit `8180b33` passes post-hold legalization (96.04% cell utilization); the
-shared-SPI variant `57c202f` also passes at 94.49%. No routed or submitted v5 implementation
+shared-SPI variant `57c202f` also passes at 94.49%. Those two physical results
+use latch storage and do not qualify this flip-flop variant. No routed or submitted v5 implementation
 exists yet. Earlier v4 failures remain in the [historical ledger](docs/single-pio-validation.md).
 
 - One context with one instruction slot every four clocks; both output groups remain accessible.
-- One 16 × 10-bit latch program store (20 bytes), using unchanged IHP standard cells; no SRAM macro.
+- One 16 × 10-bit program store (20 bytes), using flip-flops in this isolated experiment and unchanged IHP standard cells; no SRAM macro.
 - Two-byte TX and RX queues (4 bytes total), plus 24-bit timed RX, active TX and staging registers.
 - Same SPI pins and 32-bit framing; new ABI, capacity and firmware APIs.
 - Exact shuttle PDK c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c; all checks blocking.

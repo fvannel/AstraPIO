@@ -1,7 +1,7 @@
 {
   "project_name": "AstraPIO",
   "stage": "rtl_implemented",
-  "architecture": "single_context_native_ten_bit_program_plus_timed_io_abi5_experiment",
+  "architecture": "single_context_native_ten_bit_flip_flop_program_plus_timed_io_abi5_experiment",
   "target_shuttle": "ttihp26b",
   "target_tiles": "1x2",
   "pdk_version": "c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c",
@@ -33,7 +33,7 @@
   "provisional_sram_precheck_nonblocking_authorized": false,
   "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. New timed experiment is on its own branch and cannot replace fallback until all gates pass. Main and Pages unchanged.",
   "physical_validation_passed": false,
-  "physical_validation_scope": "Encoding-only commit 8180b33 passes post-hold legalization at 57728.8 um2 (96.0397 percent) in 35438406460. Encoding plus shared SPI commit 57c202f also passes, at 56798.0 um2 (94.4912 percent), 328 hold buffers, in 35438677326. Full official flow is the next gate; no routed qualification, precheck or derated audit is yet claimed. Same pinned PDK and all timing/check constraints retained.",
+  "physical_validation_scope": "This isolated branch changes the program payload from latches to synchronous flip-flops. No physical measurement exists for it yet. Earlier latch-store measurements below qualify only the named historical commits. PDK, capacity, timing constraints and all blocking checks are unchanged.",
   "placement_routing_completed": false,
   "lvs_passed": false,
   "official_precheck_passed": false,
@@ -44,7 +44,10 @@
     "No routed timing/DRC/LVS/precheck proof exists for the extension. Board clock, voltage translation and LPC546xx transport remain unqualified. Existing compact PR142 central checks passed and it was merged on 2026-09-19T06:26:37Z; preserve it until a new candidate qualifies."
   ],
   "dense_validation": {
-    "branch": "codex/dense-pio10",
+    "branch": "codex/dense-pio10-flop-memory",
+    "program_storage": "synchronous_flip_flops",
+    "storage_unit_widths_tested_in_both_modes": [10, 16],
+    "physical_measurement_pending": true,
     "abi": "0x0500",
     "program_words": 16,
     "instruction_bits": 10,

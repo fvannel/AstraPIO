@@ -38,7 +38,7 @@ module pio_single_core (
     wire control_this_slot = restart || host_run;
     wire slot = phase == 1 && fetched_valid && running && !control_this_slot;
     wire executing = slot && delay_slots == 0 && pc < program_length;
-    pio_program #(.WIDTH(10)) imem (
+    pio_program #(.WIDTH(10), .FLIP_FLOPS(1)) imem (
         .clk(clk), .rst_n(rst_n),
         .write_enable(write_enable && program_page && legal_program_write),
         .write_address(address[3:0]), .write_data(write_data[9:0]),
