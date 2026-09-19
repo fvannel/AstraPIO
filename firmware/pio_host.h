@@ -18,9 +18,11 @@ int pio_read(pio_device *, uint8_t address, uint16_t *value);
 int pio_write(pio_device *, uint8_t address, uint16_t value);
 int pio_probe(pio_device *);
 int pio_stop(pio_device *); /* Stops the context; GPIO levels are retained. */
-/* ABI v5 only; ten-bit program words in uint16_t containers (upper bits zero).
+/* ABI v5 or exact OUTMSB-only ABI v6 (capability register 1A == 4).
+ * Ten-bit program words in uint16_t containers (upper bits zero).
  * All context arguments must be zero; run mask must be 0 or 1.
- * Reload resets the sole context and its queues. Probe rejects v3/v4 hardware. */
+ * Reload resets the sole context and its queues. Probe rejects v3/v4 and
+ * unknown ABI-6 variants. OUTMSB code is rejected on ABI-5 before stopping it. */
 int pio_load(pio_device *, const uint16_t *words, size_t count);
 int pio_set_entry(pio_device *, unsigned context, unsigned pc);
 int pio_set_mask(pio_device *, unsigned context, uint16_t global_mask);

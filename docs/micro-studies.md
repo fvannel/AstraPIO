@@ -51,5 +51,14 @@ committed before launching the unchanged official GDS workflow. This is a
 physical-verification candidate, not approval or submission. The same 25
 legacy pin tests, exact ABI/capability guards, a 14-instruction full-duplex SPI
 program and all-14-pin ownership/data-preservation checks pass at RTL. The
-gate-level workflow runs these new tests too. C host ABI-6 support is still a
-release blocker.
+gate-level workflow runs these new tests too.
+
+The shared-prototype OUTMSB variant failed post-CTS timing-repair legalization
+in matrix 35470009386. Redundant full run 35470584546 was cancelled, not passed.
+The final bounded attempt removes ALL unrelated prototype machinery: SPI and
+timed RTL are byte-identical to the qualified baseline; only the core's ABI,
+capability read at 1A and fourteen OUTMSB encodings differ. Registers 1B/1C and
+the other experimental controls are not implemented in this minimal candidate.
+All 28 RTL tests pass together. C probe accepts only baseline ABI5 or ABI6 with
+capability exactly 4; unsupported extensions fail before stopping the device.
+Transport framing remains unchanged. Host tests pass with sanitizers.

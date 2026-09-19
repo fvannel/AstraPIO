@@ -13,24 +13,39 @@ int pio_write(pio_device *d, uint8_t address, uint16_t value) {
     if (!d || !d->transfer) return PIO_EINVAL;
     return d->transfer(d->ctx, tx, rx) ? PIO_EIO : PIO_OK;
 }
-int pio_probe(pio_device *d) {
+static int probe_features(pio_device *d, uint16_t *features) {
     uint16_t value;
     int rc = pio_read(d, 0, &value);
     if (rc) return rc;
     if (value != 0x5049) return PIO_EABI;
     rc = pio_read(d, 1, &value);
-    return rc ? rc : value == 0x0500 ? PIO_OK : PIO_EABI;
+    if (rc) return rc;
+    *features = 0;
+    if (value == 0x0500) return PIO_OK;
+    if (value != 0x0600) return PIO_EABI;
+    if ((rc = pio_read(d, 0x1a, &value))) return rc;
+    /* This driver supports only the exact OUTMSB-only ABI-6 contract. */
+    if (value != 4) return PIO_EABI;
+    *features = value;
+    return PIO_OK;
 }
+int pio_probe(pio_device *d) { uint16_t features; return probe_features(d, &features); }
 int pio_stop(pio_device *d) { return pio_write(d, 3, 0); }
 
 int pio_load(pio_device *d, const uint16_t *words, size_t count) {
-    uint16_t value;
+    uint16_t value, features;
+    int needs_outmsb = 0;
     int rc;
     if (!words || count == 0 || count > 16) return PIO_EINVAL;
     for (size_t i = 0; i < count; ++i) {
         if (words[i] > 0x3ffu) return PIO_EINVAL;
+        if (words[i] >= 0x3c0u) {
+            if (words[i] < 0x3e0u || words[i] > 0x3edu) return PIO_EINVAL;
+            needs_outmsb = 1;
+        }
     }
-    if ((rc = pio_probe(d))) return rc;
+    if ((rc = probe_features(d, &features))) return rc;
+    if (needs_outmsb && !(features & 4)) return PIO_EABI;
     if ((rc = pio_stop(d))) return rc;
     if ((rc = pio_write(d, 4, 1))) return rc;
     if ((rc = pio_write(d, 0x0a, 0))) return rc;

@@ -56,5 +56,18 @@ int main(void) {
     assert(pio_read(0,0,code)==PIO_EINVAL);
     assert(pio_load(&d,code,17)==PIO_EINVAL);
     assert(pio_set_entry(&d,2,0)==PIO_EINVAL);
+    /* Explicit ABI-6 OUTMSB contract; unknown variants fail closed. */
+    m.fail=0; m.reg[1]=0x0600; m.reg[0x1a]=4;
+    assert(pio_probe(&d)==PIO_OK);
+    uint16_t duplex_code[3]={0x0a5,0x3e0,0x306};
+    assert(pio_load(&d,duplex_code,3)==PIO_OK);
+    m.reg[0x1a]=5; assert(pio_probe(&d)==PIO_EABI);
+    m.reg[0x1a]=0; assert(pio_probe(&d)==PIO_EABI);
+    m.reg[0x1a]=4; m.reg[1]=0x0700; assert(pio_probe(&d)==PIO_EABI);
+    m.reg[1]=0x0500;
+    m.reg[3]=1; assert(pio_load(&d,duplex_code,3)==PIO_EABI && m.reg[3]==1);
+    m.reg[1]=0x0600;
+    uint16_t bad_extension[1]={0x3ee};
+    assert(pio_load(&d,bad_extension,1)==PIO_EINVAL && m.reg[3]==1);
     return 0;
 }

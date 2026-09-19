@@ -16,8 +16,8 @@ module tt_um_fabien_pio (
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
-  // Isolated study selector. Zero is the unchanged ABI-5 behavior.
-  // tools/micro_variant.py records and materializes each experiment separately.
+  // Fixed contract for this minimal candidate, not a configurable study build.
+  // The independent configurable prototypes remain on codex/pio-micro-studies.
   localparam integer STUDY_FEATURES = 4;
 
   wire active = ena & rst_n;
@@ -43,7 +43,7 @@ module tt_um_fabien_pio (
   wire [13:0] pins_out;
   wire [7:0] pins_oe;
 
-  pio_spi #(.STUDY(STUDY_FEATURES)) spi (
+  pio_spi spi (
       .clk(clk), .rst_n(core_reset_n),
       .sck(ui_in[0]), .mosi(ui_in[1]), .cs_n(ui_in[2]), .miso(miso),
       .address(address), .write_data(write_data), .write_enable(write_enable),
@@ -51,7 +51,7 @@ module tt_um_fabien_pio (
       .read_commit(read_commit), .read_busy(read_busy)
   );
 
-  pio_single_core #(.STUDY(STUDY_FEATURES)) core (
+  pio_single_core core (
       .clk(clk), .rst_n(core_reset_n), .address(address),
       .write_data(write_data), .write_enable(write_enable && !timed_page), .read_data(core_read_data),
       .read_commit(read_commit && !timed_page), .read_valid(core_read_valid),
@@ -62,7 +62,7 @@ module tt_um_fabien_pio (
 
   wire _unused_read_lock = read_busy; // No peer RX consumer in the single core.
 
-  pio_timed #(.STUDY(STUDY_FEATURES)) timed_io (
+  pio_timed timed_io (
       .clk(clk), .rst_n(core_reset_n), .inputs(sampled_inputs), .occupied(claimed_pins),
       .address(address[3:0]), .write_data(write_data), .write_enable(write_enable && timed_page),
       .read_data(timed_read_data), .claim(reserved_pins), .serial_out(timed_out), .irq(timed_irq)

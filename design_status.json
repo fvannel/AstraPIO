@@ -11,7 +11,7 @@
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,
   "distinct_pin_level_test_scenarios": 28,
-  "simulation_scope": "OUTMSB-only ABI 0600 candidate: 25 legacy pin tests plus exact capability/disabled-feature guards and 14-instruction full-duplex SPI pass together (27); separate all-14-output ownership and accumulator-preservation scenario also passes (28 distinct). This authorizes strict physical CI only, not a release. Default core differential test matches 1988 legacy traces. Host C ABI-6 support remains a release blocker.",
+  "simulation_scope": "Minimal OUTMSB-only ABI 0600 candidate: all 28 pin scenarios pass together, including 25 legacy tests, exact capability/disabled-feature guards, 14-instruction full-duplex SPI and all-14-output ownership/data preservation. C host tests with sanitizers and assembler/framing tests pass. This authorizes strict physical CI only, not a release. Prior 1988-trace differential result qualifies the independent study baseline, not this new source.",
   "hardware_workflows_enabled": true,
   "publication_authorized": true,
   "submission_authorized": false,
@@ -30,7 +30,7 @@
   "shuttle_submission_netlist_matches_official_artifact": true,
   "ready_for_submission": false,
   "ready_for_submission_commit": null,
-  "new_revision_submission_blocker": "Experimental OUTMSB candidate awaits unchanged full physical checks, explicit derated timing audit, routed functional tests, ABI-6 host support and a qualitative decision. No study revision has been submitted.",
+  "new_revision_submission_blocker": "Minimal OUTMSB candidate awaits unchanged full physical checks, explicit derated timing audit, routed functional tests and a qualitative decision. No study revision has been submitted.",
   "magic_drc_nonblocking_authorized": false,
   "provisional_sram_precheck_nonblocking_authorized": false,
   "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. New timed experiment is on its own branch and cannot replace fallback until all gates pass. Main and Pages unchanged.",
@@ -42,7 +42,7 @@
   "routed_netlist_functional_simulation_passed": false,
   "sdf_simulation_performed": false,
   "release_blockers": [
-    "OUTMSB experiment is not released: full physical checks, explicit derated timing, routed new-feature tests and host ABI-6 support are required. Historical platform and baseline evidence below do not qualify the experimental source."
+    "OUTMSB experiment is not released: full physical checks, explicit derated timing and routed new-feature tests are required. Historical platform and baseline evidence below do not qualify the experimental source."
   ],
   "remaining_validation_limits": [
     "Board clock quality, voltage translation and LPC546xx transport/DMA remain to validate on hardware.",

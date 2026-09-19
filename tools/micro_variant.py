@@ -27,6 +27,8 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     source = root / "src/project.v"
+    if "Fixed contract for this minimal candidate" in source.read_text():
+        raise SystemExit("Fixed candidate: use codex/pio-micro-studies for independent variants")
     value = VARIANTS[args.variant]
     updated, count = re.subn(r"localparam integer STUDY_FEATURES = \d+;",
                             f"localparam integer STUDY_FEATURES = {value};", source.read_text())

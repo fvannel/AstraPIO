@@ -4,8 +4,14 @@ import unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 from pioasm import assemble
+from host_protocol import program_frames
 
 class MicroAssemblerTest(unittest.TestCase):
+    def test_abi6_upload_frames_retain_ten_bit_integrity(self):
+        self.assertEqual(program_frames([0x3E0], abi=6)[-1], bytes.fromhex('024003e0'))
+        for value in (-1, 0x400, 0xFFFF):
+            with self.assertRaises(ValueError): program_frames([value], abi=6)
+
     def test_new_operations_are_explicit_abi6_only(self):
         self.assertEqual(assemble('SETDIR 7,1\nOUTMSB 13\nJIN 0', abi=6),
                          [0x3CF, 0x3ED, 0x3D0])
