@@ -103,10 +103,12 @@ That simulation has no SDF and is not a routed timing qualification. Local
 checks additionally pass 52 Python tests, both sanitizer-enabled C test
 binaries, the FIFO unit bench and both latch-store widths.
 
-The official full-flow candidate is frozen at `8819b92660527db107a6639ac1193156d1c1f6d8`
+The first official full-flow trial is frozen at `8819b92660527db107a6639ac1193156d1c1f6d8`
 in [run 35438884203](https://github.com/fvannel/AstraPIO/actions/runs/35438884203).
-Its result, official precheck and explicit derated audit must all be reviewed
-before promoting the candidate. No check is bypassed.
+It was cancelled, not passed or classified as a signoff failure, after the
+density-90 comparison advanced further. Its retained log records 2,148 global
+overflow units at 11:35 UTC during post-global timing repair. It never reached
+final routing or signoff. No new revision was submitted from this trial.
 
 The density-97 official trial develops routing congestion. A separate
 [density-90 diagnostic](https://github.com/fvannel/AstraPIO/actions/runs/35440167471)
@@ -116,6 +118,39 @@ zero overflow on every routing layer. It changes only the initial placement
 density target, not the boundary, timing margins, PDK or checkers. The target
 is now 90 for a new full-flow trial. This diagnostic stops before post-route
 timing repair, detailed routing and signoff; it cannot qualify a submission.
+
+The new complete official trial is
+[run 35440371045](https://github.com/fvannel/AstraPIO/actions/runs/35440371045),
+frozen at `83ef6b7d8e96dd90e14fa3d22ad8585309dd1a03`. Its RTL is identical
+to `8819b92`; only the placement density changed in the physical config.
+[Independent functional CI](https://github.com/fvannel/AstraPIO/actions/runs/35440371601)
+passes on that exact commit. Downloaded XML evidence confirms 25 pin-level
+scenarios plus the differential, FIFO and two program-width benches with no
+failure, error or skip. Complete routing, official precheck and explicit derated
+timing must still pass before any promotion.
+
+Density 90 reaches detailed routing; Metal2 spacing markers persist through
+multiple repair passes (reduced to one at an intermediate observation). They
+are blocking until repaired; the run is not qualified.
+To test whether the conflict depends on local placement, the adjacent target
+91 was measured separately in
+[run 35442518158](https://github.com/fvannel/AstraPIO/actions/runs/35442518158):
+56,743.5 square micrometers, 94.4007% utilization, 327 hold buffers and zero
+initial global overflow. No capacity, RTL, boundary or checking rule changes.
+Its complete official trial is
+[run 35442726541](https://github.com/fvannel/AstraPIO/actions/runs/35442726541)
+on `1b1c91183a4a9a5ea3516699845336175ffe6d96`. Both complete trials are still
+unqualified until their results and the supplemental audit are reviewed.
+
+An isolated flip-flop alternative was also measured, without changing the
+sixteen ten-bit words, instruction cadence or host contract. All 25 local
+pin-level scenarios, 1,988 differential traces and both storage-width unit
+benches pass. However, [physical run 35443893374](https://github.com/fvannel/AstraPIO/actions/runs/35443893374)
+at `3d296921ff7011b5353b11f66549c1629fe1b35f` fails post-CTS legalization
+(`DPL-0036`) before hold repair. Pre-CTS area rises from 49,424.3 to 55,335.6
+um2 at the same placement target 91. Post-CTS area is already 57,654.4 um2
+(95.916%). This alternative is rejected and remains isolated on
+`codex/dense-pio10-flop-memory`; it is not merged into this latch candidate.
 
 The repository has no separate agent glossary/ADR configuration; existing
 `compact-v3.md`, `single-pio-v4.md` and their validation ledgers remain the
