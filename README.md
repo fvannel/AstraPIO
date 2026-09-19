@@ -17,7 +17,8 @@ See [native ten-bit architecture and migration](docs/dense-pio-v5.md).
 traces pass. Commit `83ef6b7` completes the official physical build with zero
 Magic/KLayout DRC, LVS, XOR and antenna violations, at 94.5939% standard-cell
 utilization. All ten official prechecks and all 25 routed-netlist functional
-scenarios pass. The explicit derated timing audit is still pending; no ABI-v5 revision has
+scenarios pass. The explicit derated timing audit finds a -6.421 ps fast-corner
+hold violation, so this candidate remains blocked; no ABI-v5 revision has
 been submitted. See the [validation ledger](docs/dense-pio-v5.md). Earlier v4
 failures remain in the [historical ledger](docs/single-pio-validation.md).
 

@@ -41,7 +41,7 @@
   "sdf_simulation_performed": false,
   "release_blockers": [
     "Native ten-bit instruction encoding and shared-SPI experiment need new physical qualification. The user rejected reducing program depth: sixteen instruction slots, depth-two queues and all three 24-bit timed payload registers must remain. Native format changes require ABI v5, not silent compatibility with v4 binaries.",
-    "Routed DRC/LVS/XOR/antenna, 25 functional tests and official precheck pass for density-90 commit 83ef6b7. The explicit derated timing audit still needs to pass. Board clock, voltage translation and LPC546xx transport remain unqualified. Existing compact PR142 central checks passed and it was merged on 2026-09-19T06:26:37Z; preserve it until a new candidate qualifies."
+    "Density-90 commit 83ef6b7 passes the official workflow but fails explicit derated fast-corner hold at -0.006421 ns between shared SPI payload bits 11 and 12. No submission permitted. Density-91 remains in progress and needs the same audit. Board clock, voltage translation and LPC546xx transport remain unqualified. Existing compact PR142 remains the accepted fallback."
   ],
   "dense_validation": {
     "branch": "codex/dense-pio10",
@@ -92,6 +92,10 @@
     "final_standard_cell_area_um2": 56859.7,
     "final_standard_cell_utilization_percent": 94.5939,
     "supplemental_derated_audit_passed": false,
+    "supplemental_derated_audit_run_url": "https://github.com/fvannel/AstraPIO/actions/runs/35445183116",
+    "supplemental_derated_audit_result": "failure_fast_corner_hold",
+    "supplemental_derated_fast_hold_slack_ns": -0.006421,
+    "supplemental_derated_failing_path": "_4672_ to _4673_: shared SPI payload bits 11 to 12",
     "density_91_diagnostic_run_url": "https://github.com/fvannel/AstraPIO/actions/runs/35442518158",
     "density_91_initial_global_routing_passed": true,
     "density_91_initial_global_overflow": 0,

@@ -157,6 +157,23 @@ exact successful run, source commit, netlist hash, PDK, final SDC and nominal
 SPEF, and checks all three cell corners with explicit early 0.95 / late 1.05.
 No new revision is submitted before that additional gate passes.
 
+The first [explicit derated audit 35445183116](https://github.com/fvannel/AstraPIO/actions/runs/35445183116)
+fails at the fast corner: hold slack -0.006421 ns from `_4672_` to `_4673_`,
+the shared SPI payload bits 11 to 12 (netlist aliases `core.write_data`).
+The launch/capture clock arrival times are 0.465576 / 0.553815 ns;
+data arrives at 0.756809 ns but is required at 0.763231 ns, including the
+unchanged 0.25 ns uncertainty and clock reconvergence correction. This is
+not a parser artifact or a zero-slack latch-borrowing entry. The candidate
+cannot be submitted. The unchanged nominal audit from the official flow
+does not include the intended non-unity derating because of the documented
+integer division in LibreLane 3.0.5's generic SDC.
+
+The audit now collects all three corners before returning failure if any
+original check fails. A repeat on the identical frozen artifacts will confirm
+the failure and provide the other corners; it does not relax any criterion.
+The density-91 candidate must pass this same supplemental gate if its official
+flow succeeds. No hardware or margin change has been made in response yet.
+
 An isolated flip-flop alternative was also measured, without changing the
 sixteen ten-bit words, instruction cadence or host contract. All 25 local
 pin-level scenarios, 1,988 differential traces and both storage-width unit
