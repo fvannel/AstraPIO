@@ -24,15 +24,15 @@ jobs:
         run: |
           pip install -r tt/requirements.txt librelane==3.0.5
           python tt/tt_tool.py --ihp --create-user-config
-      - name: Compare density 90 through global routing with all checks retained
+      - name: Compare density 91 through global routing with all checks retained
         run: |
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag dense-density90 --to OpenROAD.GlobalRouting -c 'PL_TARGET_DENSITY_PCT=90' src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag dense-density91 --to OpenROAD.GlobalRouting -c 'PL_TARGET_DENSITY_PCT=91' src/config_merged.json
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: dense-density90-global-route
+          name: dense-density91-global-route
           path: |
-            src/runs/dense-density90
+            src/runs/dense-density91
             src/config_merged.json
             src/user_config.json
           if-no-files-found: error
