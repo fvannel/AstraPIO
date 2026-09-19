@@ -72,7 +72,7 @@ timing, complete-read consumption and aborted-frame semantics are unchanged.
 24 pin-level tests pass after sharing, including every 0..31-bit abort length,
 all twenty input-clock phase offsets at the specified minimum SPI timing,
 arbitrary read MOSI and alternating read/write transactions. Timing constraints
-are not relaxed. The physical benefit is still to be measured separately.
+are not relaxed. The separate physical comparison is recorded below.
 
 `make differential` compares the new core with a frozen v4 reference from
 `9ac64fb` at public bus/pin ports: all 944 operations in two accumulator states,
@@ -93,6 +93,20 @@ The suite now has 25 pin-level scenarios, including rejection of all 80
 reserved ten-bit codes and each of the upper six transport bits. The SPI phase
 sweep explicitly aligns simulation time to each phase 0..19 before transfer.
 No confidence is inferred for new RTL from historical fallback checks.
+
+Commit `8819b92660527db107a6639ac1193156d1c1f6d8` passes the independent
+[25-scenario RTL CI](https://github.com/fvannel/AstraPIO/actions/runs/35438879956).
+The same 25 scenarios also pass locally against the exact post-hold placed
+netlist from run 35438677326, SHA256
+`0d0d72e7bc181b3aa7547b4ff1ab663b9d25c939343e08e59f64b60913430f0c`.
+That simulation has no SDF and is not a routed timing qualification. Local
+checks additionally pass 52 Python tests, both sanitizer-enabled C test
+binaries, the FIFO unit bench and both latch-store widths.
+
+The official full-flow candidate is frozen at `8819b92660527db107a6639ac1193156d1c1f6d8`
+in [run 35438884203](https://github.com/fvannel/AstraPIO/actions/runs/35438884203).
+Its result, official precheck and explicit derated audit must all be reviewed
+before promoting the candidate. No check is bypassed.
 
 The repository has no separate agent glossary/ADR configuration; existing
 `compact-v3.md`, `single-pio-v4.md` and their validation ledgers remain the
