@@ -16,6 +16,9 @@ module tt_um_fabien_pio (
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
+  // Isolated study selector. Zero is the unchanged ABI-5 behavior.
+  // tools/micro_variant.py records and materializes each experiment separately.
+  localparam integer STUDY_FEATURES = 0;
 
   wire active = ena & rst_n;
   // Asynchronous assertion releases the pads immediately; internal reset
@@ -48,7 +51,7 @@ module tt_um_fabien_pio (
       .read_commit(read_commit), .read_busy(read_busy)
   );
 
-  pio_single_core core (
+  pio_single_core #(.STUDY(STUDY_FEATURES)) core (
       .clk(clk), .rst_n(core_reset_n), .address(address),
       .write_data(write_data), .write_enable(write_enable && !timed_page), .read_data(core_read_data),
       .read_commit(read_commit && !timed_page), .read_valid(core_read_valid),

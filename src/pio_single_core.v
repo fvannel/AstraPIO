@@ -2,7 +2,7 @@
 `default_nettype none
 // ABI v5: one context, 16 native ten-bit words, two-byte TX and RX queues.
 // Preserve the v3 4-clock instruction cadence: fetch, execute, idle, idle.
-module pio_single_core (
+module pio_single_core #(parameter integer STUDY = 0) (
     input wire clk, rst_n,
     input wire [7:0] address,
     input wire [15:0] write_data,
@@ -20,6 +20,9 @@ module pio_single_core (
     reg [4:0] program_length, pc;
     reg [7:0] accumulator, delay_slots;
     reg [3:0] counter;
+    reg [3:0] jump_pin;
+    reg wrap_enabled;
+    reg [3:0] wrap_bottom;
     reg [13:0] output_mask;
     reg running, fault, irq_pending, event_flag, rx_irq_mask, host_error;
     reg [1:0] phase;
@@ -74,7 +77,7 @@ module pio_single_core (
                 read_data = {6'b0,program_q};
         end else case (address)
             8'h00: read_data = 16'h5049;
-            8'h01: read_data = 16'h0500;
+            8'h01: read_data = STUDY == 0 ? 16'h0500 : 16'h0600;
             8'h02: read_data = 1;
             8'h03: read_data = {15'b0,running};
             8'h05: read_data = {15'b0,irq_pending};
@@ -94,6 +97,9 @@ module pio_single_core (
             8'h15: read_data = {~rx_empty,7'b0,rx_q};
             8'h16: read_data = {rx_level,tx_level,8'b0,rx_full,rx_empty,tx_full,tx_empty};
             8'h17: read_data = {12'b0,counter};
+            8'h18: if (STUDY & 2) read_data = {12'b0,jump_pin};
+            8'h19: if (STUDY & 8) read_data = {11'b0,wrap_enabled,wrap_bottom};
+            8'h1a: read_data = STUDY;
             default: read_data = 0;
         endcase
     end
@@ -102,6 +108,8 @@ module pio_single_core (
         if (!rst_n) begin
             program_length <= 0; pc <= 0; accumulator <= 0; delay_slots <= 0;
             counter <= 0; output_mask <= 0; running <= 0; fault <= 0;
+            jump_pin <= 0;
+            wrap_enabled <= 0; wrap_bottom <= 0;
             irq_pending <= 0; event_flag <= 0; rx_irq_mask <= 0; host_error <= 0;
             phase <= 0; fetched_valid <= 0; pins_out <= 0; pins_oe <= 0;
             input_meta <= 0; input_sync <= 0;
@@ -127,6 +135,7 @@ module pio_single_core (
                     8'h06: if (write_data == 1) host_error <= 0; else host_error <= 1;
                     8'h0a: if (!running && !memory_busy && write_data == 0) begin
                         program_length <= 0; pc <= 0;
+                        wrap_enabled <= 0; wrap_bottom <= 0;
                     end else host_error <= 1;
                     8'h0c: if (write_data <= 1) rx_irq_mask <= write_data[0]; else host_error <= 1;
                     8'h0d: if (write_data <= 1) event_flag <= event_flag | write_data[0]; else host_error <= 1;
@@ -140,6 +149,11 @@ module pio_single_core (
                     8'h12: if (!running) accumulator <= write_data[7:0]; else host_error <= 1;
                     8'h14: begin end
                     8'h17: if (!running) counter <= write_data[3:0]; else host_error <= 1;
+                    8'h18: if ((STUDY & 2) && !running && write_data <= 12) jump_pin <= write_data[3:0]; else host_error <= 1;
+                    8'h19: if ((STUDY & 8) && !running && write_data[15:5] == 0 &&
+                                (!write_data[4] || {1'b0,write_data[3:0]} < program_length)) begin
+                        wrap_enabled <= write_data[4]; wrap_bottom <= write_data[3:0];
+                    end else host_error <= 1;
                     default: host_error <= 1;
                 endcase
             end
@@ -147,7 +161,9 @@ module pio_single_core (
                 if (delay_slots != 0) delay_slots <= delay_slots - 1'b1;
                 else if (pc >= program_length) begin fault <= 1; running <= 0; end
                 else begin
-                    pc <= pc + 1'b1;
+                    if ((STUDY & 8) && wrap_enabled && pc + 5'd1 == program_length)
+                        pc <= {1'b0,wrap_bottom};
+                    else pc <= pc + 1'b1;
                     // 00/01/10 carry an eight-bit literal. 11 selects a
                     // four-bit operation plus four-bit pin/address/function.
                     // Decode natively: no expanded 16-bit instruction register.
@@ -194,6 +210,19 @@ module pio_single_core (
                             4'hb: begin
                                 counter <= counter - 1'b1;
                                 if (counter != 1) pc <= {1'b0,instruction[3:0]};
+                            end
+                            4'hc: begin
+                                if (!(STUDY & 1)) begin fault <= 1; running <= 0; end
+                                else if (output_mask[instruction[3:1]])
+                                    pins_oe[instruction[3:1]] <= instruction[0];
+                            end
+                            4'hd: begin
+                                if (!(STUDY & 2)) begin fault <= 1; running <= 0; end
+                                else if (input_sync[jump_pin]) pc <= {1'b0,instruction[3:0]};
+                            end
+                            4'he: begin
+                                if (!(STUDY & 4) || instruction[3:0] > 13) begin fault <= 1; running <= 0; end
+                                else if (output_mask[instruction[3:0]]) pins_out[instruction[3:0]] <= accumulator[7];
                             end
                             default: begin fault <= 1; running <= 0; end
                         endcase

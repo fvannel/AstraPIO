@@ -1,0 +1,67 @@
+name: Micro-adaptation physical studies (not a release)
+on:
+  push:
+    branches: [codex/pio-micro-studies]
+    paths: [src/**, test/micro/**, tools/micro_variant.py, .github/workflows/micro-studies.yaml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        variant: [baseline, setdir, jin, outmsb, wrap, isa]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: TinyTapeout/tt-support-tools
+          ref: 01d5d2814fa9dd61e9d211e0b235a4a592a9316a
+          path: tt
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install frozen flow and pin-level test runtime
+        run: |
+          pip install -r tt/requirements.txt -r test/requirements.txt librelane==3.0.5
+          wget -q https://github.com/TinyTapeout/iverilog/releases/download/v13.0/iverilog_13.0-1_amd64.deb
+          echo '888bca6b06289ea8b55368d43db38dc88932938319ab40d45a763ce5114e8505  iverilog_13.0-1_amd64.deb' | sha256sum -c -
+          sudo apt-get update -qq
+          sudo apt-get install -y ./iverilog_13.0-1_amd64.deb
+      - uses: actions/checkout@v6
+        with:
+          repository: IHP-GmbH/IHP-Open-PDK
+          ref: c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c
+          path: work/ci-pdk
+          sparse-checkout: ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog
+          persist-credentials: false
+      - name: Materialize one variant and verify all existing pin scenarios
+        env:
+          PDK_ROOT: ${{ github.workspace }}/work/ci-pdk
+        run: |
+          python tools/micro_variant.py '${{ matrix.variant }}'
+          make -C test/micro VARIANT='${{ matrix.variant }}' COCOTB_TEST_MODULES=test_single,test_dense,test_timed,test_micro
+          python tools/check_results.py work/micro/'${{ matrix.variant }}'/results.xml
+      - name: Keep the same PDK, tiles, clock, density and signoff settings
+        run: |
+          python tt/tt_tool.py --ihp --create-user-config
+          git diff -- src > work/micro/'${{ matrix.variant }}'/materialized-source.diff
+      - name: Measure through global routing, without producing submission artifacts
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag micro --to OpenROAD.GlobalRouting src/config_merged.json
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: micro-${{ matrix.variant }}
+          path: |
+            work/micro/${{ matrix.variant }}/*.json
+            work/micro/${{ matrix.variant }}/*.xml
+            work/micro/${{ matrix.variant }}/*.diff
+            src/runs/micro
+            src/config_merged.json
+            src/user_config.json
+          if-no-files-found: error

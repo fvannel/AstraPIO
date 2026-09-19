@@ -5,12 +5,13 @@ from cocotb.triggers import ClockCycles, Timer
 from cocotb.utils import get_sim_time
 from spi_host import setup
 from host_protocol import write_frame, read_frame, read_value
+from test_single import ABI, FEATURES
 
 
 @cocotb.test()
 async def native_ten_bit_program_keeps_all_sixteen_slots(dut):
     host = await setup(dut)
-    assert await host.read(1) == 0x0500
+    assert await host.read(1) == ABI
     assert await host.read(0x0F) == 0x1002
     # Independent literal encoding, not produced by the assembler under test.
     words = [0x055, 0x308] + [0x300]*13 + [0x306]  # LDI, PUSH, NOPs, HALT
@@ -32,12 +33,17 @@ async def native_ten_bit_program_keeps_all_sixteen_slots(dut):
 
 
 @cocotb.test()
-async def all_eighty_reserved_ten_bit_encodings_fault(dut):
+async def every_remaining_reserved_ten_bit_encoding_faults(dut):
     host = await setup(dut)
     invalid = [0x30F] + list(range(0x3C0,0x400))
     invalid += [base+pin for base in (0x340,0x350,0x390) for pin in (13,14,15)]
     invalid += [base+pin for base in (0x360,0x370,0x380) for pin in (14,15)]
     assert len(set(invalid)) == 80
+    new_legal = set()
+    if FEATURES & 1: new_legal.update(range(0x3C0,0x3D0))
+    if FEATURES & 2: new_legal.update(range(0x3D0,0x3E0))
+    if FEATURES & 4: new_legal.update(range(0x3E0,0x3EE))
+    invalid = [word for word in invalid if word not in new_legal]
     for word in invalid:
         await host.write(4,1)
         await host.write(0x0A,0)
@@ -70,7 +76,7 @@ async def spi_read_write_turnaround_ignores_read_payload_and_aborted_frames(dut)
         await host.transfer(write_frame(0x67, 0xC35A), bits=bits)
         assert await host.read(0x67) == 0x5AC3, ('write abort',bits)
         await host.transfer(read_frame(0x67), bits=bits)
-        assert await host.read(1) == 0x0500, ('read abort',bits)
+        assert await host.read(1) == ABI, ('read abort',bits)
     # Unknown commands must not alias writes or leave part of a read active.
     for command in (0,1,4,0x82,0x83,0xFE,0xFF):
         await host.transfer(bytes((command,0x67,0xC3,0x5A)))

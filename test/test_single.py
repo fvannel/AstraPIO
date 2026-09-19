@@ -1,8 +1,12 @@
 """Single-context ABI v5 acceptance, using only SPI/GPIO pins."""
 import cocotb
 import random
+import os
 from cocotb.triggers import ClockCycles, FallingEdge, Timer, with_timeout
 from spi_host import setup
+from micro_variant import VARIANTS
+FEATURES = VARIANTS[os.environ.get('ASTRA_VARIANT', 'baseline')]
+ABI = 0x0600 if FEATURES else 0x0500
 
 
 async def load_program(host, words):
@@ -16,7 +20,7 @@ async def load_program(host, words):
 async def single_context_identity_capacity_and_no_alias(dut):
     host = await setup(dut)
     assert await host.read(0) == 0x5049
-    assert await host.read(1) == 0x0500
+    assert await host.read(1) == ABI
     assert await host.read(2) == 1
     assert await host.read(0x0F) == 0x1002
     words = [i for i in range(15)] + [0x306]
@@ -150,6 +154,10 @@ async def bounds_removed_instructions_and_restart(dut):
     host = await setup(dut)
     for words in ([0x300]*16,[0x30F],[0x3C0],[0x3FF],[0x34D],[0x39D],
                   [0x36E],[0x38F],[0x3D0],[0x3E0]):
+        if len(words) == 1 and ((words[0] == 0x3C0 and FEATURES & 1) or
+                               (words[0] == 0x3D0 and FEATURES & 2) or
+                               (words[0] == 0x3E0 and FEATURES & 4)):
+            continue  # These are explicitly tested as new legal operations.
         await host.write(4, 1)
         await load_program(host, words)
         await host.write(3, 1)
