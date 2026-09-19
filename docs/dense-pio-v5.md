@@ -1,7 +1,8 @@
 # AstraPIO ABI v5 — native ten-bit instruction experiment
 
-Branch `codex/dense-pio10`. Not physically qualified or submitted. The merged
-compact fallback `946648ff` / shuttle PR 142 remains unchanged.
+Branch `codex/dense-pio10`. Exact density-91 candidate `1b1c911` passes the
+official flow and supplemental derated audit; it is not yet submitted. The
+merged compact fallback `946648ff` / shuttle PR 142 remains unchanged.
 
 The user approved reducing storage representation and sharing SPI shift storage,
 not reducing capabilities. Keep one general PIO, sixteen instruction slots,
@@ -196,6 +197,31 @@ The same three-corner audit is now frozen to these density-91 artifacts; only
 the input run/commit/netlist identifiers change. No checking criterion changes,
 and the failed density-90 audit remains part of the permanent evidence.
 No ABI-v5 revision has been submitted.
+
+The density-91 [supplemental audit 35448283122](https://github.com/fvannel/AstraPIO/actions/runs/35448283122)
+passes all three corners. Netlist, SPEF, final SDC, source and PDK provenance
+match the downloaded official build. Hold slack is +0.004872 ns fast,
++0.140331 ns typical and +0.375741 ns slow. Minimum pulse-width margins are
+9.860577 / 9.779032 / 9.652014 ns respectively. All requested setup/hold,
+recovery/removal, clock-gating, electrical and unconstrained-path checks pass.
+Zero-slack latch-borrowing entries are not negative timing violations.
+The smallest hold margin remains narrow; the evidence applies to the 20 ns
+clock, declared IO constraints, three cell corners and nominal extracted RC.
+It is not a board-level, silicon or SDF-simulation qualification.
+
+**Selected candidate:** `1b1c91183a4a9a5ea3516699845336175ffe6d96`.
+No RTL, capacity, PDK, checking rule or timing margin was relaxed. The passing
+placement target 91 was the sole physical-config difference from target 90.
+The failed target-90 evidence is retained, not reclassified as passing.
+
+**Submission handoff:** on 2026-09-19 the authenticated project 5799 still
+shows only merged PR 142 and closed PR 122. The "Submit a previous commit"
+menu is available, but both accessibility and coordinate selection fail to
+open its input dialog in the in-app browser. The captured page console says
+`Error: prompt() is not supported.` No submission request or new revision was
+created by these actions. Use a browser supporting JavaScript prompts, select
+that menu and enter the full selected-candidate SHA above. Do not use the
+default latest-main action. Central PR checks and acceptance remain to verify.
 
 An isolated flip-flop alternative was also measured, without changing the
 sixteen ten-bit words, instruction cadence or host contract. All 25 local

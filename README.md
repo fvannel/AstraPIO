@@ -3,7 +3,8 @@
 General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 
 **This branch implements ABI 0x0500: one PIO context plus a timed-I/O engine.
-It is NOT physically qualified and has NOT replaced the submitted chip.**
+Exact candidate `1b1c911` passes physical qualification and is ready to submit.
+It has NOT yet replaced the submitted chip.**
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.
@@ -14,12 +15,16 @@ experiment exceeded the two-tile area; this reduction is explicitly approved.
 See [native ten-bit architecture and migration](docs/dense-pio-v5.md).
 
 **Current result:** all 25 pin-level RTL scenarios and 1,988 bounded differential
-traces pass. Commit `83ef6b7` completes the official physical build with zero
-Magic/KLayout DRC, LVS, XOR and antenna violations, at 94.5939% standard-cell
+traces pass. Commit `1b1c911` completes the official physical build with zero
+Magic/KLayout DRC, LVS, XOR and antenna violations, at 94.5637% standard-cell
 utilization. All ten official prechecks and all 25 routed-netlist functional
-scenarios pass. The explicit derated timing audit finds a -6.421 ps fast-corner
-hold violation, so this candidate remains blocked; no ABI-v5 revision has
-been submitted. See the [validation ledger](docs/dense-pio-v5.md). Earlier v4
+scenarios pass. The explicit 0.95/1.05 derated timing audit also passes all
+three cell corners, with minimum hold slack +4.872 ps. The earlier density-90
+candidate remains rejected. No ABI-v5 revision has been submitted: the in-app
+browser cannot open the platform's commit-entry prompt. Use "Submit a previous
+commit" in a browser supporting that dialog, with exact commit
+`1b1c91183a4a9a5ea3516699845336175ffe6d96`.
+See the [validation ledger](docs/dense-pio-v5.md). Earlier v4
 failures remain in the [historical ledger](docs/single-pio-validation.md).
 
 - One context with one instruction slot every four clocks; both output groups remain accessible.
