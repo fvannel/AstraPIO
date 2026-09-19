@@ -2,6 +2,7 @@
 import cocotb
 import random
 from cocotb.triggers import ClockCycles, Timer
+from cocotb.utils import get_sim_time
 from spi_host import setup
 from host_protocol import write_frame, read_frame, read_value
 
@@ -17,15 +18,34 @@ async def native_ten_bit_program_keeps_all_sixteen_slots(dut):
         await host.write(0x40+index, word)
     assert await host.read(0x0A) == 16
     assert [await host.read(0x40+i) for i in range(16)] == words
-    await host.write(0x40, 0x0455)  # Upper six bits must never silently truncate.
-    assert await host.read(0x40) == 0x055
-    assert await host.read(6) == 1
-    await host.write(6, 1)
+    for bit in range(10,16):  # Upper six bits must never silently truncate.
+        await host.write(0x40, 0x055 | (1 << bit))
+        assert await host.read(0x40) == 0x055
+        assert await host.read(0x0A) == 16
+        assert await host.read(6) == 1
+        await host.write(6, 1)
     await host.write(3, 1)
     await ClockCycles(dut.clk, 100)
     assert await host.read(3) == 0
     assert await host.read(0x15) == 0x8055
     assert await host.read(6) == 0
+
+
+@cocotb.test()
+async def all_eighty_reserved_ten_bit_encodings_fault(dut):
+    host = await setup(dut)
+    invalid = [0x30F] + list(range(0x3C0,0x400))
+    invalid += [base+pin for base in (0x340,0x350,0x390) for pin in (13,14,15)]
+    invalid += [base+pin for base in (0x360,0x370,0x380) for pin in (14,15)]
+    assert len(set(invalid)) == 80
+    for word in invalid:
+        await host.write(4,1)
+        await host.write(0x0A,0)
+        await host.write(0x40,word)
+        assert await host.read(0x40) == word
+        await host.write(3,1)
+        assert await host.read(6) == 0x100, hex(word)
+        assert await host.read(3) == 0
 
 
 @cocotb.test()
@@ -35,7 +55,10 @@ async def spi_read_write_turnaround_ignores_read_payload_and_aborted_frames(dut)
     # At the minimum supported SCK/CS timing, exercise every clock phase and
     # both shift-register roles. Arbitrary MOSI read payload must be ignored.
     for phase in range(20):
-        await Timer(phase+1, unit='ns')
+        offset = (phase - int(get_sim_time(unit='ns')) % 20) % 20
+        if offset:
+            await Timer(offset, unit='ns')
+        assert int(get_sim_time(unit='ns')) % 20 == phase
         for value in (0, 0xFFFF, 0x5555, 0xAAAA, rng.randrange(65536)):
             await host.write(0x67, value)
             dummy = rng.randrange(65536)

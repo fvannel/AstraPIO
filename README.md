@@ -13,10 +13,10 @@ programmable context remains available concurrently. The earlier two-context
 experiment exceeded the two-tile area; this reduction is explicitly approved.
 See [native ten-bit architecture and migration](docs/dense-pio-v5.md).
 
-**Current result:** all 24 pin-level scenarios pass locally in RTL, and 1,988
+**Current result:** all 25 pin-level scenarios pass locally in RTL, and 1,988
 bounded differential traces match the earlier core cycle by cycle. Encoding-only
 commit `8180b33` passes post-hold legalization (96.04% cell utilization); the
-shared-SPI variant is being measured. No routed or submitted v5 implementation
+shared-SPI variant `57c202f` also passes at 94.49%. No routed or submitted v5 implementation
 exists yet. Earlier v4 failures remain in the [historical ledger](docs/single-pio-validation.md).
 
 - One context with one instruction slot every four clocks; both output groups remain accessible.

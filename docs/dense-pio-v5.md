@@ -81,6 +81,19 @@ Long delays are observed for 1,100 cycles. The reference is test-only and never
 part of the ASIC source list. This is bounded dynamic equivalence, not formal
 proof. The latch-store unit bench also passes at both widths (10 and legacy 16).
 
+The shared-SPI comparison `57c202f` passes
+[run 35438677326](https://github.com/fvannel/AstraPIO/actions/runs/35438677326):
+56,798.0 square micrometers after 328 hold buffers, 94.4912% utilization,
+930.8 square micrometers less than the encoding-only trial. These are legalized
+post-CTS figures, not final routed results. The same three placement/clock
+settings are now selected in the official build config for the full-flow test.
+Synthesis contains exactly 160 program latches and sixteen row clock gates.
+
+The suite now has 25 pin-level scenarios, including rejection of all 80
+reserved ten-bit codes and each of the upper six transport bits. The SPI phase
+sweep explicitly aligns simulation time to each phase 0..19 before transfer.
+No confidence is inferred for new RTL from historical fallback checks.
+
 The repository has no separate agent glossary/ADR configuration; existing
 `compact-v3.md`, `single-pio-v4.md` and their validation ledgers remain the
 domain references. No issue-tracker setup, label or external issue is created.

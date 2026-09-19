@@ -1,6 +1,7 @@
 {
-  "//": "AstraPIO single-context ABI v4 + timed I/O. Standard-cell latch memory; exact shuttle PDK; no DRC or timing exceptions. Uses official base SDC.",
-  "PL_TARGET_DENSITY_PCT": 70,
+  "//": "AstraPIO ABI v5, native ten-bit program and shared SPI. Proven post-CTS placement settings; full routing/signoff still required. Exact shuttle PDK and official base SDC; no check/timing exceptions.",
+  "PL_TARGET_DENSITY_PCT": 97,
+  "PL_MAX_DISPLACEMENT_Y": 350,
   "CLOCK_PERIOD": 20,
   "ERROR_ON_MAGIC_DRC": true,
   "SYNTH_ABC_AREA_USE_NF": false,
@@ -18,7 +19,7 @@
     "nom_typ_1p20V_25C"
   ],
   "CTS_SINK_CLUSTERING_SIZE": 25,
-  "CTS_ROOT_BUFFER": "sg13g2_buf_4",
+  "CTS_ROOT_BUFFER": "sg13g2_buf_2",
   "MAX_FANOUT_CONSTRAINT": 8,
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.02,
   "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.02,
