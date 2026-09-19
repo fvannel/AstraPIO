@@ -5,7 +5,8 @@ the 16 × 10-bit program payload with synchronous flip-flops. The original
 request/busy timing and all capacities are retained. The latch implementation
 remains the default for the frozen reference. All 25 local pin-level scenarios
 and 1,988 bounded differential traces pass; this is not a formal proof.
-Physical benefit has not yet been measured.
+The physical comparison failed after clock-tree synthesis and used more area;
+this variant is rejected, not a release candidate.
 
 General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 

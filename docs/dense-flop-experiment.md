@@ -25,3 +25,14 @@ blocking checks unchanged. No signoff waiver is permitted.
 This is bounded simulation, not formal equivalence. No routed-netlist, signoff,
 explicit derated timing or official precheck result exists for this variant yet.
 The accepted compact revision remains unchanged.
+
+## Physical result: rejected
+
+[Run 35443893374](https://github.com/fvannel/AstraPIO/actions/runs/35443893374)
+at `3d296921ff7011b5353b11f66549c1629fe1b35f` fails post-CTS detailed
+placement (`DPL-0036`, six reported entries). It never reaches hold repair or
+global routing. Cell area before CTS is 55,335.6 um2, versus 49,424.3 um2 for
+the same-density latch trial. After CTS it occupies 57,654.4 um2 (95.916% of
+the core), before any hold-repair additions. Fewer clock gates did not offset
+the additional payload and feedback-selection logic. Do not promote this
+variant or use its failed diagnostic as a qualification.
