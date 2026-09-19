@@ -1,0 +1,18 @@
+# ABI 6, OUTMSB capability bit 4; mask 0x000B.
+# MOSI=uio0, SCK=uio1, MISO=uio2, CS_n=uio3.
+# Mode 0, MSB first, one CS transaction per byte, 400 ns intrabyte period
+# at 50 MHz. RX FIFO may stall BETWEEN transactions, never mid-byte.
+LDI 11
+SET 3,1
+DIR
+byte: PULL
+LDX 8
+SET 3,0
+bit: OUTMSB 0
+SET 1,1
+INBIT 2
+SET 1,0
+DJNZ bit
+SET 3,1
+PUSH
+JMP byte

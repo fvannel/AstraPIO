@@ -35,8 +35,8 @@ def _dense_word(word: int) -> int:
 
 
 def assemble(source: str, *, abi: int = 3) -> list[int]:
-    if abi not in (3, 4, 5):
-        raise ValueError("supported ABIs: 3 (two contexts), 4 (single), 5 (single/dense)")
+    if abi not in (3, 4, 5, 6):
+        raise ValueError("supported ABIs: 3, 4, 5, 6 (experimental capabilities required)")
     labels = {}
     instructions = []
     for number, line in enumerate(source.splitlines(), 1):
@@ -56,8 +56,19 @@ def assemble(source: str, *, abi: int = 3) -> list[int]:
     words = []
     for number, tokens in instructions:
         op, args = tokens[0].upper(), tokens[1:]
+        native = False
         try:
-            if op in EXT_SIMPLE and not args:
+            if abi == 6 and op == 'SETDIR' and len(args) == 2:
+                pin, level = map(lambda value: int(value, 0), args)
+                if not 0 <= pin <= 7 or level not in (0, 1):
+                    raise ValueError('SETDIR expects pin 0..7 and level 0/1')
+                word, native = 0x3C0 | (pin << 1) | level, True
+            elif abi == 6 and op in ('OUTMSB', 'JIN') and len(args) == 1:
+                value = labels[args[0]] if op == 'JIN' and args[0] in labels else int(args[0], 0)
+                if not 0 <= value <= (13 if op == 'OUTMSB' else 15):
+                    raise ValueError('pin/address out of range')
+                word, native = (0x3E0 if op == 'OUTMSB' else 0x3D0) | value, True
+            elif op in EXT_SIMPLE and not args:
                 if abi >= 4 and op in ("SIGNAL", "RECV"):
                     raise ValueError(f"{op} requires two contexts (ABI v3 only)")
                 word = EXT_SIMPLE[op]
@@ -96,14 +107,14 @@ def assemble(source: str, *, abi: int = 3) -> list[int]:
                 raise ValueError(f"unknown instruction or wrong argument count: {' '.join(tokens)}")
         except ValueError as exc:
             raise ValueError(f"line {number}: {exc}") from exc
-        words.append(_dense_word(word) if abi == 5 else word)
+        words.append(_dense_word(word) if abi >= 5 and not native else word)
     return words
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
-    parser.add_argument("--abi", type=int, choices=(3, 4, 5), default=3,
+    parser.add_argument("--abi", type=int, choices=(3, 4, 5, 6), default=3,
                         help="default 3 retains legacy programs; use 5 for the dense single-context chip")
     args = parser.parse_args()
     try:

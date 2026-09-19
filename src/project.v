@@ -43,7 +43,7 @@ module tt_um_fabien_pio (
   wire [13:0] pins_out;
   wire [7:0] pins_oe;
 
-  pio_spi spi (
+  pio_spi #(.STUDY(STUDY_FEATURES)) spi (
       .clk(clk), .rst_n(core_reset_n),
       .sck(ui_in[0]), .mosi(ui_in[1]), .cs_n(ui_in[2]), .miso(miso),
       .address(address), .write_data(write_data), .write_enable(write_enable),
@@ -62,7 +62,7 @@ module tt_um_fabien_pio (
 
   wire _unused_read_lock = read_busy; // No peer RX consumer in the single core.
 
-  pio_timed timed_io (
+  pio_timed #(.STUDY(STUDY_FEATURES)) timed_io (
       .clk(clk), .rst_n(core_reset_n), .inputs(sampled_inputs), .occupied(claimed_pins),
       .address(address[3:0]), .write_data(write_data), .write_enable(write_enable && timed_page),
       .read_data(timed_read_data), .claim(reserved_pins), .serial_out(timed_out), .irq(timed_irq)

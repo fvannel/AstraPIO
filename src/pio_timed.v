@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 `default_nettype none
 // Shared configurable pulse-I/O engine. All state uses the main ASIC clock.
-module pio_timed (
+module pio_timed #(parameter integer STUDY = 0) (
     input wire clk, rst_n,
     input wire [12:0] inputs,
     input wire [13:0] occupied,
@@ -14,6 +14,9 @@ module pio_timed (
     output wire irq
 );
     reg enabled, output_enabled, replace_prefix;
+    reg [1:0] timed_mode;
+    wire event_mode = (STUDY & 32) && timed_mode == 1;
+    wire capture_mode = (STUDY & 64) && timed_mode == 2;
     reg [3:0] input_pin, output_pin;
     reg [15:0] idle_limit, idle_left;
     reg [5:0] sample_delay, launch_delay, high_zero, high_one;
@@ -27,12 +30,16 @@ module pio_timed (
     reg [5:0] pulse_left;
     reg rx_valid, host_error, overrun, timing_error;
     wire din = inputs[input_pin];
-    wire rise = din && !input_previous;
+    wire trigger_input = capture_mode ? inputs[output_pin] : din;
+    wire rise = trigger_input && !input_previous;
     wire [13:0] output_mask = 14'b1 << output_pin;
     assign claim = enabled && output_enabled ? output_mask : 14'b0;
     assign serial_out = enabled && output_enabled && dout;
     assign irq = rx_valid || host_error || overrun || timing_error;
     wire control_ok = (write_data & 16'hf8f8) == 0 &&
+        !(event_mode && write_data[2]) &&
+        !(capture_mode && (write_data[2:1] != 0 || (write_data[0] && output_pin > 12))) &&
+        !(event_mode && write_data[0] && high_zero >= idle_limit) &&
         !(write_data[0] && write_data[1] && |(occupied & output_mask)) &&
         !(enabled && write_data[0] && write_data[2:1] != {replace_prefix,output_enabled}) &&
         !(write_data[0] && write_data[1] && write_data[2] && !active_valid && !pending && !write_data[9]) &&
@@ -58,6 +65,7 @@ module pio_timed (
             4'ha: read_data = rx_valid ? {8'b0,received[23:16]} : 16'b0;
             4'hb: read_data = {8'b0,timing_error,overrun,host_error,active_valid,pending,rx_valid,in_frame,armed};
             4'hc: read_data = 16'h0118;
+            4'hd: if (STUDY & (32|64)) read_data = {14'b0,timed_mode};
             default: read_data = 0;
         endcase
     end
@@ -65,6 +73,7 @@ module pio_timed (
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             enabled <= 0; output_enabled <= 0; replace_prefix <= 0;
+            timed_mode <= 0;
             input_pin <= 0; output_pin <= 8; idle_limit <= 15000;
             sample_delay <= 25; launch_delay <= 32; high_zero <= 16; high_one <= 32;
             prefix_length <= 24; remaining <= 0; idle_left <= 0;
@@ -74,8 +83,8 @@ module pio_timed (
             pending <= 0; active_valid <= 0; sampled_bit <= 0; dout <= 0; pulse_left <= 0;
             shadow_initialized <= 0;
         end else begin
-            input_previous <= din;
-            if (dout) begin
+            input_previous <= trigger_input;
+            if (dout && (!event_mode || rise)) begin
                 if (pulse_left == 1) begin dout <= 0; pulse_left <= 0; end
                 else pulse_left <= pulse_left - 1'b1;
             end
@@ -104,6 +113,11 @@ module pio_timed (
                     4'h6: if (!enabled && write_data >= 1 && write_data <= 24) prefix_length <= write_data[4:0]; else host_error <= 1;
                     4'h7: if (pending) host_error <= 1; else shadow_initialized[0] <= 1;
                     4'h8: if (pending || write_data[15:8] != 0) host_error <= 1; else shadow_initialized[1] <= 1;
+                    4'hd: if (!enabled && (STUDY & (32|64)) &&
+                                (write_data == 0 || (write_data == 1 && (STUDY & 32)) ||
+                                 (write_data == 2 && (STUDY & 64))))
+                        timed_mode <= write_data[1:0];
+                        else host_error <= 1;
                     default: host_error <= 1;
                 endcase
             end
@@ -111,6 +125,32 @@ module pio_timed (
                 idle_left <= idle_limit; armed <= 0; in_frame <= 0;
                 sampling <= 0; remaining <= 0; capture_frame <= 0;
                 dout <= 0; pulse_left <= 0;
+            end else if (capture_mode) begin
+                // Input-only fixed-period sampler. Output selector is the
+                // separate trigger input; the existing 24-bit RX bank is reused.
+                if (rise && !in_frame) begin
+                    in_frame <= 1; sampling <= 1; age <= 1;
+                    remaining <= prefix_length; capture_frame <= !rx_valid;
+                    if (rx_valid) overrun <= 1;
+                end else if (in_frame) begin
+                    if (rise) timing_error <= 1;
+                    if (sample_now) begin
+                        remaining <= remaining - 1'b1;
+                        if (remaining == 1) begin
+                            if (capture_frame) rx_valid <= 1;
+                            in_frame <= 0; sampling <= 0;
+                        end
+                    end
+                    age <= age == launch_delay ? 6'd1 : age + 1'b1;
+                end
+            end else if (event_mode) begin
+                // Same 16-bit countdown and 6-bit pulse counter, edge timebase.
+                if (rise) begin
+                    if (idle_left <= 1) begin
+                        idle_left <= idle_limit;
+                        dout <= 1; pulse_left <= high_zero;
+                    end else idle_left <= idle_left - 1'b1;
+                end
             end else begin
                 // Countdown avoids a 16-bit magnitude comparator and a second
                 // subtractor. Zero holds the qualification until a new edge.
@@ -162,7 +202,7 @@ module pio_timed (
     // Payload only becomes observable after every configured bit was captured.
     // No reset needed; clear at the first sample, not on every idle clock.
     always @(posedge clk) begin
-        if (rst_n && sample_now && !rise && !stop && remaining != 0 && capture_frame) begin
+        if (rst_n && sample_now && (!rise || capture_mode) && !stop && remaining != 0 && capture_frame) begin
             if (remaining == prefix_length) received <= {23'b0,din};
             else received <= {received[22:0],din};
         end

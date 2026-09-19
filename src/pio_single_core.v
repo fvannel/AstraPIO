@@ -51,7 +51,10 @@ module pio_single_core #(parameter integer STUDY = 0) (
     always @(posedge clk) if (phase == 0) instruction <= program_q;
     wire tx_empty, tx_full, tx_ready, rx_empty, rx_full, rx_ready;
     wire [7:0] tx_q, rx_q;
-    wire [1:0] tx_level, rx_level;
+    localparam integer RX_ADDR_BITS = (STUDY & 16) ? 2 : 1;
+    wire [1:0] tx_level;
+    wire [RX_ADDR_BITS:0] rx_level;
+    wire [1:0] legacy_rx_level = rx_level > 3 ? 2'd3 : rx_level[1:0];
     wire host_tx = write_enable && address == 8'h14;
     wire pull = executing && instruction == 10'h307 && !tx_empty && !restart;
     wire push = executing && instruction == 10'h308 && rx_ready && !restart;
@@ -62,7 +65,7 @@ module pio_single_core #(parameter integer STUDY = 0) (
         .data_in(write_data[7:0]), .data_out(tx_q), .empty(tx_empty),
         .full(tx_full), .push_ready(tx_ready), .level(tx_level)
     );
-    pio_fifo #(.WIDTH(8), .ADDR_BITS(1)) rx (
+    pio_fifo #(.WIDTH(8), .ADDR_BITS(RX_ADDR_BITS)) rx (
         .clk(clk), .rst_n(rst_n), .flush(restart), .push(push),
         .pop(read_commit && address == 8'h15), .data_in(accumulator),
         .data_out(rx_q), .empty(rx_empty), .full(rx_full),
@@ -95,11 +98,13 @@ module pio_single_core #(parameter integer STUDY = 0) (
             8'h12: read_data = {8'b0,accumulator};
             8'h13: read_data = {8'b0,delay_slots};
             8'h15: read_data = {~rx_empty,7'b0,rx_q};
-            8'h16: read_data = {rx_level,tx_level,8'b0,rx_full,rx_empty,tx_full,tx_empty};
+            8'h16: read_data = {legacy_rx_level,tx_level,8'b0,rx_full,rx_empty,tx_full,tx_empty};
             8'h17: read_data = {12'b0,counter};
             8'h18: if (STUDY & 2) read_data = {12'b0,jump_pin};
             8'h19: if (STUDY & 8) read_data = {11'b0,wrap_enabled,wrap_bottom};
             8'h1a: read_data = STUDY;
+            8'h1b: if (STUDY != 0) read_data = (STUDY & 16) ? 16'h0402 : 16'h0202;
+            8'h1c: if (STUDY != 0) read_data = (rx_level << 8) | tx_level;
             default: read_data = 0;
         endcase
     end

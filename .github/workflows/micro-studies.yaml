@@ -4,6 +4,11 @@ on:
     branches: [codex/pio-micro-studies]
     paths: [src/**, test/micro/**, tools/micro_variant.py, .github/workflows/micro-studies.yaml]
   workflow_dispatch:
+    inputs:
+      variants:
+        description: JSON list of independent variants
+        default: '["baseline","setdir","jin","outmsb","wrap","rx4","event","capture","burst","isa"]'
+        required: true
 permissions:
   contents: read
 jobs:
@@ -14,7 +19,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        variant: [baseline, setdir, jin, outmsb, wrap, isa]
+        variant: ${{ fromJSON(inputs.variants || '["baseline","setdir","jin","outmsb","wrap","rx4","event","capture","burst","isa"]') }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6

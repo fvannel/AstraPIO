@@ -52,7 +52,7 @@ class ToolsTest(unittest.TestCase):
         for source in ('SET 14,1', 'OUTBIT 14', 'SIGNAL', 'RECV'):
             with self.subTest(source=source), self.assertRaises(ValueError):
                 assemble(source, abi=4)
-        for abi in (2, 6):
+        for abi in (2, 7):
             with self.assertRaises(ValueError): assemble('HALT', abi=abi)
             with self.assertRaises(ValueError): program_frames([0xE000], abi=abi)
         self.assertEqual(program_frames([0xE000], abi=4)[1], bytes.fromhex('02 04 00 01'))
