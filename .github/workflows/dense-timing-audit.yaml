@@ -1,15 +1,23 @@
-name: Dense PIO frozen routed timing audit (not a release)
+name: Selected candidate frozen routed timing audit (not a release)
 on:
-  push:
-    branches: [codex/dense-pio10]
-    paths:
-      - .github/workflows/dense-timing-audit.yaml
-      - tools/dense_timing_audit.tcl
   workflow_dispatch:
+    inputs:
+      gds_run:
+        description: Exact successful official GDS run ID
+        required: true
+        type: string
+      source_commit:
+        description: Exact 40-hex source commit of that run
+        required: true
+        type: string
+      netlist_sha:
+        description: Expected SHA256 of the downloaded routed netlist
+        required: true
+        type: string
 env:
-  RUN_ID: '35442726541'
-  SOURCE_COMMIT: '1b1c91183a4a9a5ea3516699845336175ffe6d96'
-  NETLIST_SHA: '6d2dbfd333bb89544cf296e9ff408e8870b7151984e7962b098833fd15e3e948'
+  RUN_ID: ${{ inputs.gds_run }}
+  SOURCE_COMMIT: ${{ inputs.source_commit }}
+  NETLIST_SHA: ${{ inputs.netlist_sha }}
 permissions:
   contents: read
   actions: read
@@ -37,13 +45,13 @@ jobs:
       - uses: actions/download-artifact@v7
         with:
           name: GDS_logs
-          run-id: '35442726541'
+          run-id: ${{ inputs.gds_run }}
           github-token: ${{ github.token }}
           path: work/dense-audit/logs
       - uses: actions/download-artifact@v7
         with:
           name: tt_submission
-          run-id: '35442726541'
+          run-id: ${{ inputs.gds_run }}
           github-token: ${{ github.token }}
           path: work/dense-audit/submission
       - uses: actions/checkout@v6
@@ -85,6 +93,6 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: dense-frozen-timing-audit
+          name: micro-candidate-timing-audit
           path: work/dense-audit/reports
           if-no-files-found: error

@@ -1,4 +1,4 @@
-# Supplemental audit of the frozen, officially routed ABI-v5 candidate.
+# Supplemental audit of the selected frozen, officially routed candidate.
 # Not a replacement for any Tiny Tapeout check; no timing exception is added.
 set sta_continue_on_error 0
 if {[catch {
@@ -33,4 +33,3 @@ if {[catch {
     exit 1
 }
 exit 0
-

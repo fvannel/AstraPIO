@@ -1,10 +1,12 @@
-# AstraPIO — dense single-context timed-I/O experiment
+# AstraPIO — isolated OUTMSB micro-adaptation candidate
 
 General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 
-**This branch implements ABI 0x0500: one PIO context plus a timed-I/O engine.
-Exact candidate `1b1c911` passes physical qualification and is ready to submit.
-It has NOT yet replaced the submitted chip.**
+**This branch is an unapproved ABI 0x0600 experiment: one PIO context plus the
+unchanged timed-I/O engine. Only OUTMSB is added. Do not submit this branch.**
+The qualified ABI-5 source `1b1c911` was accepted as shuttle PR149 on
+2026-09-19. These experiments have not replaced it. See the
+[micro-adaptation evidence and decisions](docs/micro-studies.md).
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.
@@ -14,16 +16,15 @@ programmable context remains available concurrently. The earlier two-context
 experiment exceeded the two-tile area; this reduction is explicitly approved.
 See [native ten-bit architecture and migration](docs/dense-pio-v5.md).
 
-**Current result:** all 25 pin-level RTL scenarios and 1,988 bounded differential
-traces pass. Commit `1b1c911` completes the official physical build with zero
+**Historical qualified baseline, not this candidate:** commit `1b1c911`
+passed 25 pin-level scenarios and 1,988 bounded differential traces, and
+completed the official physical build with zero
 Magic/KLayout DRC, LVS, XOR and antenna violations, at 94.5637% standard-cell
 utilization. All ten official prechecks and all 25 routed-netlist functional
 scenarios pass. The explicit 0.95/1.05 derated timing audit also passes all
 three cell corners, with minimum hold slack +4.872 ps. The earlier density-90
-candidate remains rejected. No ABI-v5 revision has been submitted: the in-app
-browser cannot open the platform's commit-entry prompt. Use "Submit a previous
-commit" in a browser supporting that dialog, with exact commit
-`1b1c91183a4a9a5ea3516699845336175ffe6d96`.
+candidate remains rejected. The qualified density-91 version was submitted
+and merged as [PR149](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/149).
 See the [validation ledger](docs/dense-pio-v5.md). Earlier v4
 failures remain in the [historical ledger](docs/single-pio-validation.md).
 
@@ -33,7 +34,10 @@ failures remain in the [historical ledger](docs/single-pio-validation.md).
 - Same SPI pins and 32-bit framing; new ABI, capacity and firmware APIs.
 - Exact shuttle PDK c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c; all checks blocking.
 
-Use `tools/pioasm.py --abi 5` and the ABI-v5 C driver. Reassemble ABI-v4 source programs; their old binaries are incompatible. See [current qualification status](design_status.json). Historical [compact documentation](docs/compact-v3.md) describes the submitted fallback, not this variant.
+Use `tools/pioasm.py --abi 6` for the candidate's OUTMSB example. The C driver
+probes ABI5 or exact ABI6 capability 4 and rejects unsupported hardware before
+loading extension instructions. Legacy ABI5 encodings are unchanged; ABI4
+binaries remain incompatible. See [current qualification status](design_status.json).
 
 The historical SRAM implementation and its evidence remain on branch `diagnostic/sram-magic` at `f7f5ca6`. Existing SRAM docs, larger examples and test modules are archival unless explicitly selected by the compact test suite. Their passes do not qualify this design. In particular, the previous WS2812 transmitter/relay does not fit unchanged.
 
@@ -43,8 +47,8 @@ Install the dependencies in `test/requirements.txt`, Icarus Verilog **13**, and 
 
 The manual GDS workflow runs the official Tiny Tapeout physical flow, precheck and gate simulation. It does not merge, publish a viewer or submit a shuttle revision. A successful functional test or synthesis-area estimate is not physical signoff.
 
-## Submitted fallback (different RTL)
+## Historical compact revision (superseded by PR149)
 
 The [official compact build at `946648f`](https://github.com/fvannel/AstraPIO/actions/runs/35385953304) completes routing in **1×2 tiles**, with zero Magic/KLayout DRC, LVS, XOR and antenna violations. All ten official prechecks pass. Eleven compact integration tests pass on the exact routed netlist locally (the official build ran the first ten). Final standard-cell utilization is **90.42%**. The PDK and all blocking checks remain unchanged.
 
-That compact commit was submitted as [shuttle PR 142](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/142). Its central submission check and official precheck passed; the PR was merged on 2026-09-19 at 06:26:37 UTC. It does not contain this timed extension. See the [validation ledger](docs/compact-validation.md) for timing assumptions, artifacts and limitations. A failed or oversized experiment must not replace this fallback.
+That compact commit was submitted as [shuttle PR 142](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/142). Its central submission check and official precheck passed; the PR was merged on 2026-09-19 at 06:26:37 UTC. It does not contain the timed extension later accepted in PR149. See the [validation ledger](docs/compact-validation.md) for historical evidence. A failed or oversized experiment must not replace the qualified submission.
