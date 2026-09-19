@@ -48,14 +48,16 @@ module tt_um_fabien_pio (
       .read_commit(read_commit), .read_busy(read_busy)
   );
 
-  pio_core core (
+  pio_single_core core (
       .clk(clk), .rst_n(core_reset_n), .address(address),
       .write_data(write_data), .write_enable(write_enable && !timed_page), .read_data(core_read_data),
-      .read_commit(read_commit && !timed_page), .read_busy(read_busy && !timed_page), .read_valid(core_read_valid),
+      .read_commit(read_commit && !timed_page), .read_valid(core_read_valid),
       .pins_in({ui_in[7:3], uio_in}),
       .reserved_pins(reserved_pins), .sampled_inputs(sampled_inputs), .claimed_pins(claimed_pins),
       .pins_out(pins_out), .pins_oe(pins_oe), .irq(core_irq)
   );
+
+  wire _unused_read_lock = read_busy; // No peer RX consumer in the single core.
 
   pio_timed timed_io (
       .clk(clk), .rst_n(core_reset_n), .inputs(sampled_inputs), .occupied(claimed_pins),

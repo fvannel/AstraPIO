@@ -1,24 +1,25 @@
-# AstraPIO — timed-I/O experiment
+# AstraPIO — single-context timed-I/O experiment
 
-General-purpose, dual-context programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
+General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 
-**This branch adds an experimental shared timed-I/O engine to compact ABI
-0x0300. It is NOT physically qualified and has NOT replaced the submitted chip.**
+**This branch implements ABI 0x0400: one PIO context plus a timed-I/O engine.
+It is NOT physically qualified and has NOT replaced the submitted chip.**
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.
 Timing and GPIO routing are programmable; WS2812B V5 is one tested profile.
-Atomic host updates, an RX mailbox and error reporting are included. The two
-existing programmable contexts and their ISA remain available concurrently.
-See [experiment architecture and evidence](docs/timed-pio-v4.md).
+Atomic host updates, an RX mailbox and error reporting are included. The sole
+programmable context remains available concurrently. The earlier two-context
+experiment exceeded the two-tile area; this reduction is explicitly approved.
+See [single-context architecture and migration](docs/single-pio-v4.md).
 
-- Two contexts with deterministic four-clock scheduling.
-- One shared 16 × 16-bit latch program store (32 bytes), using unchanged IHP standard cells; no SRAM macro.
-- Two-byte TX and RX queues per context (8 bytes total).
+- One context with one instruction slot every four clocks; both output groups remain accessible.
+- One 16 × 16-bit latch program store (32 bytes), using unchanged IHP standard cells; no SRAM macro.
+- Two-byte TX and RX queues (4 bytes total), plus 24-bit timed RX, active TX and staging registers.
 - Same SPI pins and 32-bit framing; new ABI, capacity and firmware APIs.
 - Exact shuttle PDK c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c; all checks blocking.
 
-See [architecture, register map, ISA and timing obligations](docs/compact-v3.md), [compact examples](examples/compact/README.md), and [current qualification status](design_status.json).
+Use `tools/pioasm.py --abi 4` and the ABI-v4 C driver. Old ABI-v3 two-context programs are not interchangeable. See [current qualification status](design_status.json). Historical [compact documentation](docs/compact-v3.md) describes the submitted fallback, not this variant.
 
 The historical SRAM implementation and its evidence remain on branch `diagnostic/sram-magic` at `f7f5ca6`. Existing SRAM docs, larger examples and test modules are archival unless explicitly selected by the compact test suite. Their passes do not qualify this design. In particular, the previous WS2812 transmitter/relay does not fit unchanged.
 

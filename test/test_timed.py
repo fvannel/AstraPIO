@@ -227,17 +227,15 @@ async def pin_ownership_and_safe_disable(dut):
 
 
 @cocotb.test()
-async def simultaneous_compact_programs_and_timed_relay(dut):
-    from test_compact import load_shared
+async def simultaneous_single_program_and_timed_relay(dut):
+    from test_single import load_program
     host = await setup(dut)
-    await load_shared(host, [0xF211, 0xF210, 0x5000, 0xF221, 0xF220, 0x5003])
-    await host.write(0x10, 2)
-    await host.write(0x20, 0x200)
-    await host.write(0x21, 3)
+    await load_program(host, [0xF211, 0xF291, 0xF210, 0xF290, 0x5000])
+    await host.write(0x10, 0x202)
     await configure(host)
     await stage(host, 0xAA55FF)
     await host.write(0x61, 7)
-    await host.write(3, 3)
+    await host.write(3, 1)
     await Timer(310, unit="us")
     pulses, core_edges = [], [0, 0]
     async def count_edges(signal, bit, index):
@@ -254,7 +252,7 @@ async def simultaneous_compact_programs_and_timed_relay(dut):
     await Timer(2, unit="us")
     check_pulses(pulses, 0xAA55FFAABBCC, 48)
     assert all(n > 100 for n in core_edges), core_edges
-    assert await host.read(3) == 3
+    assert await host.read(3) == 1
     assert await host.read(6) == 0
     assert await host.read(0x6B) & 0xE0 == 0
     for task in tasks: task.cancel()

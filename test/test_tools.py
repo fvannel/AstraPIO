@@ -9,6 +9,17 @@ from host_protocol import program_frames, read_frame, read_value, write_frame
 
 
 class ToolsTest(unittest.TestCase):
+    def test_single_context_abi(self):
+        self.assertEqual(assemble('OUT 1\nSET 13,1\nOUTBIT 13\nAWAIT', abi=4),
+                         [0x3100, 0xF2D1, 0xF3D0, 0xF710])
+        for source in ('SET 14,1', 'OUTBIT 14', 'SIGNAL', 'RECV'):
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                assemble(source, abi=4)
+        for abi in (2, 5):
+            with self.assertRaises(ValueError): assemble('HALT', abi=abi)
+            with self.assertRaises(ValueError): program_frames([0xE000], abi=abi)
+        self.assertEqual(program_frames([0xE000], abi=4)[1], bytes.fromhex('02 04 00 01'))
+
     def test_encoding(self):
         self.assertEqual(assemble("loop: LDI 0x23\nOUT\nWAIT 12,1\nJMP loop\nHALT"),
                          [0x1023, 0x3000, 0x810C, 0x5000, 0xE000])

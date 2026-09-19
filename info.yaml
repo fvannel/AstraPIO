@@ -19,9 +19,8 @@ project:
   source_files:
     - "project.v"
     - "pio_spi.v"
-    - "pio_core.v"
+    - "pio_single_core.v"
     - "pio_program.v"
-    - "pio_queues.v"
     - "pio_fifo.v"
     - "pio_timed.v"
 

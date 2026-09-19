@@ -9,7 +9,7 @@ endif
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(abspath $(CURDIR)/../src)
-PROJECT_SOURCES = project.v pio_spi.v pio_core.v pio_program.v pio_queues.v pio_fifo.v pio_timed.v
+PROJECT_SOURCES = project.v pio_spi.v pio_single_core.v pio_program.v pio_fifo.v pio_timed.v
 PDK_ROOT ?= $(abspath ../work/pdk)
 COMPILE_ARGS += -DFUNCTIONAL
 VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
@@ -43,7 +43,7 @@ VERILOG_SOURCES += $(CURDIR)/tb.v
 TOPLEVEL = tb
 
 # List test modules to run, separated by commas and without the .py suffix:
-COCOTB_TEST_MODULES = test_compact,test_timed
+COCOTB_TEST_MODULES = test_single,test_timed
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim

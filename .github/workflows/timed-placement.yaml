@@ -1,8 +1,8 @@
 name: Timed PIO placement feasibility (not a release)
 on:
   push:
-    branches: [feature/timed-pio]
-    paths: [.github/workflows/timed-placement.yaml]
+    branches: [feature/timed-pio, feature/single-pio-timed]
+    paths: [src/**, info.yaml, .github/workflows/timed-placement.yaml]
   workflow_dispatch:
 permissions:
   contents: read

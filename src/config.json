@@ -1,5 +1,5 @@
 {
-  "//": "AstraPIO compact ABI v3. Standard-cell latch memory; exact shuttle PDK; no DRC or timing exceptions. Uses official base SDC.",
+  "//": "AstraPIO single-context ABI v4 + timed I/O. Standard-cell latch memory; exact shuttle PDK; no DRC or timing exceptions. Uses official base SDC.",
   "PL_TARGET_DENSITY_PCT": 70,
   "CLOCK_PERIOD": 20,
   "ERROR_ON_MAGIC_DRC": true,

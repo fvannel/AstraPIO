@@ -1,7 +1,7 @@
 {
   "project_name": "AstraPIO",
   "stage": "rtl_prototype",
-  "architecture": "compact_plus_shared_timed_io_experiment",
+  "architecture": "single_context_plus_timed_io_abi4_experiment",
   "target_shuttle": "ttihp26b",
   "target_tiles": "1x2",
   "pdk_version": "c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c",
@@ -10,8 +10,8 @@
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,
-  "distinct_pin_level_test_scenarios": 22,
-  "simulation_scope": "Timed experiment: 22 Icarus RTL integration scenarios (11 compact + 11 timed), including 24 prefix lengths and 20 clock phases. All 22 pass on the optimized AREA 2 synthesized netlist, functional without SDF. No routed-netlist or timing qualification. Portable C drivers pass sanitized bus-boundary tests. Historical compact physical results below apply only to fallback 946648ff.",
+  "distinct_pin_level_test_scenarios": 21,
+  "simulation_scope": "Single-context ABI v4: 21 Icarus RTL integration scenarios (10 single-context + 11 timed) pass, including 24 prefix lengths and 20 clock phases. Portable C drivers pass sanitized bus-boundary tests. No physical evidence yet for this RTL. Historical dual-context and compact results below belong to their identified commits only.",
   "hardware_workflows_enabled": false,
   "publication_authorized": true,
   "submission_authorized": true,
@@ -32,16 +32,23 @@
   "provisional_sram_precheck_nonblocking_authorized": false,
   "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. New timed experiment is on its own branch and cannot replace fallback until all gates pass. Main and Pages unchanged.",
   "physical_validation_passed": false,
-  "physical_validation_scope": "Timed extension FAILED global placement: best AREA 2 utilization 114.466%, AREA 0 116.329%. No routed GDS, timing signoff, DRC/LVS or precheck completed for this extension. Compact evidence below belongs only to the unchanged submitted fallback.",
+  "physical_validation_scope": "Single-context variant not yet physically tested. The previous TWO-context timed experiment failed placement; compact fallback evidence belongs to different RTL. No result is inherited.",
   "placement_routing_completed": false,
   "lvs_passed": false,
   "official_precheck_passed": false,
   "routed_netlist_functional_simulation_passed": false,
   "sdf_simulation_performed": false,
   "release_blockers": [
-    "Timed extension FAILED strict placement at 114.466 percent best utilization (AREA 2). Actual cell area is already 62181.302 square micrometers before the placer's pin-density adjustment, versus 60109.258 available. New revision is blocked; meaningful resource-sharing or capacity tradeoffs are needed.",
+    "Single-context variant requires new placement, routing, timing, DRC/LVS, official precheck and routed functional simulation. The second context is removed with user approval; 16 program words, depth-two queues and all three 24-bit timed payload registers are retained.",
     "No routed timing/DRC/LVS/precheck proof exists for the extension. Board clock, voltage translation and LPC546xx transport remain unqualified. Existing compact PR142 central checks passed and it remains the unmerged fallback."
   ],
+  "single_context_validation": {
+    "branch": "feature/single-pio-timed",
+    "abi": "0x0400",
+    "rtl_test_count": 21,
+    "new_revision_submitted": false,
+    "safety_overrides_added": false
+  },
   "timed_extension_validation": {
     "branch": "feature/timed-pio",
     "rtl_source_commit": "2656afa",
