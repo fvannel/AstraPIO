@@ -10,6 +10,7 @@ src/config_merged.json
 test/sim_build
 test/__pycache__/
 test/results.xml
+test/output/
 test/*-results.xml
 test/compact-*.xml
 test/units/sim_build/

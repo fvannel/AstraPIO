@@ -3,10 +3,19 @@
 General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 
 **This branch is an unapproved ABI 0x0600 experiment: one PIO context plus the
-unchanged timed-I/O engine. Only OUTMSB is added. Do not submit this branch.**
+unchanged timed-I/O engine. Only OUTMSB is added. Submission is authorized only
+after every exact-source functional, physical and timing gate passes.**
 The qualified ABI-5 source `1b1c911` was accepted as shuttle PR149 on
 2026-09-19. These experiments have not replaced it. See the
 [micro-adaptation evidence and decisions](docs/micro-studies.md).
+
+The mandatory [WS2812 counter application](docs/ws2812-release.md) captures the
+first 24 input bits for the LPC, concurrently substitutes its 24-bit counter,
+and relays following words unchanged. Mid-frame counter updates take effect
+on the next frame. The release suite runs this application alongside OUTMSB
+activity on both RTL and the exact routed netlist; a missing or stale report
+blocks qualification. All 29 pin-level tests pass locally; physical and routed
+results for the final source are still pending.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.

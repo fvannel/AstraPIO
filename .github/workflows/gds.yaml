@@ -56,3 +56,6 @@ jobs:
 
       - name: GL test
         uses: TinyTapeout/tt-gds-action/gl_test@ttihp26b
+
+      - name: Require complete WS2812 application evidence on the exact routed chip
+        run: python3 tools/check_ws2812_release.py --mode gl

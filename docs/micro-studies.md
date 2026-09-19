@@ -106,7 +106,22 @@ it does not claim arbitrary-length atomic peripheral frames or all four SPI
 modes. Host SPI transactions and two-byte FIFOs limit sustained throughput;
 the measured SCK frequency is not sustained LPC-to-peripheral bandwidth.
 
+## Mandatory WS2812 release qualification
+
+The user subsequently authorized continuing to a new Tiny Tapeout revision,
+conditional on preserving the WS2812 application and passing all qualification
+gates. The default suite now contains 29 scenarios, including a dedicated
+12-frame / 1,440-bit counter replacement application with concurrent OUTMSB.
+All 29 pass locally. Both RTL and official routed CI now require a complete,
+source-bound WS2812 report; see [the release contract](ws2812-release.md).
+
+These test/documentation changes do not alter any RTL, PDK or physical setting
+from minimal source `456092e`. A final official build must use the same commit
+as the expanded suite and accurate ABI6 submission documentation. The earlier
+28-test build cannot stand in for that final build.
+
 Full build and, if successful, the explicit three-corner audit remain pending.
-The existing thread follow-up `qualification-astrapio-compact` is active every
-10 minutes until that decision. It must stay quiet on unchanged state, stop
-after the final decision, and never merge or submit a shuttle revision.
+The existing follow-up `qualification-astrapio-compact` checks every 10 minutes
+when active. It stays quiet on unchanged state. Submission is permitted only
+for the exact final qualified commit; no arbitrary merge, skipped check,
+reservation change or replacement of accepted PR149 by a failed experiment.

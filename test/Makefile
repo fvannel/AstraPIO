@@ -44,7 +44,9 @@ TOPLEVEL = tb
 
 # List test modules to run, separated by commas and without the .py suffix:
 export PYTHONPATH := $(CURDIR)/micro:$(CURDIR)/../tools:$(PYTHONPATH)
-COCOTB_TEST_MODULES = test_single,test_timed,test_dense,test_micro
+export ASTRA_WS_MODE := $(if $(filter yes,$(GATES)),gl,rtl)
+export ASTRA_WS_REPORT := $(CURDIR)/output/ws2812-counter-$(ASTRA_WS_MODE).json
+COCOTB_TEST_MODULES = test_single,test_timed,test_dense,test_micro,test_ws2812_counter
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim

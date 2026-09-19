@@ -13,6 +13,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReleasePolicyTest(unittest.TestCase):
+    def test_ws2812_counter_application_is_mandatory_in_release_ci(self):
+        makefile = (ROOT / "test/Makefile").read_text()
+        self.assertRegex(makefile, r"(?m)^COCOTB_TEST_MODULES = .*test_ws2812_counter")
+        self.assertTrue((ROOT / "test/test_ws2812_counter.py").is_file())
+        for workflow, mode in (("test", "rtl"), ("gds", "gl")):
+            text = (ROOT / f".github/workflows/{workflow}.yaml").read_text()
+            self.assertIn(f"python3 tools/check_ws2812_release.py --mode {mode}", text)
+
     def test_magic_errors_are_fatal(self):
         config = json.loads((ROOT / "src/config.json").read_text())
         self.assertIs(config.get("ERROR_ON_MAGIC_DRC"), True)

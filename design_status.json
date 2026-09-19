@@ -10,8 +10,20 @@
   "platform_project_url": "https://app.tinytapeout.com/projects/5799",
   "functional_rtl_implemented": true,
   "rtl_simulation_passed": true,
-  "distinct_pin_level_test_scenarios": 28,
-  "simulation_scope": "Minimal OUTMSB-only ABI 0600 candidate at 456092e: independent CI 35470811077 passes all 28 pin scenarios, 1988 bounded differential traces, FIFO/latch units and C host tests with sanitizers. Includes legacy scenarios, exact capability/disabled-feature guards, 14-instruction full-duplex SPI and all-14-output ownership/data preservation. This authorizes strict physical CI only, not a release.",
+  "distinct_pin_level_test_scenarios": 29,
+  "simulation_scope": "Minimal OUTMSB-only ABI 0600 RTL unchanged from 456092e. All 29 expanded pin scenarios pass locally, including mandatory 12-frame / 1440-bit WS2812 counter replacement, capture and tail relay with simultaneous OUTMSB. Checker unit tests and C host sanitizers pass. Earlier independent CI 35470811077 passed 28 pin scenarios and 1988 bounded differential traces. Final exact-source RTL CI and routed simulation are still required; local evidence is not release approval.",
+  "ws2812_release_contract": {
+    "required": true,
+    "report": "docs/ws2812-release.md",
+    "test_module": "test_ws2812_counter",
+    "local_rtl_passed": true,
+    "final_source_rtl_ci_passed": false,
+    "final_source_routed_ci_passed": false,
+    "frames": 12,
+    "checked_output_bits": 1440,
+    "concurrent_general_pio": "OUTMSB_toggle",
+    "host_scope": "SPI pin-level LPC behaviour model, not ARM firmware execution"
+  },
   "micro_adaptation_study": {
     "approved_for_release": false,
     "comparative_source_commit": "df77ab3b12d2c04b48efe4bce4089cc46659fbdd",
@@ -19,8 +31,9 @@
     "comparative_functional_test_executions_passed": 272,
     "selected_minimal_source_commit": "456092ecd7256d25b9650145767b28282cc43a73",
     "selected_functional_ci_run_id": 35470811077,
-    "selected_gds_run_id": 35470810763,
-    "selected_gds_result": "in_progress",
+    "prior_28_test_gds_run_id": 35470810763,
+    "selected_gds_run_id": null,
+    "selected_gds_result": "final_29_test_source_not_launched_yet",
     "explicit_timing_audit_run_id": null,
     "followup_automation_id": "qualification-astrapio-compact",
     "report": "docs/micro-studies.md",
@@ -28,8 +41,8 @@
   },
   "hardware_workflows_enabled": true,
   "publication_authorized": true,
-  "submission_authorized": false,
-  "submission_authorization_scope": "This study authorizes tests and qualitative evaluation only. No new Tiny Tapeout revision or merge is authorized by these flags.",
+  "submission_authorized": true,
+  "submission_authorization_scope": "Latest explicit user request authorizes continuing through a new Tiny Tapeout revision, only after preserving the complete WS2812 application and passing exact-source functional, physical, official precheck and explicit derated timing gates. No arbitrary merge, purchases, reservation changes or safety bypasses.",
   "platform_revision_submitted": true,
   "platform_revision_submitted_at": null,
   "platform_revision_commit": "1b1c91183a4a9a5ea3516699845336175ffe6d96",
@@ -44,7 +57,7 @@
   "shuttle_submission_netlist_matches_official_artifact": null,
   "ready_for_submission": false,
   "ready_for_submission_commit": null,
-  "new_revision_submission_blocker": "Minimal OUTMSB candidate awaits unchanged full physical checks, explicit derated timing audit, routed functional tests and a qualitative decision. No study revision has been submitted.",
+  "new_revision_submission_blocker": "Final OUTMSB candidate requires its expanded 29-test source to pass independent RTL CI, full physical flow, unchanged official precheck, routed WS2812 evidence gate and explicit derated timing audit. No study revision has been submitted.",
   "magic_drc_nonblocking_authorized": false,
   "provisional_sram_precheck_nonblocking_authorized": false,
   "next_revision_policy": "Strict DRC, LVS, timing and unchanged official precheck; no waived checks. New timed experiment is on its own branch and cannot replace fallback until all gates pass. Main and Pages unchanged.",
@@ -56,7 +69,7 @@
   "routed_netlist_functional_simulation_passed": false,
   "sdf_simulation_performed": false,
   "release_blockers": [
-    "OUTMSB experiment is not released: full physical checks, explicit derated timing and routed new-feature tests are required. Historical platform and baseline evidence below do not qualify the experimental source."
+    "OUTMSB experiment is not released: final exact-source RTL CI, full physical checks, explicit derated timing and all 29 routed tests including the mandatory WS2812 evidence gate are required. Historical platform and baseline evidence below do not qualify the experimental source."
   ],
   "remaining_validation_limits": [
     "Board clock quality, voltage translation and LPC546xx transport/DMA remain to validate on hardware.",

@@ -44,6 +44,7 @@ jobs:
           PDK_ROOT: ${{ github.workspace }}/work/ci-pdk
         run: |
           make test
+          python3 tools/check_ws2812_release.py --mode rtl
 
       - name: Test Summary
         uses: test-summary/action@v2.4
