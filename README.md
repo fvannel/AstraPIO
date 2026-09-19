@@ -13,6 +13,12 @@ programmable context remains available concurrently. The earlier two-context
 experiment exceeded the two-tile area; this reduction is explicitly approved.
 See [single-context architecture and migration](docs/single-pio-v4.md).
 
+**Current result:** all 22 pin-level scenarios pass in RTL and on the globally
+placed netlist (functional simulation, no SDF). A controlled placement trial
+also passes clock-tree legalization, but the required hold-time repair adds
+390 buffers and cannot be legally placed. There is no new routed GDS or
+shuttle revision. See the [measured validation and capacity tradeoffs](docs/single-pio-validation.md).
+
 - One context with one instruction slot every four clocks; both output groups remain accessible.
 - One 16 × 16-bit latch program store (32 bytes), using unchanged IHP standard cells; no SRAM macro.
 - Two-byte TX and RX queues (4 bytes total), plus 24-bit timed RX, active TX and staging registers.

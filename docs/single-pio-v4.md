@@ -91,3 +91,10 @@ RTL `eeaa97f`). AREA 2 has 51,657.8 µm² of pre-CTS cells (85.9398% of the
 60,109.3 µm² core); the placer's pin-density-adjusted utilization is 93.741%.
 These are not final routed utilization or timing results. AREA 2 is selected
 for the full official flow. All physical and precheck gates remain unchanged.
+
+The full flow subsequently failed CTS legalization. A controlled trial later
+passed that stage but failed placement after adding 390 hold-time repair
+buffers. All 22 functional scenarios also pass on the exact globally placed
+netlist, without SDF; that is not routing or timing signoff. See
+[the final diagnostic ledger](single-pio-validation.md) for reproducible
+run identifiers, retained constraints and the next capacity decision.
