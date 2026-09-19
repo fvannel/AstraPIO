@@ -14,15 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: clock4-density97
-            setting: CTS_CLK_BUFFERS=["sg13g2_buf_4", "sg13g2_buf_2"]
+          # The legalizer's default Y search is 100 um, versus a 306 um core.
+          # Expand its search only; placement/timing/DRC checks remain fatal.
+          - name: root2-density97-y350
+            setting: PL_MAX_DISPLACEMENT_Y=350
             second: PL_TARGET_DENSITY_PCT=97
-          - name: root2-density98
-            setting: PL_TARGET_DENSITY_PCT=98
-            second: CTS_SINK_CLUSTERING_SIZE=25
-          - name: root2-density99
-            setting: PL_TARGET_DENSITY_PCT=99
-            second: CTS_SINK_CLUSTERING_SIZE=25
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
