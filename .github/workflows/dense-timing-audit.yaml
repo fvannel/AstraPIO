@@ -1,19 +1,15 @@
 name: Dense PIO frozen routed timing audit (not a release)
 on:
+  push:
+    branches: [codex/dense-pio10]
+    paths:
+      - .github/workflows/dense-timing-audit.yaml
+      - tools/dense_timing_audit.tcl
   workflow_dispatch:
-    inputs:
-      run_id:
-        description: Successful official gds workflow run to audit
-        required: true
-        type: string
-      source_commit:
-        description: Exact full source commit of that gds run
-        required: true
-        type: string
-      netlist_sha256:
-        description: SHA256 of the downloaded submission netlist
-        required: true
-        type: string
+env:
+  RUN_ID: '35440371045'
+  SOURCE_COMMIT: '83ef6b7d8e96dd90e14fa3d22ad8585309dd1a03'
+  NETLIST_SHA: '68601a53d42b98c47013c1ebe57f53303c69d4d89d95a011fd8e0ca608ac4357'
 permissions:
   contents: read
   actions: read
@@ -31,9 +27,6 @@ jobs:
       - name: Verify the selected run is the exact successful official build
         env:
           GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ inputs.run_id }}
-          SOURCE_COMMIT: ${{ inputs.source_commit }}
-          NETLIST_SHA: ${{ inputs.netlist_sha256 }}
         run: |
           set -euo pipefail
           [[ "$RUN_ID" =~ ^[0-9]+$ ]]
@@ -44,13 +37,13 @@ jobs:
       - uses: actions/download-artifact@v7
         with:
           name: GDS_logs
-          run-id: ${{ inputs.run_id }}
+          run-id: '35440371045'
           github-token: ${{ github.token }}
           path: work/dense-audit/logs
       - uses: actions/download-artifact@v7
         with:
           name: tt_submission
-          run-id: ${{ inputs.run_id }}
+          run-id: '35440371045'
           github-token: ${{ github.token }}
           path: work/dense-audit/submission
       - uses: actions/checkout@v6
@@ -61,11 +54,10 @@ jobs:
           sparse-checkout: ihp-sg13g2/libs.ref/sg13g2_stdcell/lib
           persist-credentials: false
       - name: Audit all three corners with explicit 0.95 and 1.05 derating
-        env:
-          NETLIST_SHA: ${{ inputs.netlist_sha256 }}
         run: |
           set -euo pipefail
           printf '%s  %s\n' "$NETLIST_SHA" work/dense-audit/submission/tt_submission/tt_um_fabien_pio.v | sha256sum -c -
+          test "$(jq -r .commit work/dense-audit/submission/tt_submission/commit_id.json)" = "$SOURCE_COMMIT"
           test "$(jq -r .PDK_VERSION work/dense-audit/submission/tt_submission/pdk.json)" = c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c
           mkdir -p work/dense-audit/reports
           cp selected-run.json work/dense-audit/reports/

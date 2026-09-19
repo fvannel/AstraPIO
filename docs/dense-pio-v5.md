@@ -142,6 +142,21 @@ Its complete official trial is
 on `1b1c91183a4a9a5ea3516699845336175ffe6d96`. Both complete trials are still
 unqualified until their results and the supplemental audit are reviewed.
 
+At 13:04 UTC on 2026-09-19, the density-90 physical build completes. Its final
+metrics record 56,859.7 um2 standard-cell area (94.5939% utilization), zero
+Magic/KLayout DRC, LVS, XOR and antenna violations. All ten official prechecks
+pass with no failure, error or skip. The final routed netlist SHA256 is
+`68601a53d42b98c47013c1ebe57f53303c69d4d89d95a011fd8e0ca608ac4357`.
+Submission metadata confirms source `83ef6b7d8e96dd90e14fa3d22ad8585309dd1a03`,
+the unchanged shuttle PDK and LibreLane 3.0.5. The standard fast-corner hold
+slack is 0.030340 ns; it does not replace the explicit derated audit.
+At 13:13 UTC, all 25 routed-netlist functional scenarios pass with no failures
+or skips, and the entire official workflow succeeds. This simulation has no
+SDF. The supplemental audit remains pending. Its workflow is frozen to this
+exact successful run, source commit, netlist hash, PDK, final SDC and nominal
+SPEF, and checks all three cell corners with explicit early 0.95 / late 1.05.
+No new revision is submitted before that additional gate passes.
+
 An isolated flip-flop alternative was also measured, without changing the
 sixteen ten-bit words, instruction cadence or host contract. All 25 local
 pin-level scenarios, 1,988 differential traces and both storage-width unit
