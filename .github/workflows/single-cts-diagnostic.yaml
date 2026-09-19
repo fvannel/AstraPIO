@@ -16,12 +16,13 @@ jobs:
         include:
           - name: baseline
             setting: CTS_ROOT_BUFFER=sg13g2_buf_4
-          - name: root2
+            second: PL_TARGET_DENSITY_PCT=70
+          - name: root2-density97
             setting: CTS_ROOT_BUFFER=sg13g2_buf_2
-          - name: area1
-            setting: SYNTH_STRATEGY=AREA 1
-          - name: density97
-            setting: PL_TARGET_DENSITY_PCT=97
+            second: PL_TARGET_DENSITY_PCT=97
+          - name: nf
+            setting: SYNTH_ABC_AREA_USE_NF=true
+            second: PL_TARGET_DENSITY_PCT=70
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -39,8 +40,9 @@ jobs:
       - name: Replay through post-clock timing repair; one optimization variable only
         env:
           DIAGNOSTIC_SETTING: ${{ matrix.setting }}
+          DIAGNOSTIC_SECOND: ${{ matrix.second }}
         run: |
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag single-cts --to OpenROAD.ResizerTimingPostCTS -c "$DIAGNOSTIC_SETTING" src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag single-cts --to OpenROAD.ResizerTimingPostCTS -c "$DIAGNOSTIC_SETTING" -c "$DIAGNOSTIC_SECOND" src/config_merged.json
       - uses: actions/upload-artifact@v7
         if: always()
         with:
