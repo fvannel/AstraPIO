@@ -169,8 +169,17 @@ does not include the intended non-unity derating because of the documented
 integer division in LibreLane 3.0.5's generic SDC.
 
 The audit now collects all three corners before returning failure if any
-original check fails. A repeat on the identical frozen artifacts will confirm
-the failure and provide the other corners; it does not relax any criterion.
+original check fails. [Repeat 35445478047](https://github.com/fvannel/AstraPIO/actions/runs/35445478047)
+on the identical frozen artifacts reproduces the same -0.006421 ns fast-corner
+hold failure and returns failure overall. All three reports are preserved:
+
+| Cell corner | Worst reported hold slack (ns) | Result |
+| --- | ---: | --- |
+| Fast, 1.32 V, -40 C | -0.006421 | Fail |
+| Typical, 1.20 V, 25 C | 0.124461 | Pass |
+| Slow, 1.08 V, 125 C | 0.350550 | Pass |
+
+Minimum pulse-width checks pass at all three corners. No criterion changed.
 The density-91 candidate must pass this same supplemental gate if its official
 flow succeeds. No hardware or margin change has been made in response yet.
 
