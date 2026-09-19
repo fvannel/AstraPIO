@@ -108,6 +108,15 @@ in [run 35438884203](https://github.com/fvannel/AstraPIO/actions/runs/3543888420
 Its result, official precheck and explicit derated audit must all be reviewed
 before promoting the candidate. No check is bypassed.
 
+The density-97 official trial develops routing congestion. A separate
+[density-90 diagnostic](https://github.com/fvannel/AstraPIO/actions/runs/35440167471)
+on the same RTL passes post-hold legalization and the first global routing
+stage: 56,788.9 square micrometers, 94.4761% utilization, 325 hold buffers,
+zero overflow on every routing layer. It changes only the initial placement
+density target, not the boundary, timing margins, PDK or checkers. The target
+is now 90 for a new full-flow trial. This diagnostic stops before post-route
+timing repair, detailed routing and signoff; it cannot qualify a submission.
+
 The repository has no separate agent glossary/ADR configuration; existing
 `compact-v3.md`, `single-pio-v4.md` and their validation ledgers remain the
 domain references. No issue-tracker setup, label or external issue is created.

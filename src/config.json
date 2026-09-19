@@ -1,6 +1,6 @@
 {
-  "//": "AstraPIO ABI v5, native ten-bit program and shared SPI. Proven post-CTS placement settings; full routing/signoff still required. Exact shuttle PDK and official base SDC; no check/timing exceptions.",
-  "PL_TARGET_DENSITY_PCT": 97,
+  "//": "AstraPIO ABI v5, native ten-bit program and shared SPI. Density 90 passes post-CTS and initial global routing; full routing/signoff still required. Exact shuttle PDK and official base SDC; no check/timing exceptions.",
+  "PL_TARGET_DENSITY_PCT": 90,
   "PL_MAX_DISPLACEMENT_Y": 350,
   "CLOCK_PERIOD": 20,
   "ERROR_ON_MAGIC_DRC": true,
