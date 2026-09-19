@@ -92,6 +92,10 @@ capability exactly 4; unsupported extensions fail before stopping the device.
 Transport framing remains unchanged. Host tests pass with sanitizers.
 
 The selected minimal RTL source is `456092ecd7256d25b9650145767b28282cc43a73`.
+Its [independent test CI](https://github.com/fvannel/AstraPIO/actions/runs/35470811077)
+passes all 28 pin scenarios, 1,988 bounded legacy differential traces, FIFO and
+latch-store units and host driver tests. The downloaded test XML was checked
+again locally with no failures, errors or skips.
 Its [strict full build](https://github.com/fvannel/AstraPIO/actions/runs/35470810763)
 is separate from the failed shared-prototype run. No memory bytes, instruction
 slots, safety checks, clock targets or PDK rules were removed to make room.
@@ -101,3 +105,8 @@ clock (2.5 MHz SCK within a byte). The 14-word demonstration toggles CS per byte
 it does not claim arbitrary-length atomic peripheral frames or all four SPI
 modes. Host SPI transactions and two-byte FIFOs limit sustained throughput;
 the measured SCK frequency is not sustained LPC-to-peripheral bandwidth.
+
+Full build and, if successful, the explicit three-corner audit remain pending.
+The existing thread follow-up `qualification-astrapio-compact` is active every
+10 minutes until that decision. It must stay quiet on unchanged state, stop
+after the final decision, and never merge or submit a shuttle revision.
