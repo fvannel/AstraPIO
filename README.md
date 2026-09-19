@@ -13,10 +13,11 @@ programmable context remains available concurrently. The earlier two-context
 experiment exceeded the two-tile area; this reduction is explicitly approved.
 See [native ten-bit architecture and migration](docs/dense-pio-v5.md).
 
-**Current result:** all 23 pin-level scenarios pass locally in RTL. New physical
-measurements are pending. The earlier ABI-v4 experiment failed post-hold
-placement; see its [historical diagnostic ledger](docs/single-pio-validation.md).
-No routed or submitted v5 implementation exists yet.
+**Current result:** all 24 pin-level scenarios pass locally in RTL, and 1,988
+bounded differential traces match the earlier core cycle by cycle. Encoding-only
+commit `8180b33` passes post-hold legalization (96.04% cell utilization); the
+shared-SPI variant is being measured. No routed or submitted v5 implementation
+exists yet. Earlier v4 failures remain in the [historical ledger](docs/single-pio-validation.md).
 
 - One context with one instruction slot every four clocks; both output groups remain accessible.
 - One 16 × 10-bit latch program store (20 bytes), using unchanged IHP standard cells; no SRAM macro.

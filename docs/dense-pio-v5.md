@@ -58,6 +58,29 @@ first measure encoding alone, then shared SPI. Neither a smaller cell count nor
 functional tests qualify a release. Full routing/checks and a new explicit
 derated timing audit remain mandatory before any new submission.
 
+Encoding-only commit `8180b33` passes the same controlled diagnostic in
+[run 35438406460](https://github.com/fvannel/AstraPIO/actions/runs/35438406460).
+Post-CTS cells: 51,801.1 square micrometers. After 363 hold-repair buffers,
+legalized cells: 57,728.8 square micrometers (96.0397% of the core).
+The exact settings are root buffer 2, density target 97, Y legalization search
+350 micrometers. No routing or signoff follows this diagnostic's stop point.
+
+The second change shares the SPI read/write shift storage, since the protocol
+selects one direction per transaction. Read snapshots replace header storage
+at the original falling-edge boundary; subsequent read MOSI is ignored. MISO
+timing, complete-read consumption and aborted-frame semantics are unchanged.
+24 pin-level tests pass after sharing, including every 0..31-bit abort length,
+all twenty input-clock phase offsets at the specified minimum SPI timing,
+arbitrary read MOSI and alternating read/write transactions. Timing constraints
+are not relaxed. The physical benefit is still to be measured separately.
+
+`make differential` compares the new core with a frozen v4 reference from
+`9ac64fb` at public bus/pin ports: all 944 operations in two accumulator states,
+plus 100 random programs, match on every observed cycle (1,988 traces).
+Long delays are observed for 1,100 cycles. The reference is test-only and never
+part of the ASIC source list. This is bounded dynamic equivalence, not formal
+proof. The latch-store unit bench also passes at both widths (10 and legacy 16).
+
 The repository has no separate agent glossary/ADR configuration; existing
 `compact-v3.md`, `single-pio-v4.md` and their validation ledgers remain the
 domain references. No issue-tracker setup, label or external issue is created.

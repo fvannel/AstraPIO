@@ -16,9 +16,11 @@ async def accepted_write_isolated_from_busy_bus_changes(dut):
     dut.rst_n.value=1
     expected={}
     rng=random.Random(0x16A7)
+    width=len(dut.write_data)
+    mask=(1 << width)-1
     for index in range(200):
         address=index if index<16 else rng.randrange(16)
-        value=rng.randrange(65536)
+        value=rng.randrange(1 << width)
         await FallingEdge(dut.clk)
         await Timer(1,unit='ns')
         assert int(dut.busy.value)==0
@@ -30,7 +32,7 @@ async def accepted_write_isolated_from_busy_bus_changes(dut):
         assert int(dut.busy.value)==1
         # Inputs can change while busy, but no second request may be accepted.
         dut.write_address.value=(address+1)%16
-        dut.write_data.value=value^0xFFFF
+        dut.write_data.value=value^mask
         await RisingEdge(dut.clk)
         await Timer(1,unit='ns')
         assert int(dut.busy.value)==1

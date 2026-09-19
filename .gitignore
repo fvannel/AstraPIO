@@ -16,6 +16,9 @@ test/units/sim_build/
 test/units/results.xml
 test/program/sim_build/
 test/program/results.xml
+test/program/results16.xml
+test/differential/sim_build/
+test/differential/results.xml
 test/gate_level_netlist.v
 __pycache__/
 .venv/
