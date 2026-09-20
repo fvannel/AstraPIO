@@ -419,3 +419,40 @@ RTL or capacity. See the [pinned LibreLane CTS configuration](https://github.com
 An earlier architecture used root2 for area; it is not evidence that a stronger
 root will succeed on this new mapping. Compare actual net area and legality.
 Any legal result still needs every full-flow, WS2812 and strict audit gate.
+
+## Bounded study closeout: extension not approved
+
+The final clock-drive [diagnostic35490586921](https://github.com/fvannel/AstraPIO/actions/runs/35490586921),
+source `e3ca13c8683488a6703e1aa709b7d3e6979e51ba`, fails both arms at post-CTS
+hold-repair legalization (`DPL-0036`). Both frozen-condition guards pass and
+were replayed locally on the downloaded artifacts: each has12 actual Tcl
+environments with5.0 and7 exported OpenROAD SDCs with early0.95/late1.05.
+
+| Clock root | Cell area before hold repair (µm²) | Clock cells / their area (µm²) | Added post-CTS hold buffers | Unplaced log entries |
+|---|---:|---:|---:|---:|
+| Strength2, prior control | 51,891.8 | 121 / 1,968.62 | 369 | 9 |
+| Strength4 | 52,223.9 | 121 / 2,300.66 | 366 | 19 |
+| Strength8 | 52,800.9 | 122 / 2,877.64 | 366 | 36 |
+
+These are **intermediate** cell areas, not completed layout area. Some unplaced
+entries repeat the same instance. The stronger trees save only three hold
+buffers while increasing the pre-repair area by332.1/909.1µm²; neither places
+legally. This does not prove no possible layout exists, but it does not support
+approving either change or continuing an unlimited parameter sweep.
+
+Same-source RTL CI35490586833 and docs35490586851 pass. Downloaded XMLs contain
+29 passing pin tests plus unit/differential groups, no failures/errors/skips.
+The dedicated12-frame/1,440-bit WS2812 report matches the source and all six RTL
+hashes. The entire bounded physical study leaves RTL and capacities unchanged.
+No gate simulation of a successful new layout is possible for these failed runs.
+
+**Decision:** OUTMSB is not approved for fabrication. No new Tiny Tapeout
+revision was submitted. PR149 / `1b1c911` is still MERGED (rechecked2026-09-20),
+and its accepted files are untouched. No PDK, official checker, supplemental
+audit, memory capacity or WS2812 function was relaxed to obtain a pass.
+
+Automatic experiments are paused. Recommendation: retain the accepted ABI5
+revision for this shuttle. Keeping OUTMSB would require a separately bounded
+structural optimization/re-mapping study and complete requalification; its
+success is unknown. Do not silently reduce program/FIFO memory or call the
+existing failed layout manufacturable. Ask for direction before that expansion.

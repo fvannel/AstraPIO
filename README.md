@@ -1,10 +1,13 @@
-# AstraPIO — isolated OUTMSB micro-adaptation candidate
+# AstraPIO — OUTMSB study paused, no qualified new revision
 
 General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
 
 **This branch is an unapproved ABI 0x0600 experiment: one PIO context plus the
 unchanged timed-I/O engine. Only OUTMSB is added. Submission is authorized only
 after every exact-source functional, physical and timing gate passes.**
+The bounded physical study has ended without a qualified candidate. OUTMSB is
+**not approved for fabrication**. Automatic experiments are paused pending a
+decision on a structural redesign; no memory or WS2812 capacity was sacrificed.
 The qualified ABI-5 source `1b1c911` was accepted as shuttle PR149 on
 2026-09-19. These experiments have not replaced it. See the
 [micro-adaptation evidence and decisions](docs/micro-studies.md).
@@ -27,8 +30,9 @@ rejects it: **fast hold −22.042 ps and two slow-corner slew violations**.
 The derating diagnostic confirms that `5.0` activates the intended 5% margin,
 but its density92 placement fails after378 post-CTS hold buffers (332 in the
 integer control). Densities90/91 also fail after367/369 hold buffers, with real
-5% margins independently verified. The next bounded study changes clock-tree
-root drive only, looking for lower skew/repair overhead. No diagnostic can produce a submission artifact.
+5% margins independently verified. Stronger clock-tree root drives4/8 also
+fail legalization: both need366 hold buffers while increasing clock-cell area.
+These bounded adjustments have not qualified the extension. No diagnostic can produce a submission artifact.
 No failed candidate is approved. RTL, memory, PDK and release criteria stay unchanged.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
