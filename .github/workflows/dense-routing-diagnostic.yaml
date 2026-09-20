@@ -1,15 +1,17 @@
-name: Dense PIO routing density diagnostic (not a release)
+name: Bounded post-route hold placement diagnostic (not a release)
 on:
-  push:
-    branches: [codex/dense-pio10]
-    paths: [.github/workflows/dense-routing-diagnostic.yaml]
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   diagnostic:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        hold_margin: ['0.075', '0.08']
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -24,15 +26,36 @@ jobs:
         run: |
           pip install -r tt/requirements.txt librelane==3.0.5
           python tt/tt_tool.py --ihp --create-user-config
-      - name: Compare density 91 through global routing with all checks retained
+      - name: Compare one repair target through post-global-route legalization
+        env:
+          HOLD_MARGIN: ${{ matrix.hold_margin }}
         run: |
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag dense-density91 --to OpenROAD.GlobalRouting -c 'PL_TARGET_DENSITY_PCT=91' src/config_merged.json
+          set -euo pipefail
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag hold-diagnostic --to OpenROAD.ResizerTimingPostGRT -c "GRT_RESIZER_HOLD_SLACK_MARGIN=$HOLD_MARGIN" src/config_merged.json
+      - name: Verify frozen diagnostic conditions even when placement fails
+        if: always()
+        env:
+          HOLD_MARGIN: ${{ matrix.hold_margin }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          config = json.loads(Path('src/runs/hold-diagnostic/resolved.json').read_text())
+          assert config['PDK_ROOT'].endswith('/c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c')
+          assert config['CLOCK_PERIOD'] == 20
+          assert config['PL_TARGET_DENSITY_PCT'] == 91
+          assert config['PL_RESIZER_HOLD_SLACK_MARGIN'] == 0.02
+          assert config['GRT_RESIZER_HOLD_SLACK_MARGIN'] == float(os.environ['HOLD_MARGIN'])
+          assert config['GRT_RESIZER_ALLOW_SETUP_VIOS'] is False
+          assert config['ERROR_ON_MAGIC_DRC'] is True
+          print('Frozen PDK, clock, density and guards verified. Diagnostic only: no submission artifact.')
+          PY
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: dense-density91-global-route
+          name: hold-placement-${{ matrix.hold_margin }}
           path: |
-            src/runs/dense-density91
+            src/runs/hold-diagnostic
             src/config_merged.json
             src/user_config.json
           if-no-files-found: error

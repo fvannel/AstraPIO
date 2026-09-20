@@ -184,3 +184,40 @@ including the source-bound WS2812 application, and the identical strict
 three-corner audit. No acceptance is inferred from increasing the setting.
 The failed `f9e8b69` artifacts are retained; accepted baseline PR149 is untouched.
 No new shuttle revision has been submitted.
+
+### Hold80 result and bounded diagnostic
+
+Source `4a044644455181e3053fe15fc3d3ba170b501c30`: RTL CI
+[35481475673](https://github.com/fvannel/AstraPIO/actions/runs/35481475673)
+and docs CI 35481475694 succeed. Downloaded XMLs contain 29 pin scenarios,
+the differential scenario group (1,988 traces), FIFO/latch units and no
+failures or skips. The WS2812 report is bound to this exact source and all six
+RTL hashes; all 12 frames / 1,440 bits pass.
+
+Official [GDS 35481481220](https://github.com/fvannel/AstraPIO/actions/runs/35481481220)
+**fails** in `OpenROAD.ResizerTimingPostGRT`: `DPL-0036` after inserting 15
+hold buffers (+0.4% cell area at the repair step). Precheck and routed tests are
+skipped, not passed. No timing audit or shuttle submission is justified.
+
+The prior 20 ps build has identical setup-repair log entries at this step,
+inserts no hold buffers and legalizes. At 80 ps, the repair starts with a
+60 ps worst endpoint, reaches 74 ps at `_5048_/D` after ten buffers, then
+80 ps after fifteen. The failing placement lists `input18`, `_4652_`,
+`_4869__378` twice and `_4878__369`. This supports a repair-induced local
+placement bottleneck; it does not prove total area is physically impossible.
+
+Ranked falsifiable hypotheses: (1) fewer inserted delay cells at 75 ps may
+legalize while still repairing the 74 ps critical endpoint; (2) a different
+initial distribution at the same capacity may accommodate the 80 ps repair;
+(3) OUTMSB's physical overhead cannot be accommodated without sacrificing
+required capacity, in which case retain PR149. A 60 ps target was not selected:
+it might leave the observed critical endpoint untouched.
+
+The first experiment compares **only** GRT repair target 75 vs 80 ps, keeping
+density 91, post-CTS target 20 ps, clock 20 ns and the frozen PDK. The existing
+diagnostic workflow stops after post-global-route timing repair/legalization,
+preserves failure status, and cannot create a submission artifact. The 80 ps
+arm is a reproduction control, not an attempt to rerun a failed release until
+green. If 75 ps legalizes, its extracted final timing is still unknown: a new
+official full build plus all 29 routed tests and the unchanged three-corner
+0.95/1.05 audit are mandatory. No signoff acceptance threshold is changed.
