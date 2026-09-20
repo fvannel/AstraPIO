@@ -286,3 +286,64 @@ The regression harness is the same full official GDS, all 29 routed scenarios
 and source-bound WS2812 evidence, then the exact frozen-netlist three-corner
 early0.95/late1.05 audit. Diagnostic success alone does not authorize submission.
 No checker or safety override was introduced. Accepted PR149 stays intact.
+
+### Density92 full build rejected by the strict audit
+
+Source `e66a4a86e904f15e634af217e1618e96fa707511` completes official
+[GDS35483793555](https://github.com/fvannel/AstraPIO/actions/runs/35483793555),
+RTL35483793679 and docs35483793664. All ten official prechecks and all 29
+RTL/routed tests pass. The exact-source/netlist-bound WS2812 report verifies
+12 frames / 1,440 bits, latency682–699ns and concurrent OUTMSB. Global overflow
+is resolved: final routing, Magic/KLayout DRC, LVS, XOR and antenna errors are
+zero. Cell area is57,574.5µm², utilization95.7832%.
+
+Nevertheless, unchanged [audit35488663072](https://github.com/fvannel/AstraPIO/actions/runs/35488663072)
+**rejects this candidate**, for two independent reasons:
+
+- Fast hold **−0.022042ns**, again instruction[8]/`_4779_` → accumulator[6]/`_5048_`.
+  Arrival0.780781ns, required0.802823ns. Typical hold+0.113252ns and
+  slow+0.346109ns; minimum pulse widths pass at all three corners.
+- Slow maximum slew: `_2586_/A1`2.675279ns and `_2584_/Y`2.674728ns exceed
+  their2.507400ns limit. These violations also appear in the official final
+  metrics/reports, despite that workflow's green status. They are not caused
+  only by the supplemental derating and must not be ignored.
+
+Exact netlist SHA256:
+`730cbb4768336fdd3ca733549ae073f153f80a6905fe339e51498972946dffea`.
+SDC/SPEF hashes and source/PDK provenance match. The candidate is not submitted;
+PR149 remains the accepted fallback. Functional WS2812 success does not waive
+either physical defect.
+
+### Bounded derating-representation diagnostic
+
+Ranked, falsifiable hypotheses before the next experiment:
+
+1. Intended derating is absent during optimization: if so, the emitted Tcl
+   and exported SDC will show1/1 for integer `5`, but0.95/1.05 for decimal
+   `5.0`. A decimal-config build should optimize under the audit's actual
+   factors. It is not assumed to cure the independent slew problem.
+2. Global-route delay estimates are too optimistic: if so, the same endpoint
+   will lose margin between post-GRT and final extracted timing even after
+   derating is aligned. Compare actual reports, not the repair-target setting.
+3. Local density cannot accommodate necessary repairs: if so, stronger real
+   margins will cause legalization failure or remaining electrical violations.
+   This is not permission to reduce memory, add tiles or bypass checks.
+
+The unchanged LibreLane3.0.5 [base.sdc](https://github.com/librelane/librelane/blob/3.0.5/librelane/scripts/base.sdc)
+divides `TIME_DERATING_CONSTRAINT` by integer100. The actual official post-GRT
+`_env.tcl` contains integer5. A local Tcl reproduction confirms5→early1/late1,
+whereas5.0→early0.95/late1.05. This explains a missing intended optimization
+margin, **not yet a validated physical fix**.
+
+The variable is an official Decimal configuration field. The diagnostic
+compares only its representation (`5` vs `5.0`) through the normal command-line
+configuration interface. Density92, GRT hold80ps, post-CTS20ps, clock20ns,
+RTL, capacities, die boundary and frozen PDK remain identical. Neither the
+tool's script, PDK nor any official or supplemental checker is modified.
+The control intentionally reproduces the existing optimization, not a proposed
+release with relaxed criteria. Both arms stop after post-GRT repair and cannot
+produce a submission artifact. An always-run assertion inspects real emitted
+Tcl and tool-exported SDC files, so a silently normalized decimal value is
+detected. Any successful arm still needs a fresh full official build, all
+29 source-bound WS2812/other routed tests, ten prechecks and the unchanged
+three-corner strict audit, including zero slew violations.

@@ -20,10 +20,14 @@ by 16.380 ps and must NOT be submitted. The 80 ps hold-repair candidate
 `4a04464` passes all 29 RTL scenarios but fails post-global-route legalization
 after adding 15 delay cells. Both arms of the 75/80 ps placement comparison
 also fail. In the bounded density-90/92 study, **density 92 legalizes** after
-adding eight hold buffers; density 90 fails. Density 92 is selected for a new
-full build with the 80 ps target. Its intermediate global-route overflow is
-40, so detailed routing and final timing still need qualification. No failed
-candidate is approved. RTL and all release criteria remain unchanged.
+adding eight hold buffers; density 90 fails. The full density92/hold80 build
+`e66a4a8` resolves routing and passes all official jobs, ten prechecks and all
+29 RTL/routed scenarios, including WS2812. However, the unchanged audit
+rejects it: **fast hold −22.042 ps and two slow-corner slew violations**.
+The current bounded diagnostic tests the integer-division defect in the
+tool's intended 5% derating, comparing configuration representations `5` and
+`5.0`. Neither arm can produce a submission artifact. No failed candidate
+is approved. RTL, memory, PDK and release acceptance criteria stay unchanged.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.
