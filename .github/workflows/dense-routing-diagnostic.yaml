@@ -1,4 +1,4 @@
-name: Bounded timing-derate representation diagnostic (not a release)
+name: Bounded derated placement distribution diagnostic (not a release)
 on:
   workflow_dispatch:
 permissions:
@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        derate: ['5', '5.0']
+        density: ['90', '91']
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -26,32 +26,32 @@ jobs:
         run: |
           pip install -r tt/requirements.txt librelane==3.0.5
           python tt/tt_tool.py --ihp --create-user-config
-      - name: Compare integer and decimal representation of the same five percent
+      - name: Compare placement distribution under the verified full five percent
         env:
-          DERATE: ${{ matrix.derate }}
+          DENSITY: ${{ matrix.density }}
         run: |
           set -euo pipefail
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag derating-diagnostic --to OpenROAD.ResizerTimingPostGRT -c "TIME_DERATING_CONSTRAINT=$DERATE" src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag derated-placement --to OpenROAD.ResizerTimingPostGRT -c "TIME_DERATING_CONSTRAINT=5.0" -c "PL_TARGET_DENSITY_PCT=$DENSITY" src/config_merged.json
       - name: Verify frozen diagnostic conditions even when placement fails
         if: always()
         env:
-          DERATE: ${{ matrix.derate }}
+          DENSITY: ${{ matrix.density }}
         run: |
           python - <<'PY'
           import json, os, re
           from pathlib import Path
-          root = Path('src/runs/derating-diagnostic')
+          root = Path('src/runs/derated-placement')
           config = json.loads((root / 'resolved.json').read_text())
           assert config['PDK_ROOT'].endswith('/c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c')
           assert config['CLOCK_PERIOD'] == 20
-          assert config['PL_TARGET_DENSITY_PCT'] == 92
+          assert config['PL_TARGET_DENSITY_PCT'] == int(os.environ['DENSITY'])
           assert config['TIME_DERATING_CONSTRAINT'] == 5
           assert config['PL_RESIZER_HOLD_SLACK_MARGIN'] == 0.02
           assert config['GRT_RESIZER_HOLD_SLACK_MARGIN'] == 0.08
           assert config['DIE_AREA'] == [0, 0, 202.08, 313.74]
           assert config['GRT_RESIZER_ALLOW_SETUP_VIOS'] is False
           assert config['ERROR_ON_MAGIC_DRC'] is True
-          expected = os.environ['DERATE']
+          expected = '5.0'
           env_count = 0
           for path in sorted(root.glob('*/_env.tcl')):
               values = re.findall(r'^set ::env\(TIME_DERATING_CONSTRAINT\) (\S+)\s*$', path.read_text(), re.M)
@@ -60,18 +60,17 @@ jobs:
                   env_count += 1
           assert env_count, 'No emitted Tcl derating setting found'
           sdc_count = 0
-          for path in sorted(root.glob('*/*.sdc')):
+          # ABC's two-line driving-cell/load file is not an STA constraint deck.
+          # Verify every actual OpenROAD-exported STA SDC, not synthesis.abc.sdc.
+          for path in sorted(root.glob('*-openroad-*/*.sdc')):
               commands = re.findall(r'^set_timing_derate\s+(.+)$', path.read_text(), re.M)
-              if expected == '5':
-                  assert not commands, (path, commands)
-              else:
-                  factors = {}
-                  for command in commands:
-                      parts = command.split()
-                      assert len(parts) == 2 and parts[0] in ('-early', '-late'), (path, command)
-                      assert parts[0] not in factors, (path, command)
-                      factors[parts[0]] = float(parts[1])
-                  assert factors == {'-early': 0.95, '-late': 1.05}, (path, factors)
+              factors = {}
+              for command in commands:
+                  parts = command.split()
+                  assert len(parts) == 2 and parts[0] in ('-early', '-late'), (path, command)
+                  assert parts[0] not in factors, (path, command)
+                  factors[parts[0]] = float(parts[1])
+              assert factors == {'-early': 0.95, '-late': 1.05}, (path, factors)
               sdc_count += 1
           assert sdc_count, 'No real tool-exported SDC found'
           print(f'Actual Tcl value {expected} verified in {env_count} tool environments and {sdc_count} exported SDC files.')
@@ -80,9 +79,9 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: derating-representation-${{ matrix.derate }}
+          name: derated-placement-${{ matrix.density }}
           path: |
-            src/runs/derating-diagnostic
+            src/runs/derated-placement
             src/config_merged.json
             src/user_config.json
           if-no-files-found: error

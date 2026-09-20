@@ -347,3 +347,36 @@ Tcl and tool-exported SDC files, so a silently normalized decimal value is
 detected. Any successful arm still needs a fresh full official build, all
 29 source-bound WS2812/other routed tests, ten prechecks and the unchanged
 three-corner strict audit, including zero slew violations.
+
+### Derating confirmed; density92 cannot legalize this repair
+
+Diagnostic [35489278311](https://github.com/fvannel/AstraPIO/actions/runs/35489278311),
+source `73ad2393a03539971f99a6544700b9d1ce3f161f`, is **failed** overall:
+the integer control passes through post-GRT, but decimal5.0 fails already
+at post-CTS legalization (`DPL-0036`,12 unplaced log entries). It inserts378
+post-CTS hold buffers versus332 for the control. Both runs report unresolved
+intermediate setup violations; none of these estimates constitutes final signoff.
+
+The decimal CI provenance assertion also failed because it mistakenly included
+`06-yosys-synthesis/synthesis.abc.sdc`. That file contains only driving-cell and
+load directives, not an STA constraint deck. The diagnostic assertion is now
+scoped to **every OpenROAD-exported STA SDC**. On downloaded, unmodified
+artifacts it verifies12 actual tool environments containing5.0 and7 exported
+SDCs with early0.9500/late1.0500. The control verifies17 environments containing5
+and10 OpenROAD SDCs without derates. This correction does not make the failed
+physical run pass, alter an official checker or remove an acceptance criterion.
+It confirms the first hypothesis: the intended margin was absent, and the
+normal decimal configuration actually enables it. Physical feasibility remains
+unresolved.
+
+Same-source RTL CI35489278244 and docs35489278257 pass. All downloaded XMLs,
+29 pin scenarios and the exact-source/six-RTL-hash WS2812 report are verified;
+12frames/1,440bits still pass. No GDS or new submission was attempted.
+
+The next bounded experiment tests the local-distribution hypothesis at
+densities90/91, now holding **actual5%derating** fixed along with post-CTS20ps
+and GRT80ps. This changes only density relative to the failed decimal arm.
+The prior90/91 failures with integer derating do not predict this different
+buffer population's legalization. No memory, RTL, clock, die boundary or
+acceptance criterion changes. Failure stays failure, and any legal result
+still requires an exact-source full flow, WS2812 tests and strict audit.

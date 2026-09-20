@@ -24,10 +24,11 @@ adding eight hold buffers; density 90 fails. The full density92/hold80 build
 `e66a4a8` resolves routing and passes all official jobs, ten prechecks and all
 29 RTL/routed scenarios, including WS2812. However, the unchanged audit
 rejects it: **fast hold −22.042 ps and two slow-corner slew violations**.
-The current bounded diagnostic tests the integer-division defect in the
-tool's intended 5% derating, comparing configuration representations `5` and
-`5.0`. Neither arm can produce a submission artifact. No failed candidate
-is approved. RTL, memory, PDK and release acceptance criteria stay unchanged.
+The derating diagnostic confirms that `5.0` activates the intended 5% margin,
+but its density92 placement fails after378 post-CTS hold buffers (332 in the
+integer control). The next bounded diagnostic tests densities90/91 while
+retaining the real 5% margin. No diagnostic can produce a submission artifact.
+No failed candidate is approved. RTL, memory, PDK and release criteria stay unchanged.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.

@@ -1,5 +1,5 @@
 {
-  "//": "AstraPIO ABI v6 OUTMSB experiment. Density92/hold80 source e66a4a8 passes official build and WS2812 but FAILS strict audit: fast hold and slow slew. NOT qualified. Current diagnostic compares 5 vs 5.0 representation of intended derating using CLI config only; no operational setting here, RTL, memory, PDK or acceptance rule changed.",
+  "//": "AstraPIO ABI v6 OUTMSB experiment, NOT qualified. e66a4a8 fails strict hold/slew audit. Diagnostic 35489278311 confirms5.0 activates intended derating but density92 fails post-CTS legalization. Next diagnostic compares densities90/91 with full5percent via normal CLI config. Operational settings here, RTL, memory, PDK and acceptance rules unchanged; no release yet.",
   "PL_TARGET_DENSITY_PCT": 92,
   "PL_MAX_DISPLACEMENT_Y": 350,
   "CLOCK_PERIOD": 20,
