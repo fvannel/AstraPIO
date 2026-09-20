@@ -1,5 +1,5 @@
 {
-  "//": "AstraPIO ABI v5, native ten-bit program and shared SPI. Density 91 passes post-CTS and initial global routing; full routing/signoff still required. Exact shuttle PDK and official base SDC; no check/timing exceptions.",
+  "//": "AstraPIO ABI v6 OUTMSB candidate. Post-global-route hold repair target increased to 80 ps after the 20 ps build failed explicit derated fast-corner hold by 16.380 ps. RTL, clock, PDK, density and all signoff checks unchanged; complete requalification required.",
   "PL_TARGET_DENSITY_PCT": 91,
   "PL_MAX_DISPLACEMENT_Y": 350,
   "CLOCK_PERIOD": 20,
@@ -22,7 +22,7 @@
   "CTS_ROOT_BUFFER": "sg13g2_buf_2",
   "MAX_FANOUT_CONSTRAINT": 8,
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.02,
-  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.02,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.08,
   "RUN_LINTER": 1,
   "LINTER_INCLUDE_PDK_MODELS": 1,
   "CLOCK_PORT": "clk",

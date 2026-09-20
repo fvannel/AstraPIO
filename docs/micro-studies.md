@@ -97,7 +97,7 @@ passes all 28 pin scenarios, 1,988 bounded legacy differential traces, FIFO and
 latch-store units and host driver tests. The downloaded test XML was checked
 again locally with no failures, errors or skips.
 Its [strict full build](https://github.com/fvannel/AstraPIO/actions/runs/35470810763)
-is separate from the failed shared-prototype run. No memory bytes, instruction
+was cancelled in favor of the final 29-test source below, not passed. No memory bytes, instruction
 slots, safety checks, clock targets or PDK rules were removed to make room.
 
 SPI application limits: the measured bit interval is 400 ns at a 50 MHz ASIC
@@ -120,8 +120,67 @@ from minimal source `456092e`. A final official build must use the same commit
 as the expanded suite and accurate ABI6 submission documentation. The earlier
 28-test build cannot stand in for that final build.
 
-Full build and, if successful, the explicit three-corner audit remain pending.
+Every new physical candidate requires a full build and explicit three-corner audit.
 The existing follow-up `qualification-astrapio-compact` checks every 10 minutes
 when active. It stays quiet on unchanged state. Submission is permitted only
 for the exact final qualified commit; no arbitrary merge, skipped check,
 reservation change or replacement of accepted PR149 by a failed experiment.
+
+### Final exact-source verification
+
+Source `f9e8b69f90cfacd1fafebe9513a5b294ed691fb0` includes the mandatory WS2812
+scenario and correct ABI6 submission documentation. Independent RTL CI
+[35472246586](https://github.com/fvannel/AstraPIO/actions/runs/35472246586)
+and docs CI 35472246583 succeed. The entire official
+[GDS run 35472253033](https://github.com/fvannel/AstraPIO/actions/runs/35472253033)
+succeeds: zero final Magic/KLayout DRC, LVS, XOR, antenna and routing errors;
+all ten official prechecks and all 29 routed pin-level scenarios pass.
+Downloaded results were independently checked for failures, errors and skips.
+
+The WS2812 report passes both its CI gate and a local source/netlist-bound
+recheck: 12 frames, 1,440 bits, host prefix capture, atomic next-frame counter
+replacement, intact tail and concurrent OUTMSB. Observed rise latency in both
+CI runs is 682–699 ns. The local RTL run measured 680–697 ns at its phases;
+both are inside the unchanged 680–700 ns assertion. No SDF is used.
+
+Final standard-cell area is **57,400.4 µm² (95.4934%)**, compared with
+56,841.5 µm² (94.5637%) for qualified baseline 1b1c911. The increase is
+558.9 µm², with unchanged memory, timed engine and constraints. This is a
+completed two-tile layout, not yet approval of its derated timing margins.
+
+Exact routed netlist SHA256:
+`de4a388ce1ab062ae44cfd8c3a4b51d82db5e16dd28761cda36964f3a02210b1`.
+PDK remains `c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c`; LibreLane is 3.0.5.
+The explicit three-corner 0.95/1.05 audit was launched once as
+[35481178961](https://github.com/fvannel/AstraPIO/actions/runs/35481178961).
+It **failed** on one fast-corner hold path: `core.instruction[8]` (`_4779_`)
+through `_3031_`, `_3032_`, `_3033_` to `core.accumulator[6]` (`_5048_`).
+The required time is 0.791058 ns and arrival 0.774678 ns, giving
+**−0.016380 ns**. Typical hold is +0.117166 ns and slow +0.345912 ns; minimum
+pulse-width checks pass at all three corners. This failure disqualifies
+`f9e8b69` despite its successful official flow and functional simulations.
+
+Diagnosis checked three hypotheses: a real fast short path, mismatched
+artifacts, or a report/parser problem. The audit netlist, SDC and SPEF hashes
+match the official build. The full path report and all-violators summary
+independently contain the same negative slack, while latch time-borrowing zeros
+are not treated as violations. Thus this is a real hold-margin deficit under
+the required derating, not a test to waive. The frozen-netlist audit is the
+regression harness; ordinary RTL tests cannot reproduce a routed hold deficit.
+
+## Corrective physical candidate: GRT hold target 80 ps
+
+Only `GRT_RESIZER_HOLD_SLACK_MARGIN` changes from 0.02 to 0.08 ns. This asks
+OpenROAD to insert enough physical delay to aim for a larger positive hold
+margin; it does NOT relax a signoff rule or change the audit's 0.95/1.05
+derating. See [LibreLane timing closure](https://librelane.readthedocs.io/en/latest/usage/timing_closure/index.html).
+Post-CTS margin stays 0.02 ns. RTL, memory, timed engine, 20 ns clock, PDK,
+placement density, setup constraints and all official checks stay unchanged.
+
+Prediction: extra post-global-route hold repair should remove the observed
+fast short path while preserving setup, legality and the two-tile boundary.
+The physical regression is a NEW complete official build, all 29 routed tests
+including the source-bound WS2812 application, and the identical strict
+three-corner audit. No acceptance is inferred from increasing the setting.
+The failed `f9e8b69` artifacts are retained; accepted baseline PR149 is untouched.
+No new shuttle revision has been submitted.

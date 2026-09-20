@@ -14,8 +14,11 @@ first 24 input bits for the LPC, concurrently substitutes its 24-bit counter,
 and relays following words unchanged. Mid-frame counter updates take effect
 on the next frame. The release suite runs this application alongside OUTMSB
 activity on both RTL and the exact routed netlist; a missing or stale report
-blocks qualification. All 29 pin-level tests pass locally; physical and routed
-results for the final source are still pending.
+blocks qualification. All 29 tests passed on RTL and the routed netlist of
+`f9e8b69`, but that layout failed the explicit derated fast-corner hold audit
+by 16.380 ps and must NOT be submitted. The current corrective candidate keeps
+all RTL unchanged and increases only the post-global-route hold repair target
+from 20 to 80 ps. It requires a new complete physical and routed qualification.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.
