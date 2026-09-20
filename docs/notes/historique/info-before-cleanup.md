@@ -1,0 +1,40 @@
+# AstraPIO — single PIO plus timed I/O (ABI v5)
+
+**Release status:** exact candidate `1b1c911` adds a configurable timed pulse-I/O
+engine beside one general-purpose PIO context and passes the official physical
+flow plus the explicit three-corner derated audit. It has not been submitted.
+The already submitted compact fallback is commit `946648ff` / shuttle PR 142.
+See `docs/dense-pio-v5.md` for the candidate-specific evidence, architecture,
+migration, tests and limitations.
+
+General-purpose programmable digital IO coprocessor, **pending platform submission and shuttle acceptance**. This is ABI 0x0500; earlier single/dual-context and SRAM submissions describe different implementations.
+
+## How it works
+
+One interpreter uses a programmable 16-word, 10-bit instruction store made from IHP standard-cell latches, with two-byte transmit and receive queues. One instruction slot occurs every four chip clocks. There is no SRAM macro. An autonomous pulse engine can concurrently capture a 1..24-bit prefix, replace it on a regenerated output stream and relay subsequent bits. Timing and routing are programmable; WS2812B V5 is one tested profile, not a hardwired ASIC purpose.
+
+The host uses SPI mode 0, MSB first: command byte (02 write / 03 read), register address byte, then a 16-bit payload. Program words occupy the low ten bits; upper bits must be zero. Stop the interpreter before changing its program. Probe identity 5049, ABI 0500 and context count 1 before using the driver. SPI high/low periods and CS setup/hold/gap each require at least six ASIC clocks. MISO is not tri-stated.
+
+## How to test
+
+Reset, confirm ID/ABI/context count/capacity registers (00/01/02/0F), load and read back code, set entry PC and GPIO mask, then run with mask 1. Use assembler option `--abi 5`; old binaries are incompatible. The pin-level suite checks program integrity, 14 output indices, FIFO/SPI atomicity, UART timing, faults and reset, plus pulse-stream capture/replacement/relay while the interpreter runs independently.
+
+See `docs/dense-pio-v5.md` for the register map, ISA migration and verification scope. Pulse timing must be configured for the actual attached device. Physical timing evidence is limited to the stated clock, PVT corners and nominal extracted RC; broad WS2812 compatibility and board-level timing remain unqualified.
+
+## External hardware
+
+A host MCU (intended LPC546xx), clock source and wiring for the selected programmable protocol. The exact LPC546xx board transport/DMA and board timing remain to be qualified. No external memory is required for the compact examples.
+
+## Pin use
+
+ui0/1/2: host SCK/MOSI/CS_n; ui3..7: five dedicated PIO inputs.
+
+uo0/1: MISO/IRQ; uo2..7: six dedicated PIO outputs.
+
+uio0..7: eight bidirectional PIO pins. The single interpreter may own any of the 14 outputs; the pulse engine exclusively owns at most one. Masks cannot overlap. All pad output values are forced low and uio directions disabled on reset or deselection; dedicated outputs are not tri-state.
+
+## Qualification status
+
+Exact candidate `1b1c91183a4a9a5ea3516699845336175ffe6d96` passes placement/routing, Magic/KLayout DRC, LVS, XOR, antenna, all ten official prechecks and all 25 routed-netlist functional tests. Audit 35448283122 passes setup/hold, recovery/removal, clock-gating, pulse-width, electrical and unconstrained-path checks at all three cell corners with explicit early 0.95 / late 1.05 derating. No SDF simulation was performed. No SRAM waiver, DRC filtering or nonblocking signoff exception is permitted. These results qualify only the named frozen candidate, not arbitrary later changes.
+
+The compact candidate at commit `946648f` completed the official flow in 1×2 tiles on 2026-09-18: Magic/KLayout DRC, LVS, XOR, antenna checks, nominal-RC timing at three cell corners, ten official prechecks and ten routed functional tests passed. The latest eleven-test suite also passes locally on that exact routed netlist. That compact candidate was submitted as PR 142; this timed extension has not been submitted. Board timing review remains separate. Detailed fallback evidence is in `docs/compact-validation.md`.

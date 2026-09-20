@@ -1,13 +1,13 @@
 # AstraPIO — single PIO plus timed I/O (ABI v5)
 
-**Release status:** exact candidate `1b1c911` adds a configurable timed pulse-I/O
-engine beside one general-purpose PIO context and passes the official physical
-flow plus the explicit three-corner derated audit. It has not been submitted.
-The already submitted compact fallback is commit `946648ff` / shuttle PR 142.
-See `docs/dense-pio-v5.md` for the candidate-specific evidence, architecture,
-migration, tests and limitations.
+**Release status:** final source `1b1c91183a4a9a5ea3516699845336175ffe6d96`,
+project 5799, TTIHP26b, 1×2 tiles. Submitted as
+[PR149](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/149), merged
+2026-09-19 at 15:14:01 UTC. It passes the official physical flow and the
+explicit three-corner derated audit. The local cleanup does not change the
+submitted circuit or create a new submission. See [the validation summary](validation-finale.md).
 
-General-purpose programmable digital IO coprocessor, **pending platform submission and shuttle acceptance**. This is ABI 0x0500; earlier single/dual-context and SRAM submissions describe different implementations.
+General-purpose programmable digital IO coprocessor, **submitted and accepted; hardware qualification remains pending**. This is ABI 0x0500; earlier single/dual-context and SRAM submissions describe different implementations.
 
 ## How it works
 
@@ -37,4 +37,6 @@ uio0..7: eight bidirectional PIO pins. The single interpreter may own any of the
 
 Exact candidate `1b1c91183a4a9a5ea3516699845336175ffe6d96` passes placement/routing, Magic/KLayout DRC, LVS, XOR, antenna, all ten official prechecks and all 25 routed-netlist functional tests. Audit 35448283122 passes setup/hold, recovery/removal, clock-gating, pulse-width, electrical and unconstrained-path checks at all three cell corners with explicit early 0.95 / late 1.05 derating. No SDF simulation was performed. No SRAM waiver, DRC filtering or nonblocking signoff exception is permitted. These results qualify only the named frozen candidate, not arbitrary later changes.
 
-The compact candidate at commit `946648f` completed the official flow in 1×2 tiles on 2026-09-18: Magic/KLayout DRC, LVS, XOR, antenna checks, nominal-RC timing at three cell corners, ten official prechecks and ten routed functional tests passed. The latest eleven-test suite also passes locally on that exact routed netlist. That compact candidate was submitted as PR 142; this timed extension has not been submitted. Board timing review remains separate. Detailed fallback evidence is in `docs/compact-validation.md`.
+Older compact and SRAM candidates are historical only; their results are in
+[the archived notes](notes/README.md). The retained ABI 5 circuit is the one
+accepted through PR149. Board and silicon validation remain separate.

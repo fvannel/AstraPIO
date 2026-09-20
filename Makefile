@@ -2,11 +2,10 @@ PYTHON ?= python3
 
 .PHONY: check test unit host-test differential
 check:
+	$(PYTHON) tools/check_final_release.py
 	$(PYTHON) tools/check_project.py
 	$(PYTHON) -m unittest discover -s test -p test_tools.py
-	$(PYTHON) -m unittest discover -s test -p test_provisional_precheck.py
 	$(PYTHON) -m unittest discover -s test -p test_release_policy.py
-	$(PYTHON) -m unittest discover -s test -p test_sram_diagnostic.py
 
 unit:
 	$(MAKE) -C test/units

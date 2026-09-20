@@ -1,12 +1,12 @@
-# AstraPIO ABI v5 — native ten-bit instruction experiment
+# AstraPIO ABI v5 — final ten-bit instruction architecture
 
-Branch `codex/dense-pio10`. Exact density-91 candidate `1b1c911` passes the
-official flow and supplemental derated audit; it is not yet submitted. The
-merged compact fallback `946648ff` / shuttle PR 142 remains unchanged.
+Final submitted source `1b1c91183a4a9a5ea3516699845336175ffe6d96`,
+project 5799 / TTIHP26b / 1×2 tiles. PR149 merged on 2026-09-19.
+The official physical flow and supplemental derated audit pass.
 
-The user approved reducing storage representation and sharing SPI shift storage,
-not reducing capabilities. Keep one general PIO, sixteen instruction slots,
-two-byte queues in each direction and three 24-bit timed payload banks.
+One general PIO, sixteen ten-bit instruction slots, two-byte queues in each
+direction and three 24-bit timed payload banks are retained. Storage uses
+standard-cell latches, not SRAM macros. SPI read/write shifting shares storage.
 
 ## External interface
 
@@ -16,7 +16,10 @@ six ASIC clocks minimum for every SCK high/low and CS setup/hold/gap. Program
 40..4F accepts ten-bit values only; nonzero upper six bits are rejected without
 changing memory or length. Reads zero-extend to 16 bits. Invalid ten-bit opcodes
 can be read back but fault when executed. All other register semantics are
-unchanged from `single-pio-v4.md`; no old binary compatibility is claimed.
+unchanged from the [single-PIO register description](notes/historique/single-pio-v4.md#software-migration),
+except the ABI value and ten-bit instruction format specified here. Its old
+release status, binary opcodes and physical results are historical, not current.
+No old binary compatibility is claimed.
 
 Use `pioasm.py --abi 5` / `assemble(..., abi=5)` and `program_frames(..., abi=5)`.
 Legacy assembler defaults remain ABI 3 for archival examples. The C driver
@@ -45,194 +48,22 @@ encodings. Original noncanonical v4 aliases and arbitrary 16-bit data words
 are not part of this format. Bounds, reset, FIFO, event and ownership guards
 remain active. A program must be uploaded consecutively while stopped.
 
-## Validation sequence
+## Timed engine and validation
 
-First, the ABI-5 pin-level tracer failed against v4, then passed after native
-ten-bit storage/decode. All 23 pin-level integration scenarios pass locally
-before SPI sharing. Assembler checks enumerate all 944 encodings. C driver
-checks reject old ABIs and oversized words; sanitizer checks pass.
+The timed register page 60..6C retains the interface documented in
+[the pulse-engine notes](notes/historique/timed-pio-v4.md). The portable API is
+in `firmware/pio_timed.h` / `firmware/pio_timed.c`; the exact ABI-5 application
+scenario is [the WS2812 counter replay](../test/ws2812/README.md).
+The interpreter and timed engine run concurrently with exclusive output ownership.
 
-Physical baseline is diagnostic run 35436643505: v4 passed CTS but failed
-post-hold legalization after adding 390 buffers. The planned comparison keeps
-the exact PDK, two-tile boundary, clocks, margins, corners and checkers fixed:
-first measure encoding alone, then shared SPI. Neither a smaller cell count nor
-functional tests qualify a release. Full routing/checks and a new explicit
-derated timing audit remain mandatory before any new submission.
+The [final validation summary](validation-finale.md) distinguishes 25 pin-level
+scenarios, 1,988 differential traces, official signoff and the supplemental
+three-corner timing audit. Retained artifacts are in `release/`, with a
+SHA-256 manifest binding them to the submitted source. Simulations have no SDF;
+physical LPC/board/silicon operation remains unqualified.
 
-Encoding-only commit `8180b33` passes the same controlled diagnostic in
-[run 35438406460](https://github.com/fvannel/AstraPIO/actions/runs/35438406460).
-Post-CTS cells: 51,801.1 square micrometers. After 363 hold-repair buffers,
-legalized cells: 57,728.8 square micrometers (96.0397% of the core).
-The exact settings are root buffer 2, density target 97, Y legalization search
-350 micrometers. No routing or signoff follows this diagnostic's stop point.
-
-The second change shares the SPI read/write shift storage, since the protocol
-selects one direction per transaction. Read snapshots replace header storage
-at the original falling-edge boundary; subsequent read MOSI is ignored. MISO
-timing, complete-read consumption and aborted-frame semantics are unchanged.
-24 pin-level tests pass after sharing, including every 0..31-bit abort length,
-all twenty input-clock phase offsets at the specified minimum SPI timing,
-arbitrary read MOSI and alternating read/write transactions. Timing constraints
-are not relaxed. The separate physical comparison is recorded below.
-
-`make differential` compares the new core with a frozen v4 reference from
-`9ac64fb` at public bus/pin ports: all 944 operations in two accumulator states,
-plus 100 random programs, match on every observed cycle (1,988 traces).
-Long delays are observed for 1,100 cycles. The reference is test-only and never
-part of the ASIC source list. This is bounded dynamic equivalence, not formal
-proof. The latch-store unit bench also passes at both widths (10 and legacy 16).
-
-The shared-SPI comparison `57c202f` passes
-[run 35438677326](https://github.com/fvannel/AstraPIO/actions/runs/35438677326):
-56,798.0 square micrometers after 328 hold buffers, 94.4912% utilization,
-930.8 square micrometers less than the encoding-only trial. These are legalized
-post-CTS figures, not final routed results. The same three placement/clock
-settings are now selected in the official build config for the full-flow test.
-Synthesis contains exactly 160 program latches and sixteen row clock gates.
-
-The suite now has 25 pin-level scenarios, including rejection of all 80
-reserved ten-bit codes and each of the upper six transport bits. The SPI phase
-sweep explicitly aligns simulation time to each phase 0..19 before transfer.
-No confidence is inferred for new RTL from historical fallback checks.
-
-Commit `8819b92660527db107a6639ac1193156d1c1f6d8` passes the independent
-[25-scenario RTL CI](https://github.com/fvannel/AstraPIO/actions/runs/35438879956).
-The same 25 scenarios also pass locally against the exact post-hold placed
-netlist from run 35438677326, SHA256
-`0d0d72e7bc181b3aa7547b4ff1ab663b9d25c939343e08e59f64b60913430f0c`.
-That simulation has no SDF and is not a routed timing qualification. Local
-checks additionally pass 52 Python tests, both sanitizer-enabled C test
-binaries, the FIFO unit bench and both latch-store widths.
-
-The first official full-flow trial is frozen at `8819b92660527db107a6639ac1193156d1c1f6d8`
-in [run 35438884203](https://github.com/fvannel/AstraPIO/actions/runs/35438884203).
-It was cancelled, not passed or classified as a signoff failure, after the
-density-90 comparison advanced further. Its retained log records 2,148 global
-overflow units at 11:35 UTC during post-global timing repair. It never reached
-final routing or signoff. No new revision was submitted from this trial.
-
-The density-97 official trial develops routing congestion. A separate
-[density-90 diagnostic](https://github.com/fvannel/AstraPIO/actions/runs/35440167471)
-on the same RTL passes post-hold legalization and the first global routing
-stage: 56,788.9 square micrometers, 94.4761% utilization, 325 hold buffers,
-zero overflow on every routing layer. It changes only the initial placement
-density target, not the boundary, timing margins, PDK or checkers. The target
-is now 90 for a new full-flow trial. This diagnostic stops before post-route
-timing repair, detailed routing and signoff; it cannot qualify a submission.
-
-The new complete official trial is
-[run 35440371045](https://github.com/fvannel/AstraPIO/actions/runs/35440371045),
-frozen at `83ef6b7d8e96dd90e14fa3d22ad8585309dd1a03`. Its RTL is identical
-to `8819b92`; only the placement density changed in the physical config.
-[Independent functional CI](https://github.com/fvannel/AstraPIO/actions/runs/35440371601)
-passes on that exact commit. Downloaded XML evidence confirms 25 pin-level
-scenarios plus the differential, FIFO and two program-width benches with no
-failure, error or skip. Complete routing, official precheck and explicit derated
-timing must still pass before any promotion.
-
-Density 90 reaches detailed routing; Metal2 spacing markers persist through
-multiple repair passes (reduced to one at an intermediate observation). They
-are blocking until repaired; the run is not qualified.
-To test whether the conflict depends on local placement, the adjacent target
-91 was measured separately in
-[run 35442518158](https://github.com/fvannel/AstraPIO/actions/runs/35442518158):
-56,743.5 square micrometers, 94.4007% utilization, 327 hold buffers and zero
-initial global overflow. No capacity, RTL, boundary or checking rule changes.
-Its complete official trial is
-[run 35442726541](https://github.com/fvannel/AstraPIO/actions/runs/35442726541)
-on `1b1c91183a4a9a5ea3516699845336175ffe6d96`. Both complete trials are still
-unqualified until their results and the supplemental audit are reviewed.
-
-At 13:04 UTC on 2026-09-19, the density-90 physical build completes. Its final
-metrics record 56,859.7 um2 standard-cell area (94.5939% utilization), zero
-Magic/KLayout DRC, LVS, XOR and antenna violations. All ten official prechecks
-pass with no failure, error or skip. The final routed netlist SHA256 is
-`68601a53d42b98c47013c1ebe57f53303c69d4d89d95a011fd8e0ca608ac4357`.
-Submission metadata confirms source `83ef6b7d8e96dd90e14fa3d22ad8585309dd1a03`,
-the unchanged shuttle PDK and LibreLane 3.0.5. The standard fast-corner hold
-slack is 0.030340 ns; it does not replace the explicit derated audit.
-At 13:13 UTC, all 25 routed-netlist functional scenarios pass with no failures
-or skips, and the entire official workflow succeeds. This simulation has no
-SDF. The supplemental audit remains pending. Its workflow is frozen to this
-exact successful run, source commit, netlist hash, PDK, final SDC and nominal
-SPEF, and checks all three cell corners with explicit early 0.95 / late 1.05.
-No new revision is submitted before that additional gate passes.
-
-The first [explicit derated audit 35445183116](https://github.com/fvannel/AstraPIO/actions/runs/35445183116)
-fails at the fast corner: hold slack -0.006421 ns from `_4672_` to `_4673_`,
-the shared SPI payload bits 11 to 12 (netlist aliases `core.write_data`).
-The launch/capture clock arrival times are 0.465576 / 0.553815 ns;
-data arrives at 0.756809 ns but is required at 0.763231 ns, including the
-unchanged 0.25 ns uncertainty and clock reconvergence correction. This is
-not a parser artifact or a zero-slack latch-borrowing entry. The candidate
-cannot be submitted. The unchanged nominal audit from the official flow
-does not include the intended non-unity derating because of the documented
-integer division in LibreLane 3.0.5's generic SDC.
-
-The audit now collects all three corners before returning failure if any
-original check fails. [Repeat 35445478047](https://github.com/fvannel/AstraPIO/actions/runs/35445478047)
-on the identical frozen artifacts reproduces the same -0.006421 ns fast-corner
-hold failure and returns failure overall. All three reports are preserved:
-
-| Cell corner | Worst reported hold slack (ns) | Result |
-| --- | ---: | --- |
-| Fast, 1.32 V, -40 C | -0.006421 | Fail |
-| Typical, 1.20 V, 25 C | 0.124461 | Pass |
-| Slow, 1.08 V, 125 C | 0.350550 | Pass |
-
-Minimum pulse-width checks pass at all three corners. No criterion changed.
-The density-91 candidate must pass this same supplemental gate if its official
-flow succeeds. No hardware or margin change has been made in response yet.
-
-The density-91 official workflow `35442726541` also succeeds completely on
-2026-09-19. Its exact source remains `1b1c91183a4a9a5ea3516699845336175ffe6d96`,
-with the unchanged PDK/tool metadata verified. All ten prechecks and all 25
-routed-netlist functional scenarios pass with no failure, error or skip.
-Final Magic/KLayout DRC, LVS, XOR and antenna counts are zero. Standard-cell
-area is 56,841.5 um2 (94.5637% utilization). The standard-flow worst hold slack
-is 0.028291 ns and is not a substitute for the supplemental audit.
-Its netlist SHA256 is
-`6d2dbfd333bb89544cf296e9ff408e8870b7151984e7962b098833fd15e3e948`.
-The same three-corner audit is now frozen to these density-91 artifacts; only
-the input run/commit/netlist identifiers change. No checking criterion changes,
-and the failed density-90 audit remains part of the permanent evidence.
-No ABI-v5 revision has been submitted.
-
-The density-91 [supplemental audit 35448283122](https://github.com/fvannel/AstraPIO/actions/runs/35448283122)
-passes all three corners. Netlist, SPEF, final SDC, source and PDK provenance
-match the downloaded official build. Hold slack is +0.004872 ns fast,
-+0.140331 ns typical and +0.375741 ns slow. Minimum pulse-width margins are
-9.860577 / 9.779032 / 9.652014 ns respectively. All requested setup/hold,
-recovery/removal, clock-gating, electrical and unconstrained-path checks pass.
-Zero-slack latch-borrowing entries are not negative timing violations.
-The smallest hold margin remains narrow; the evidence applies to the 20 ns
-clock, declared IO constraints, three cell corners and nominal extracted RC.
-It is not a board-level, silicon or SDF-simulation qualification.
-
-**Selected candidate:** `1b1c91183a4a9a5ea3516699845336175ffe6d96`.
-No RTL, capacity, PDK, checking rule or timing margin was relaxed. The passing
-placement target 91 was the sole physical-config difference from target 90.
-The failed target-90 evidence is retained, not reclassified as passing.
-
-**Submission handoff:** on 2026-09-19 the authenticated project 5799 still
-shows only merged PR 142 and closed PR 122. The "Submit a previous commit"
-menu is available, but both accessibility and coordinate selection fail to
-open its input dialog in the in-app browser. The captured page console says
-`Error: prompt() is not supported.` No submission request or new revision was
-created by these actions. Use a browser supporting JavaScript prompts, select
-that menu and enter the full selected-candidate SHA above. Do not use the
-default latest-main action. Central PR checks and acceptance remain to verify.
-
-An isolated flip-flop alternative was also measured, without changing the
-sixteen ten-bit words, instruction cadence or host contract. All 25 local
-pin-level scenarios, 1,988 differential traces and both storage-width unit
-benches pass. However, [physical run 35443893374](https://github.com/fvannel/AstraPIO/actions/runs/35443893374)
-at `3d296921ff7011b5353b11f66549c1629fe1b35f` fails post-CTS legalization
-(`DPL-0036`) before hold repair. Pre-CTS area rises from 49,424.3 to 55,335.6
-um2 at the same placement target 91. Post-CTS area is already 57,654.4 um2
-(95.916%). This alternative is rejected and remains isolated on
-`codex/dense-pio10-flop-memory`; it is not merged into this latch candidate.
-
-The repository has no separate agent glossary/ADR configuration; existing
-`compact-v3.md`, `single-pio-v4.md` and their validation ledgers remain the
-domain references. No issue-tracker setup, label or external issue is created.
+The complete chronological study, including failed densities and the flip-flop
+alternative, is retained in
+[the pre-cleanup engineering notes](notes/historique/dense-pio-v5-before-cleanup.md).
+Do not treat historical submission instructions there as the present status.
+OUTMSB/ABI 6 was not approved and is not implemented in the final source.

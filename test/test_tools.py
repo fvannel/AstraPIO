@@ -82,9 +82,11 @@ class ToolsTest(unittest.TestCase):
                 assemble(source)
 
     def test_examples_assemble(self):
-        for path in (Path(__file__).resolve().parents[1] / "examples/compact").glob("*.pio"):
+        examples = list((Path(__file__).resolve().parents[1] / "examples/compact").glob("*.pio"))
+        self.assertTrue(examples, "The final examples must not silently disappear")
+        for path in examples:
             with self.subTest(path=path):
-                self.assertLessEqual(len(assemble(path.read_text())), 16)
+                self.assertLessEqual(len(assemble(path.read_text(), abi=5)), 16)
 
     def test_frames(self):
         self.assertEqual(read_frame(0x12), bytes.fromhex("03 12 00 00"))

@@ -1,50 +1,78 @@
-# AstraPIO — dense single-context timed-I/O experiment
+# AstraPIO — version finale soumise (ABI 5)
 
-General-purpose programmable digital IO coprocessor for an LPC546xx host, targeting two Tiny Tapeout IHP26b tiles.
+Version retenue : `1b1c91183a4a9a5ea3516699845336175ffe6d96`,
+projet **5799**, shuttle **TTIHP26b**, **1 × 2 tiles**.
+[PR149 acceptée](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/149),
+fusionnée le 19 septembre 2026. Le dépôt local est une présentation nettoyée :
+le circuit et sa configuration sont identiques à cette version, mais le
+commit de nettoyage n'est pas une nouvelle soumission.
 
-**This branch implements ABI 0x0500: one PIO context plus a timed-I/O engine.
-Exact candidate `1b1c911` passes physical qualification and is ready to submit.
-It has NOT yet replaced the submitted chip.**
+`info.yaml` est conservé byte pour byte comme dans le commit soumis, y compris
+ses anciens commentaires prudents. Le statut à jour est décrit ici et dans
+`design_status.json`, pas dans ces commentaires historiques.
 
-The extension captures a configurable 1..24-bit prefix, replaces that prefix
-on a simultaneously regenerated pulse stream, then relays the remaining bits.
-Timing and GPIO routing are programmable; WS2812B V5 is one tested profile.
-Atomic host updates, an RX mailbox and error reporting are included. The sole
-programmable context remains available concurrently. The earlier two-context
-experiment exceeded the two-tile area; this reduction is explicitly approved.
-See [native ten-bit architecture and migration](docs/dense-pio-v5.md).
+## Circuit conservé
 
-**Current result:** all 25 pin-level RTL scenarios and 1,988 bounded differential
-traces pass. Commit `1b1c911` completes the official physical build with zero
-Magic/KLayout DRC, LVS, XOR and antenna violations, at 94.5637% standard-cell
-utilization. All ten official prechecks and all 25 routed-netlist functional
-scenarios pass. The explicit 0.95/1.05 derated timing audit also passes all
-three cell corners, with minimum hold slack +4.872 ps. The earlier density-90
-candidate remains rejected. No ABI-v5 revision has been submitted: the in-app
-browser cannot open the platform's commit-entry prompt. Use "Submit a previous
-commit" in a browser supporting that dialog, with exact commit
-`1b1c91183a4a9a5ea3516699845336175ffe6d96`.
-See the [validation ledger](docs/dense-pio-v5.md). Earlier v4
-failures remain in the [historical ledger](docs/single-pio-validation.md).
+- Un PIO programmable, une instruction tous les quatre cycles.
+- Programme de 16 × 10 bits (20 octets), mémorisé avec des latches standard.
+- Files TX et RX de deux octets chacune.
+- Moteur temporel autonome, interface hôte SPI et IRQ, horloge 50 MHz.
+- Application WS2812 : capture du premier mot DIN de 24 bits vers le LPC,
+  remplacement simultané sur DOUT par son compteur, puis relais régénéré
+  des mots suivants. Les mises à jour s'appliquent à la trame suivante.
+- Pas de macro SRAM, pas d'extension OUTMSB de l'étude ABI 6.
 
-- One context with one instruction slot every four clocks; both output groups remain accessible.
-- One 16 × 10-bit latch program store (20 bytes), using unchanged IHP standard cells; no SRAM macro.
-- Two-byte TX and RX queues (4 bytes total), plus 24-bit timed RX, active TX and staging registers.
-- Same SPI pins and 32-bit framing; new ABI, capacity and firmware APIs.
-- Exact shuttle PDK c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c; all checks blocking.
+## Organisation
 
-Use `tools/pioasm.py --abi 5` and the ABI-v5 C driver. Reassemble ABI-v4 source programs; their old binaries are incompatible. See [current qualification status](design_status.json). Historical [compact documentation](docs/compact-v3.md) describes the submitted fallback, not this variant.
+| Répertoire | Contenu |
+|---|---|
+| `src/` | Les six fichiers RTL utilisés et leur configuration finale |
+| `firmware/`, `tools/`, `examples/` | Pilote C, assembleur et outils utiles |
+| `test/` | Régressions finales et scénario WS2812 ABI 5 |
+| `release/` | Une seule copie des artefacts de fabrication et preuves finales |
+| `vendor/` | Uniquement les modèles Verilog nécessaires aux simulations |
+| `docs/` | Description finale, bilan de validation et notes des essais |
 
-The historical SRAM implementation and its evidence remain on branch `diagnostic/sram-magic` at `f7f5ca6`. Existing SRAM docs, larger examples and test modules are archival unless explicitly selected by the compact test suite. Their passes do not qualify this design. In particular, the previous WS2812 transmitter/relay does not fit unchanged.
+Voir [la description](docs/info.md), [l'ISA ABI 5](docs/dense-pio-v5.md),
+[le bilan des tests](docs/validation-finale.md) et
+[l'index des notes historiques](docs/notes/README.md).
+Le [compte rendu de nettoyage](docs/nettoyage-20260920.md) indique ce qui
+a été retiré, comment le récupérer et les régressions exécutées.
 
-## Development
+## Vérification et développement
 
-Install the dependencies in `test/requirements.txt`, Icarus Verilog **13**, and the exact IHP standard-cell Verilog models. Icarus 12 does not correctly drive the delayed signals in these latch models; CI uses the same verified version-13 package as the official Tiny Tapeout gate simulation. Set `PDK_ROOT` to the parent of `ihp-sg13g2` (locally defaults to `work/pdk`). Run `make test`. The tests include host tooling, the C driver, FIFO and latch-store unit benches, and pin-level SPI/GPIO application tests.
+Les six RTL, la configuration de fabrication et les fichiers protégés sont
+comparés par empreintes au commit soumis :
 
-The manual GDS workflow runs the official Tiny Tapeout physical flow, precheck and gate simulation. It does not merge, publish a viewer or submit a shuttle revision. A successful functional test or synthesis-area estimate is not physical signoff.
+```sh
+python3 tools/check_final_release.py
+```
 
-## Submitted fallback (different RTL)
+Pour reproduire les simulations, installer Icarus Verilog **13** et un
+environnement Python avec `test/requirements.txt`, puis :
 
-The [official compact build at `946648f`](https://github.com/fvannel/AstraPIO/actions/runs/35385953304) completes routing in **1×2 tiles**, with zero Magic/KLayout DRC, LVS, XOR and antenna violations. All ten official prechecks pass. Eleven compact integration tests pass on the exact routed netlist locally (the official build ran the first ten). Final standard-cell utilization is **90.42%**. The PDK and all blocking checks remain unchanged.
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r test/requirements.txt
+make test
+make -C test/ws2812 MODE=rtl
+make -C test/ws2812 MODE=gl
+```
 
-That compact commit was submitted as [shuttle PR 142](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/142). Its central submission check and official precheck passed; the PR was merged on 2026-09-19 at 06:26:37 UTC. It does not contain this timed extension. See the [validation ledger](docs/compact-validation.md) for timing assumptions, artifacts and limitations. A failed or oversized experiment must not replace this fallback.
+L'assembleur doit être appelé avec **`--abi 5`**. Les modèles de simulation
+locaux sont ceux du PDK gelé
+`c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c`.
+Le PDK complet et les environnements temporaires ont été retirés.
+
+Le suivi automatique est arrêté. Les workflows de fabrication restent manuels
+et le verrou local refuse une nouvelle construction distante sans nouvelle
+autorisation. Aucun workflow officiel de vérification n'a été contourné.
+Le nettoyage local n'a rien publié sur GitHub ou Tiny Tapeout.
+
+## Limites
+
+Les simulations sont fonctionnelles, sans SDF. Les vérifications physiques
+concernent le circuit figé et les conditions documentées, pas une carte réelle.
+Le LPC546xx, ses transferts SPI/DMA, les niveaux électriques et les LED réelles
+restent à qualifier sur matériel.

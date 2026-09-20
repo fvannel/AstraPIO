@@ -1,4 +1,4 @@
-# Compact v3, context 0 mask 1, entry 0. UART 8N1 LSB first.
+# AstraPIO ABI5 (--abi 5), context 0 mask 1, entry 0. UART 8N1 LSB first.
 # At 50 MHz: 108 x 80 ns = 8640 ns per bit (~115741 baud).
 LDI 1
 DIR

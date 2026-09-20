@@ -1,24 +1,23 @@
-# Tests
+# Tests de la version finale ABI 5
 
-The default integration suite runs `test_compact.py` (11 legacy ABI v3 scenarios)
-and `test_timed.py` (11 timed-extension scenarios). Only Tiny Tapeout pins are
-used; no internal RTL state is accessed. Timed tests include 24 prefix lengths,
-all 20 one-nanosecond input clock phases, strict pulse widths/low times,
-concurrent PIO execution and host traffic, atomic commits, frozen RX words,
-late host/overrun, generic non-WS2812 timings, and malformed-frame recovery.
+`make test` conserve les **25 scénarios** `test_single`, `test_timed` et
+`test_dense`, les tests de l'assembleur/protocole, les garde-fous de soumission,
+les unités FIFO et latches (10 et 16 bits), les pilotes C avec sanitizers,
+et les **1 988 traces différentielles**. La référence RTL v4 dans
+`differential/` est un oracle de test, pas une autre version à fabriquer.
 
-`make test` also runs project/release-policy checks, assembler/packet helpers,
-depth-two byte FIFO and latch-store unit benches, and both portable C host
-drivers with address/undefined-behavior sanitizers. Historical SRAM/older ISA
-integration files are retained as evidence but are NOT the current suite.
+Le scénario applicatif supplémentaire est dans
+[ws2812/README.md](ws2812/README.md). Il s'exécute en RTL ou sur le netlist
+exactement soumis, conservé dans `release/`. Il ne remplace pas les 25 tests.
 
-Install Icarus Verilog and `requirements.txt` in a dedicated Python 3.11–3.13
-environment, activate it, then run `make test` from the repository root.
-For RTL only, run `make` here, then `python ../tools/check_results.py results.xml`.
-See `../docs/verification.md` for required functional and physical checks.
+Le PDK complet n'est pas nécessaire à ces simulations : seuls les modèles
+Verilog gelés sont conservés dans `vendor/ihp-open-pdk/`.
+La variable `PDK_ROOT` permet toujours une installation externe.
+Utiliser Icarus 13 et les dépendances Python de `requirements.txt`.
 
-Gate-level mode is `make GATES=yes`, after the matching actual netlist and exact
-shuttle PDK models are available. It is functional simulation without SDF; do
-not infer timing signoff. The compact submitted fallback and timed experiment
-have different netlists. See `../docs/timed-pio-v4.md` for experiment evidence;
-do not inherit the fallback's successful physical checks for this extension.
+Les anciens tests SRAM/dual-context et leurs outils ont été retirés du
+répertoire actif ; leur bilan est dans `docs/notes/` et leur code reste
+dans l'historique Git. Aucun scénario de la suite finale n'a été supprimé.
+
+Ces simulations sont fonctionnelles, sans SDF. Voir
+[le bilan de validation](../docs/validation-finale.md) pour leur portée.

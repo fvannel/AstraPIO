@@ -1,0 +1,149 @@
+{
+  "completed_utc": "2026-09-20T06:43:39.669381+00:00",
+  "source_commit": "1b1c91183a4a9a5ea3516699845336175ffe6d96",
+  "purpose": "Local cleanup regression; no new physical build or submission",
+  "source_artifact_vendor_identity_checks": 50,
+  "python_tools_tests": 10,
+  "release_policy_tests": 6,
+  "c_sanitizer_programs": 2,
+  "differential_traces": 1988,
+  "reports": [
+    {
+      "original_path": "test/units/results.xml",
+      "sha256": "f014b604a5addb4ca772fb563f657056d1e43ce175eb668f27d254e0eb116173",
+      "tests": 1,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0,
+      "case_names": [
+        "test_fifo.fifo_order_capacity_simultaneous_and_flush"
+      ]
+    },
+    {
+      "original_path": "test/program/results.xml",
+      "sha256": "aed0225475a9862d23501a43e47ab6b213dde561a003407630ea11343284a79e",
+      "tests": 1,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0,
+      "case_names": [
+        "test_program.accepted_write_isolated_from_busy_bus_changes"
+      ]
+    },
+    {
+      "original_path": "test/program/results16.xml",
+      "sha256": "c453ab41747a12947c6e549639acd56e114ea0bd0fb5fb820878e72a9927d2b8",
+      "tests": 1,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0,
+      "case_names": [
+        "test_program.accepted_write_isolated_from_busy_bus_changes"
+      ]
+    },
+    {
+      "original_path": "test/differential/results.xml",
+      "sha256": "878d249131b0b7c4ab90b0ebeb302b3cedb4b12567aa85cb76cbc2db4efcc28d",
+      "tests": 1,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0,
+      "case_names": [
+        "test_equivalence.all_canonical_operations_and_random_programs_match_v4"
+      ]
+    },
+    {
+      "original_path": "work/cleanup-validation/pins/results.xml",
+      "sha256": "d33a42f5fddcf3af481ba2943bded84fe1f3ece4fb2a661fa61ee59fd9fe965b",
+      "tests": 25,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0,
+      "case_names": [
+        "test_single.single_context_identity_capacity_and_no_alias",
+        "test_single.program_integrity_and_spi_atomicity",
+        "test_single.all_output_pins_and_running_write_protection",
+        "test_single.streams_overflow_backpressure_and_aborted_read",
+        "test_single.host_events_and_counted_input_loop",
+        "test_single.bounds_removed_instructions_and_restart",
+        "test_single.uart_waveform_preserves_instruction_cadence",
+        "test_single.spi_transmitter_preserves_all_bits_and_cycle_widths",
+        "test_single.reset_disable_and_queue_flush",
+        "test_single.empty_snapshot_does_not_pop_late_byte",
+        "test_single.byte_alu_branches_and_both_input_banks",
+        "test_timed.idle_qualified_prefix_capture",
+        "test_timed.prefix_replacement_and_unbroken_tail",
+        "test_timed.uninitialized_payload_cannot_be_committed",
+        "test_timed.atomic_update_and_late_host",
+        "test_timed.randomized_legal_waveforms_and_lengths",
+        "test_timed.pin_ownership_and_safe_disable",
+        "test_timed.simultaneous_single_program_and_timed_relay",
+        "test_timed.generic_timing_and_routing_profile",
+        "test_timed.malformed_frame_requires_new_idle",
+        "test_timed.every_clock_phase_at_input_timing_limits",
+        "test_timed.partial_frame_and_midframe_ack_cannot_publish_torn_word",
+        "test_dense.native_ten_bit_program_keeps_all_sixteen_slots",
+        "test_dense.all_eighty_reserved_ten_bit_encodings_fault",
+        "test_dense.spi_read_write_turnaround_ignores_read_payload_and_aborted_frames"
+      ]
+    },
+    {
+      "original_path": "work/cleanup-validation/ws2812-rtl/results.xml",
+      "sha256": "9949d01642e5d1788d5dbfcb820fe6c165eba01129ac0c114e5944df83b3fb07",
+      "tests": 12,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0,
+      "case_names": [
+        "test_timed.idle_qualified_prefix_capture",
+        "test_timed.prefix_replacement_and_unbroken_tail",
+        "test_timed.uninitialized_payload_cannot_be_committed",
+        "test_timed.atomic_update_and_late_host",
+        "test_timed.randomized_legal_waveforms_and_lengths",
+        "test_timed.pin_ownership_and_safe_disable",
+        "test_timed.simultaneous_single_program_and_timed_relay",
+        "test_timed.generic_timing_and_routing_profile",
+        "test_timed.malformed_frame_requires_new_idle",
+        "test_timed.every_clock_phase_at_input_timing_limits",
+        "test_timed.partial_frame_and_midframe_ack_cannot_publish_torn_word",
+        "test_ws2812_counter.lpc_counter_on_demand_replaces_prefix_and_relays_tail"
+      ]
+    },
+    {
+      "original_path": "work/cleanup-validation/ws2812-gl/results.xml",
+      "sha256": "d98f301825d81905df14cb454a5b26db692f729a075257706e19eb6e42f28117",
+      "tests": 12,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0,
+      "case_names": [
+        "test_timed.idle_qualified_prefix_capture",
+        "test_timed.prefix_replacement_and_unbroken_tail",
+        "test_timed.uninitialized_payload_cannot_be_committed",
+        "test_timed.atomic_update_and_late_host",
+        "test_timed.randomized_legal_waveforms_and_lengths",
+        "test_timed.pin_ownership_and_safe_disable",
+        "test_timed.simultaneous_single_program_and_timed_relay",
+        "test_timed.generic_timing_and_routing_profile",
+        "test_timed.malformed_frame_requires_new_idle",
+        "test_timed.every_clock_phase_at_input_timing_limits",
+        "test_timed.partial_frame_and_midframe_ack_cannot_publish_torn_word",
+        "test_ws2812_counter.lpc_counter_on_demand_replaces_prefix_and_relays_tail"
+      ]
+    }
+  ],
+  "ws2812_observations": "Fresh RTL and GL JSON match each other except mode, and match the frozen historical ABI5 reports exactly.",
+  "fresh_compilation": [
+    "25 pin scenarios",
+    "12 WS2812 RTL scenarios",
+    "12 WS2812 GL scenarios"
+  ],
+  "initial_cleanup_failure": "First 25-scenario run: 24 passed, UART failed because its examples/compact/uart_tx.pio path had been moved. Original example path restored without changing test_single.py or RTL; complete fresh 25-scenario rerun passed.",
+  "remote_release_gate": "Intentionally BLOCKED; no new remote hardware workflow authorized.",
+  "limits": [
+    "No SDF",
+    "No real LPC/board/silicon qualification",
+    "Reports summarize local functional regression, not new physical signoff"
+  ],
+  "raw_report_disposition": "Raw new regression outputs recycled with work/ and test caches; this compact ledger retained. Original release validation artifacts remain in release/validation/."
+}
