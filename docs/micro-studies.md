@@ -380,3 +380,42 @@ The prior90/91 failures with integer derating do not predict this different
 buffer population's legalization. No memory, RTL, clock, die boundary or
 acceptance criterion changes. Failure stays failure, and any legal result
 still requires an exact-source full flow, WS2812 tests and strict audit.
+
+### Derated density study fails; bounded clock-tree study
+
+[35489919013](https://github.com/fvannel/AstraPIO/actions/runs/35489919013),
+source `428c740877ddfb0cc2595521047de4119eb20c00`, fails both arms at post-CTS
+legalization. Density90 inserts367 hold buffers with7 unplaced log entries;
+density91 inserts369 with9 entries (some repeated instances). Both frozen-
+condition and actual-derating guards pass. RTL35489919097 and docs35489918998
+pass; downloaded XMLs and exact-source/six-hash WS2812 evidence are verified.
+There is no full physical signoff, routed simulation or new submission.
+
+Three ranked hypotheses for the next bounded physical test:
+
+1. Clock distribution contributes excessive delay/skew and hence hold repair
+   overhead. Stronger root drive should reduce skew and/or inserted delay
+   buffers enough to legalize, measurable in CTS/post-CTS/post-GRT reports.
+2. The stronger clock cells' area cost outweighs any saved repair cells.
+   If so, total cell area and placement failures will remain or increase;
+   fewer delay buffers alone will not justify selection.
+3. The current mapping plus required margins has no useful local-placement
+   solution under these small changes. If both drives fail, do not continue
+   an unbounded density sweep or trade away memory without an explicit decision.
+
+The failed density91 tree uses121 clock buffers with1,968.62µm² before hold
+repair. Its estimated fast hold before repair is−0.109062ns and reported fast
+worst hold skew−0.325400ns. These are intermediate estimates, not final audit
+results. The log shows an effective register-cluster maximum of8 even though
+the requested setting is25 (fanout constraint8). Therefore a speculative
+16/32 cluster-size sweep is not selected: it may not change the effective tree.
+
+Instead compare only the supported `CTS_ROOT_BUFFER` choices `sg13g2_buf_4`
+and `sg13g2_buf_8` against the measured failing `sg13g2_buf_2` configuration.
+Both exist in the already-used clock-buffer library. Density91, real5%derating,
+post-CTS20ps, GRT80ps, fanout8 and requested cluster25 remain fixed. This is
+physical cell selection, not a change to clock frequency, timing exceptions,
+RTL or capacity. See the [pinned LibreLane CTS configuration](https://github.com/librelane/librelane/blob/3.0.5/librelane/steps/openroad.py).
+An earlier architecture used root2 for area; it is not evidence that a stronger
+root will succeed on this new mapping. Compare actual net area and legality.
+Any legal result still needs every full-flow, WS2812 and strict audit gate.

@@ -1,4 +1,4 @@
-name: Bounded derated placement distribution diagnostic (not a release)
+name: Bounded derated clock-tree drive diagnostic (not a release)
 on:
   workflow_dispatch:
 permissions:
@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        density: ['90', '91']
+        root_buffer: ['sg13g2_buf_4', 'sg13g2_buf_8']
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -26,25 +26,28 @@ jobs:
         run: |
           pip install -r tt/requirements.txt librelane==3.0.5
           python tt/tt_tool.py --ihp --create-user-config
-      - name: Compare placement distribution under the verified full five percent
+      - name: Compare clock-tree root drive under the verified full five percent
         env:
-          DENSITY: ${{ matrix.density }}
+          ROOT_BUFFER: ${{ matrix.root_buffer }}
         run: |
           set -euo pipefail
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag derated-placement --to OpenROAD.ResizerTimingPostGRT -c "TIME_DERATING_CONSTRAINT=5.0" -c "PL_TARGET_DENSITY_PCT=$DENSITY" src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag derated-clock-tree --to OpenROAD.ResizerTimingPostGRT -c "TIME_DERATING_CONSTRAINT=5.0" -c "PL_TARGET_DENSITY_PCT=91" -c "CTS_ROOT_BUFFER=$ROOT_BUFFER" src/config_merged.json
       - name: Verify frozen diagnostic conditions even when placement fails
         if: always()
         env:
-          DENSITY: ${{ matrix.density }}
+          ROOT_BUFFER: ${{ matrix.root_buffer }}
         run: |
           python - <<'PY'
           import json, os, re
           from pathlib import Path
-          root = Path('src/runs/derated-placement')
+          root = Path('src/runs/derated-clock-tree')
           config = json.loads((root / 'resolved.json').read_text())
           assert config['PDK_ROOT'].endswith('/c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c')
           assert config['CLOCK_PERIOD'] == 20
-          assert config['PL_TARGET_DENSITY_PCT'] == int(os.environ['DENSITY'])
+          assert config['PL_TARGET_DENSITY_PCT'] == 91
+          assert config['CTS_ROOT_BUFFER'] == os.environ['ROOT_BUFFER']
+          assert config['CTS_SINK_CLUSTERING_SIZE'] == 25
+          assert config['MAX_FANOUT_CONSTRAINT'] == 8
           assert config['TIME_DERATING_CONSTRAINT'] == 5
           assert config['PL_RESIZER_HOLD_SLACK_MARGIN'] == 0.02
           assert config['GRT_RESIZER_HOLD_SLACK_MARGIN'] == 0.08
@@ -79,9 +82,9 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: derated-placement-${{ matrix.density }}
+          name: derated-clock-tree-${{ matrix.root_buffer }}
           path: |
-            src/runs/derated-placement
+            src/runs/derated-clock-tree
             src/config_merged.json
             src/user_config.json
           if-no-files-found: error

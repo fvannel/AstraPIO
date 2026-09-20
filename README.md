@@ -26,8 +26,9 @@ adding eight hold buffers; density 90 fails. The full density92/hold80 build
 rejects it: **fast hold −22.042 ps and two slow-corner slew violations**.
 The derating diagnostic confirms that `5.0` activates the intended 5% margin,
 but its density92 placement fails after378 post-CTS hold buffers (332 in the
-integer control). The next bounded diagnostic tests densities90/91 while
-retaining the real 5% margin. No diagnostic can produce a submission artifact.
+integer control). Densities90/91 also fail after367/369 hold buffers, with real
+5% margins independently verified. The next bounded study changes clock-tree
+root drive only, looking for lower skew/repair overhead. No diagnostic can produce a submission artifact.
 No failed candidate is approved. RTL, memory, PDK and release criteria stay unchanged.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix

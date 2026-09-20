@@ -1,5 +1,5 @@
 {
-  "//": "AstraPIO ABI v6 OUTMSB experiment, NOT qualified. e66a4a8 fails strict hold/slew audit. Diagnostic 35489278311 confirms5.0 activates intended derating but density92 fails post-CTS legalization. Next diagnostic compares densities90/91 with full5percent via normal CLI config. Operational settings here, RTL, memory, PDK and acceptance rules unchanged; no release yet.",
+  "//": "AstraPIO ABI v6 OUTMSB experiment, NOT qualified. Full5percent derating is verified but densities90/91/92 fail post-CTS repair legalization. Next bounded diagnostic compares clock-tree root buffers4/8 at density91/full5percent via normal CLI config. Operational settings here, RTL, memory, PDK and acceptance rules unchanged; no release yet.",
   "PL_TARGET_DENSITY_PCT": 92,
   "PL_MAX_DISPLACEMENT_Y": 350,
   "CLOCK_PERIOD": 20,
