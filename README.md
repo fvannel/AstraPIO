@@ -18,9 +18,11 @@ blocks qualification. All 29 tests passed on RTL and the routed netlist of
 `f9e8b69`, but that layout failed the explicit derated fast-corner hold audit
 by 16.380 ps and must NOT be submitted. The 80 ps hold-repair candidate
 `4a04464` passes all 29 RTL scenarios but fails post-global-route legalization
-after adding 15 delay cells. A bounded 75/80 ps placement-only comparison is
-pending; neither failed candidate is approved. RTL and all release criteria
-remain unchanged. Any selected repair requires complete requalification.
+after adding 15 delay cells. Both arms of the 75/80 ps placement comparison
+also fail. A bounded density-90/92 diagnostic now tests a different initial
+cell distribution with the 80 ps repair target. No failed candidate is
+approved. RTL and all release criteria remain unchanged. Any selected repair
+requires complete requalification.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.

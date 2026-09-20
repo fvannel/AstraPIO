@@ -221,3 +221,34 @@ arm is a reproduction control, not an attempt to rerun a failed release until
 green. If 75 ps legalizes, its extracted final timing is still unknown: a new
 official full build plus all 29 routed tests and the unchanged three-corner
 0.95/1.05 audit are mandatory. No signoff acceptance threshold is changed.
+
+### Repair-target comparison rejected; distribution study
+
+The bounded [comparison 35482376886](https://github.com/fvannel/AstraPIO/actions/runs/35482376886)
+on `9ddea8e35030b6192bb16d0e118fc663965b0e8a` fails in both arms:
+
+| GRT repair target | New hold buffers | Pre-legalization estimated minimum hold | Placement result |
+|---|---:|---:|---|
+| 75 ps | 13 | 77 ps | DPL-0036, `_2641_` |
+| 80 ps control | 15 | 80 ps | DPL-0036, `_4649_`, `input18` twice |
+
+These are global-route estimates, NOT final extracted/derated signoff slacks.
+Both arms start the repair step at 57,340.5 µm². The resolved configurations
+match the failed official hold80 build numerically except the intended 75 ps
+target; paths differ because this diagnostic runs directly inside the same
+LibreLane 3.0.5 image. The 80 ps control reproduces the failure class and repair
+counts, but the list of unplaced instances is not identical to the official
+build. Do not claim bit-identical placement across those invocation paths.
+Both runs' frozen-condition assertions pass. Same-source RTL CI 35482377042
+and documentation CI 35482376934 succeed. No release build was run at 75 ps.
+
+This falsifies the prediction that reducing the repair target to 75 ps alone
+would legalize the current distribution. The next bounded experiment tests
+the second hypothesis: `PL_TARGET_DENSITY_PCT` 90 or 92 with GRT target fixed
+at 80 ps. Only the initial-placement density target varies; neither the tile
+boundary nor the logical circuit, memory, PDK, clocks or checkers change.
+This is a [placement target](https://librelane.readthedocs.io/en/latest/reference/step_config_vars.html#global-placement),
+not permission to enlarge the two tiles or a claim about final utilization.
+The same stop-after-post-GRT diagnostic is used, with both failures preserved.
+Any legal result still needs a fresh exact-source full official flow and the
+unchanged supplemental audit before it can be selected for submission.

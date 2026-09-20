@@ -1,4 +1,4 @@
-name: Bounded post-route hold placement diagnostic (not a release)
+name: Bounded hold80 placement distribution diagnostic (not a release)
 on:
   workflow_dispatch:
 permissions:
@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        hold_margin: ['0.075', '0.08']
+        density: ['90', '92']
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -26,16 +26,16 @@ jobs:
         run: |
           pip install -r tt/requirements.txt librelane==3.0.5
           python tt/tt_tool.py --ihp --create-user-config
-      - name: Compare one repair target through post-global-route legalization
+      - name: Compare one placement density with the same hold80 repair target
         env:
-          HOLD_MARGIN: ${{ matrix.hold_margin }}
+          DENSITY: ${{ matrix.density }}
         run: |
           set -euo pipefail
-          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag hold-diagnostic --to OpenROAD.ResizerTimingPostGRT -c "GRT_RESIZER_HOLD_SLACK_MARGIN=$HOLD_MARGIN" src/config_merged.json
+          docker run --rm -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" ghcr.io/librelane/librelane:3.0.5 python -m librelane --pdk ihp-sg13g2 --run-tag hold-diagnostic --to OpenROAD.ResizerTimingPostGRT -c "PL_TARGET_DENSITY_PCT=$DENSITY" src/config_merged.json
       - name: Verify frozen diagnostic conditions even when placement fails
         if: always()
         env:
-          HOLD_MARGIN: ${{ matrix.hold_margin }}
+          DENSITY: ${{ matrix.density }}
         run: |
           python - <<'PY'
           import json, os
@@ -43,17 +43,18 @@ jobs:
           config = json.loads(Path('src/runs/hold-diagnostic/resolved.json').read_text())
           assert config['PDK_ROOT'].endswith('/c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c')
           assert config['CLOCK_PERIOD'] == 20
-          assert config['PL_TARGET_DENSITY_PCT'] == 91
+          assert config['PL_TARGET_DENSITY_PCT'] == int(os.environ['DENSITY'])
           assert config['PL_RESIZER_HOLD_SLACK_MARGIN'] == 0.02
-          assert config['GRT_RESIZER_HOLD_SLACK_MARGIN'] == float(os.environ['HOLD_MARGIN'])
+          assert config['GRT_RESIZER_HOLD_SLACK_MARGIN'] == 0.08
+          assert config['DIE_AREA'] == [0, 0, 202.08, 313.74]
           assert config['GRT_RESIZER_ALLOW_SETUP_VIOS'] is False
           assert config['ERROR_ON_MAGIC_DRC'] is True
-          print('Frozen PDK, clock, density and guards verified. Diagnostic only: no submission artifact.')
+          print('Frozen PDK, clock, two-tile boundary, hold target and guards verified. Diagnostic only: no submission artifact.')
           PY
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: hold-placement-${{ matrix.hold_margin }}
+          name: hold80-density-${{ matrix.density }}
           path: |
             src/runs/hold-diagnostic
             src/config_merged.json
