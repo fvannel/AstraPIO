@@ -252,3 +252,37 @@ not permission to enlarge the two tiles or a claim about final utilization.
 The same stop-after-post-GRT diagnostic is used, with both failures preserved.
 Any legal result still needs a fresh exact-source full official flow and the
 unchanged supplemental audit before it can be selected for submission.
+
+### Density92 selected for full reconstruction, not release
+
+The [distribution diagnostic 35483136903](https://github.com/fvannel/AstraPIO/actions/runs/35483136903)
+uses source `5ccf2984b52b4090f46058666a85945ef556c788`. The overall matrix is
+failed because density90 fails; **only the density92 job succeeds**. Frozen
+condition assertions pass for both. Same-source RTL CI 35483136845 and docs
+CI 35483136874 also succeed; those are not the next full-build source.
+
+Density90 fails post-GRT legalization (`_4327_`, `fanout256`). Its repair log
+reports a net count of one hold buffer and +0.5% area; the iterative repair
+also removes/replaces buffers, so that final count is not a gross insertion
+count. This failed arm is retained and cannot qualify a release.
+
+Density92 inserts eight hold buffers and legalizes. The estimated pre-placement
+minimum hold reaches 81 ps; after legalization, global routing ends with
+**40 overflow units**, including Metal2/3/4/5/TopMetal1. Intermediate cell area
+is 57,498.3 µm² and utilization 95.6564%; these are not final signoff metrics.
+The placement displacement maximum is 227.1 µm, within the unchanged 500/350 µm
+limits. The valid output state and netlist are preserved in the diagnostic.
+This supports the distribution hypothesis, but not a claim that final timing
+or detailed routing will pass. Global congestion is explicitly unresolved.
+
+The next candidate changes **only** `PL_TARGET_DENSITY_PCT` from 91 to 92 in
+the physical config, retaining the existing 80 ps GRT hold target. All RTL,
+program/FIFO capacity, WS2812 behaviour, two-tile boundary, clocks, PDK and
+official/supplemental acceptance gates remain unchanged. The existing
+`GRT_ALLOW_CONGESTION` setting is not changed; it allows the normal detailed
+router to attempt closure, not a waiver of final DRC or routed timing.
+
+The regression harness is the same full official GDS, all 29 routed scenarios
+and source-bound WS2812 evidence, then the exact frozen-netlist three-corner
+early0.95/late1.05 audit. Diagnostic success alone does not authorize submission.
+No checker or safety override was introduced. Accepted PR149 stays intact.

@@ -1,6 +1,6 @@
 {
-  "//": "AstraPIO ABI v6 OUTMSB candidate. Post-global-route hold repair target increased to 80 ps after the 20 ps build failed explicit derated fast-corner hold by 16.380 ps. RTL, clock, PDK, density and all signoff checks unchanged; complete requalification required.",
-  "PL_TARGET_DENSITY_PCT": 91,
+  "//": "AstraPIO ABI v6 OUTMSB candidate. Density92 with GRT hold80 passed the bounded post-GRT legalization study after density90/91 failed. RTL, clock, memory, PDK and signoff criteria unchanged. Global-route overflow remains to resolve; full official build, WS2812 routed tests and explicit derated audit are mandatory.",
+  "PL_TARGET_DENSITY_PCT": 92,
   "PL_MAX_DISPLACEMENT_Y": 350,
   "CLOCK_PERIOD": 20,
   "ERROR_ON_MAGIC_DRC": true,

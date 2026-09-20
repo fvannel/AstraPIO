@@ -19,10 +19,11 @@ blocks qualification. All 29 tests passed on RTL and the routed netlist of
 by 16.380 ps and must NOT be submitted. The 80 ps hold-repair candidate
 `4a04464` passes all 29 RTL scenarios but fails post-global-route legalization
 after adding 15 delay cells. Both arms of the 75/80 ps placement comparison
-also fail. A bounded density-90/92 diagnostic now tests a different initial
-cell distribution with the 80 ps repair target. No failed candidate is
-approved. RTL and all release criteria remain unchanged. Any selected repair
-requires complete requalification.
+also fail. In the bounded density-90/92 study, **density 92 legalizes** after
+adding eight hold buffers; density 90 fails. Density 92 is selected for a new
+full build with the 80 ps target. Its intermediate global-route overflow is
+40, so detailed routing and final timing still need qualification. No failed
+candidate is approved. RTL and all release criteria remain unchanged.
 
 The extension captures a configurable 1..24-bit prefix, replaces that prefix
 on a simultaneously regenerated pulse stream, then relays the remaining bits.
