@@ -1,7 +1,0 @@
-# Context 1, ownership 0x0100: local pin 1 = fixed PIO_OUT0.
-loop:
-    SET 1, 1
-    DELAY 15
-    SET 1, 0
-    DELAY 15
-    JMP loop

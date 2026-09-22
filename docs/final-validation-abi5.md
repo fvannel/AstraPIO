@@ -12,9 +12,10 @@ GDS ou dépôt de révision n’est produit par cette publication.
 - Sans macro SRAM, second contexte ou extension OUTMSB/ABI 6.
 - PDK `c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c`, LibreLane 3.0.5.
 
-Les anciens fichiers de développement présents sur `main` et leur statut JSON
-ne décrivent pas cette version. Le commit figé ci-dessus identifie le circuit ;
-le commit de documentation n’en est pas une nouvelle révision matérielle.
+Les sources actives de `main` et leur statut JSON décrivent désormais cette
+version finale. Le commit figé ci-dessus identifie toujours la soumission ;
+la fusion et les mises à jour documentaires ne sont pas de nouvelles révisions
+matérielles. Les anciennes variantes restent dans les notes et l'historique Git.
 
 ## Résultats conservés
 

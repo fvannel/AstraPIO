@@ -1,0 +1,336 @@
+OpenSTA 2.7.0 GITDIR-NOT Copyright (c) 2025, Parallax Software, Inc.
+License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+
+This is free software, and you are free to change and redistribute it
+under certain conditions; type `show_copying' for details. 
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show_warranty'.
+ASTRA_PULSE_BEGIN fast_1p32V_m40C
+Pin: core.imem.rows[15].bits[7].storage/GATE
+Check: sequential_clock_pulse_width
+
+      Delay        Time   Description
+-----------------------------------------------------------------
+   0.000000    0.000000   clock clk (rise edge)
+   0.507170    0.507170   clock network delay (propagated)
+   0.000000    0.507170   core.imem.rows[15].bits[7].storage/GATE
+               0.507170   open edge arrival time
+
+  10.000000   10.000000   clock clk (fall edge)
+   0.426596   10.426596   clock network delay (propagated)
+   0.000000   10.426596   core.imem.rows[15].bits[7].storage/GATE
+   0.044905   10.471500   clock reconvergence pessimism
+              10.471500   close edge arrival time
+-----------------------------------------------------------------
+               0.103754   required pulse width (high)
+               9.964331   actual pulse width
+-----------------------------------------------------------------
+               9.860577   slack (MET)
+
+
+ASTRA_PULSE_VIOLATORS_BEGIN fast_1p32V_m40C
+ASTRA_PULSE_END fast_1p32V_m40C
+Startpoint: _4841_ (rising edge-triggered flip-flop clocked by clk)
+Endpoint: _4884_ (removal check against rising-edge clock clk)
+Path Group: asynchronous
+Path Type: min
+
+      Delay        Time   Description
+-----------------------------------------------------------------
+   0.000000    0.000000   clock clk (rise edge)
+   0.464810    0.464810   clock network delay (propagated)
+   0.000000    0.464810 ^ _4841_/CLK (sg13g2_dfrbpq_1)
+   0.155107    0.619917 ^ _4841_/Q (sg13g2_dfrbpq_1)
+   0.136642    0.756559 ^ fanout260/X (sg13g2_buf_1)
+   0.130871    0.887430 ^ fanout222/X (sg13g2_buf_1)
+   0.002663    0.890092 ^ _4884_/RESET_B (sg13g2_dfrbpq_1)
+               0.890092   data arrival time
+
+   0.000000    0.000000   clock clk (rise edge)
+   0.513524    0.513524   clock network delay (propagated)
+   0.250000    0.763524   clock uncertainty
+  -0.020331    0.743193   clock reconvergence pessimism
+               0.743193 ^ _4884_/CLK (sg13g2_dfrbpq_1)
+  -0.082222    0.660971   library removal time
+               0.660971   data required time
+-----------------------------------------------------------------
+               0.660971   data required time
+              -0.890092   data arrival time
+-----------------------------------------------------------------
+               0.229122   slack (MET)
+
+
+Startpoint: _4672_ (rising edge-triggered flip-flop clocked by clk)
+Endpoint: _4673_ (rising edge-triggered flip-flop clocked by clk)
+Path Group: clk
+Path Type: min
+
+      Delay        Time   Description
+-----------------------------------------------------------------
+   0.000000    0.000000   clock clk (rise edge)
+   0.450780    0.450780   clock network delay (propagated)
+   0.000000    0.450780 ^ _4672_/CLK (sg13g2_dfrbpq_1)
+   0.133355    0.584134 v _4672_/Q (sg13g2_dfrbpq_1)
+   0.051481    0.635615 ^ _4084_/Y (sg13g2_a21oi_1)
+   0.045059    0.680675 v _4085_/Y (sg13g2_a221oi_1)
+   0.046917    0.727592 v _4086_/X (sg13g2_a21o_1)
+   0.000084    0.727675 v _4673_/D (sg13g2_dfrbpq_1)
+               0.727675   data arrival time
+
+   0.000000    0.000000   clock clk (rise edge)
+   0.512801    0.512801   clock network delay (propagated)
+   0.250000    0.762801   clock uncertainty
+  -0.020331    0.742470   clock reconvergence pessimism
+               0.742470 ^ _4673_/CLK (sg13g2_dfrbpq_1)
+  -0.019666    0.722804   library hold time
+               0.722804   data required time
+-----------------------------------------------------------------
+               0.722804   data required time
+              -0.727675   data arrival time
+-----------------------------------------------------------------
+               0.004872   slack (MET)
+
+
+Startpoint: ena (input port clocked by clk)
+Endpoint: _4840_ (recovery check against rising-edge clock clk)
+Path Group: asynchronous
+Path Type: max
+
+      Delay        Time   Description
+-----------------------------------------------------------------
+   0.000000    0.000000   clock clk (rise edge)
+   0.000000    0.000000   clock network delay (propagated)
+   4.000000    4.000000 ^ input external delay
+   0.034174    4.034173 ^ ena (in)
+   0.062694    4.096868 ^ input1/X (sg13g2_buf_1)
+   0.235608    4.332476 v _2430_/Y (sg13g2_nand2_1)
+   0.150490    4.482966 ^ _2431_/Y (sg13g2_inv_1)
+   0.162884    4.645851 ^ fanout184/X (sg13g2_buf_1)
+   0.193859    4.839710 ^ fanout183/X (sg13g2_buf_1)
+   0.014464    4.854174 ^ _4840_/RESET_B (sg13g2_dfrbpq_1)
+               4.854174   data arrival time
+
+  20.000000   20.000000   clock clk (rise edge)
+   0.464455   20.464455   clock network delay (propagated)
+  -0.250000   20.214457   clock uncertainty
+   0.000000   20.214457   clock reconvergence pessimism
+              20.214457 ^ _4840_/CLK (sg13g2_dfrbpq_1)
+  -0.115680   20.098776   library recovery time
+              20.098776   data required time
+-----------------------------------------------------------------
+              20.098776   data required time
+              -4.854174   data arrival time
+-----------------------------------------------------------------
+              15.244602   slack (MET)
+
+
+Startpoint: _4631_ (rising edge-triggered flip-flop clocked by clk)
+Endpoint: core.imem.rows[10].bits[6].storage
+          (positive level-sensitive latch clocked by clk)
+Path Group: clk
+Path Type: max
+
+      Delay        Time   Description
+-----------------------------------------------------------------
+   0.000000    0.000000   clock clk (rise edge)
+   0.512332    0.512332   clock network delay (propagated)
+   0.000000    0.512332 ^ _4631_/CLK (sg13g2_dfrbpq_1)
+   0.121213    0.633545 ^ _4631_/Q (sg13g2_dfrbpq_1)
+   0.120771    0.754316 ^ fanout310/X (sg13g2_buf_1)
+   0.150932    0.905248 ^ fanout309/X (sg13g2_buf_1)
+   0.144693    1.049941 ^ fanout308/X (sg13g2_buf_1)
+   0.006062    1.056002 ^ core.imem.rows[10].bits[6].storage/D (sg13g2_dlhq_1)
+               1.056002   data arrival time
+
+   0.000000    0.000000   clock clk (rise edge)
+   0.440919    0.440919   clock network delay (propagated)
+  -0.250000    0.190919   clock uncertainty
+   0.000000    0.190919   clock reconvergence pessimism
+               0.190919 ^ core.imem.rows[10].bits[6].storage/GATE (sg13g2_dlhq_1)
+   0.865084    1.056002   time borrowed from endpoint
+               1.056002   data required time
+-----------------------------------------------------------------
+               1.056002   data required time
+              -1.056002   data arrival time
+-----------------------------------------------------------------
+               0.000000   slack (MET)
+
+Time Borrowing Information
+------------------------------------------------
+clk nominal pulse width                10.000000
+clock latency difference               -0.031199
+library setup time                     -0.084168
+------------------------------------------------
+max time borrow                         9.884633
+------------------------------------------------
+actual time borrow                      0.865084
+open edge uncertainty                  -0.250000
+------------------------------------------------
+time given to startpoint                0.615084
+------------------------------------------------
+
+
+ASTRA_ALL_VIOLATORS_BEGIN fast_1p32V_m40C
+Group                                      Slack
+------------------------------------------------
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+clk                                     0.000000
+
+ASTRA_ALL_VIOLATORS_END fast_1p32V_m40C

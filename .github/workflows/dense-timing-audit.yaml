@@ -1,0 +1,90 @@
+name: Dense PIO frozen routed timing audit (not a release)
+on:
+  push:
+    branches: [codex/dense-pio10]
+    paths:
+      - .github/workflows/dense-timing-audit.yaml
+      - tools/dense_timing_audit.tcl
+  workflow_dispatch:
+env:
+  RUN_ID: '35442726541'
+  SOURCE_COMMIT: '1b1c91183a4a9a5ea3516699845336175ffe6d96'
+  NETLIST_SHA: '6d2dbfd333bb89544cf296e9ff408e8870b7151984e7962b098833fd15e3e948'
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Verify the selected run is the exact successful official build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
+          [[ "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$NETLIST_SHA" =~ ^[0-9a-f]{64}$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" > selected-run.json
+          jq -e --arg sha "$SOURCE_COMMIT" '.head_sha == $sha and .name == "gds" and .status == "completed" and .conclusion == "success"' selected-run.json
+      - uses: actions/download-artifact@v7
+        with:
+          name: GDS_logs
+          run-id: '35442726541'
+          github-token: ${{ github.token }}
+          path: work/dense-audit/logs
+      - uses: actions/download-artifact@v7
+        with:
+          name: tt_submission
+          run-id: '35442726541'
+          github-token: ${{ github.token }}
+          path: work/dense-audit/submission
+      - uses: actions/checkout@v6
+        with:
+          repository: IHP-GmbH/IHP-Open-PDK
+          ref: c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c
+          path: work/dense-audit/pdk
+          sparse-checkout: ihp-sg13g2/libs.ref/sg13g2_stdcell/lib
+          persist-credentials: false
+      - name: Audit all three corners with explicit 0.95 and 1.05 derating
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$NETLIST_SHA" work/dense-audit/submission/tt_submission/tt_um_fabien_pio.v | sha256sum -c -
+          test "$(jq -r .commit work/dense-audit/submission/tt_submission/commit_id.json)" = "$SOURCE_COMMIT"
+          test "$(jq -r .PDK_VERSION work/dense-audit/submission/tt_submission/pdk.json)" = c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c
+          mkdir -p work/dense-audit/reports
+          cp selected-run.json work/dense-audit/reports/
+          sha256sum work/dense-audit/submission/tt_submission/tt_um_fabien_pio.nom.spef work/dense-audit/logs/runs/wokwi/final/sdc/tt_um_fabien_pio.sdc > work/dense-audit/reports/input-sha256.txt
+          docker pull ghcr.io/librelane/librelane:3.0.5
+          docker image inspect ghcr.io/librelane/librelane:3.0.5 --format '{{json .RepoDigests}}' | tee work/dense-audit/reports/image-digest.txt
+          # Collect every corner even after a failure, but fail the whole job
+          # if ANY original check fails. This does not make a check optional.
+          audit_failed=0
+          for corner in fast_1p32V_m40C typ_1p20V_25C slow_1p08V_125C; do
+            if ! docker run --rm -v "$PWD:/work" -w /work -e ASTRA_LIB_CORNER="$corner" ghcr.io/librelane/librelane:3.0.5 sta -exit tools/dense_timing_audit.tcl 2>&1 | tee "work/dense-audit/reports/$corner.log"; then
+              audit_failed=1
+              continue
+            fi
+            if ! grep -q "ASTRA_PULSE_END $corner" "work/dense-audit/reports/$corner.log"; then audit_failed=1; fi
+            if ! grep -q "ASTRA_ALL_VIOLATORS_END $corner" "work/dense-audit/reports/$corner.log"; then audit_failed=1; fi
+            if ! awk '/ASTRA_PULSE_BEGIN/{capture=1;next} /ASTRA_PULSE_VIOLATORS_BEGIN/{capture=0} capture' "work/dense-audit/reports/$corner.log" | grep -q 'slack (MET)'; then audit_failed=1; fi
+            # Latch borrowing can report exactly zero; any negative slack fails.
+            if ! awk '/ASTRA_ALL_VIOLATORS_BEGIN/{capture=1;next} /ASTRA_ALL_VIOLATORS_END/{capture=0} capture && $NF ~ /^-?[0-9]+([.][0-9]+)?$/ && $NF + 0 < 0 {bad=1; print} END {exit bad}' "work/dense-audit/reports/$corner.log"; then audit_failed=1; fi
+            if grep -Ei 'VIOLATED|ASTRA_AUDIT_ERROR|^Error:|\[ERROR|^Warning:|\[WARNING' "work/dense-audit/reports/$corner.log"; then
+              audit_failed=1
+            fi
+          done
+          exit "$audit_failed"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: dense-frozen-timing-audit
+          path: work/dense-audit/reports
+          if-no-files-found: error

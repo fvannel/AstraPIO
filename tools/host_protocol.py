@@ -22,14 +22,17 @@ def read_value(response: bytes) -> int:
     return int.from_bytes(response[2:], "big")
 
 
-def program_frames(context: int, words: list[int]) -> list[bytes]:
-    """Data frames only. Caller must stop BOTH contexts before uploading."""
-    if context not in (0, 1) or not 1 <= len(words) <= 48:
-        raise ValueError("context must be 0/1 and program length 1..48")
-    frames = [write_frame(0x1F + 16 * context, 0)]  # Invalidate previous program first.
-    for index, word in enumerate(words):
-        if index < 16:
-            frames.append(write_frame(0x40 + 16 * context + index, word))
-        else:
-            frames.extend((write_frame(0x0A, 64 * context + index), write_frame(0x0B, word)))
-    return frames
+def program_frames(words: list[int], *, abi: int = 3) -> list[bytes]:
+    """Stop/reset the selected ABI's context(s), invalidate code, upload once.
+
+    Callers must probe ABI (abi << 8) first and read back words/errors afterwards.
+    Each transfer must honor the documented six-clock CS gap.
+    """
+    if abi not in (3, 4, 5):
+        raise ValueError("supported ABIs: 3, 4, 5")
+    if not 1 <= len(words) <= 16:
+        raise ValueError("shared program length must be 1..16")
+    if abi == 5 and any(not 0 <= word <= 0x3FF for word in words):
+        raise ValueError("ABI v5 program words must fit in ten bits")
+    return [write_frame(3, 0), write_frame(4, 1 if abi >= 4 else 3), write_frame(0x0A, 0)] + [
+        write_frame(0x40 + index, word) for index, word in enumerate(words)]

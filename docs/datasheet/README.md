@@ -11,9 +11,10 @@ projet 5799, TTIHP26b, [PR149 acceptée](https://github.com/TinyTapeout/tinytape
 un PIO, programme 16 × 10 bits en latches, FIFO de deux octets, moteur temporel,
 SPI et IRQ. Elle ne décrit pas les variantes SRAM ou ABI 6.
 
-**Les sources historiques encore présentes sur `main` ne correspondent pas à
-la datasheet.** Utiliser les sources figées du lien ci-dessus. La révision 1.0
-du document n’est pas une nouvelle révision matérielle Tiny Tapeout.
+Les sources actives de `main` sont maintenant alignées sur cette version finale.
+Le lien figé ci-dessus reste la référence de la soumission. La révision 1.0 du
+document et la fusion de `main` ne sont pas de nouvelles révisions matérielles
+Tiny Tapeout.
 
 ## Contenu
 
