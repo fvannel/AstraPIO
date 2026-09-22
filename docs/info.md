@@ -1,5 +1,11 @@
 ## How it works
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 AstraPIO is a general-purpose digital programmable I/O coprocessor for an LPC546xx host.
 **Provisional engineering submission: NOT qualified for fabrication.** The pinned
 shuttle DRC reports known SRAM errors. Magic is explicitly nonblocking for this

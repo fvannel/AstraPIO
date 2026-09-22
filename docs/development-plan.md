@@ -1,5 +1,11 @@
 # Plan de développement et fermeture — 17 septembre 2026
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 ## Autorité et périmètre
 
 Mise à jour du 18 septembre : l'utilisateur demande maintenant l'inscription

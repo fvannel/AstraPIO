@@ -1,5 +1,11 @@
 # Vérification — candidat v2, 18 septembre 2026
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 Le nom public a ensuite été changé en **AstraPIO**, sans changement du RTL ni
 du nom technique. Les résultats physiques ci-dessous correspondent à l'instantané
 `buffered-v2` et au commit `22e40dc`, avant ce changement de métadonnées.

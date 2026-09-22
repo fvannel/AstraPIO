@@ -1,5 +1,11 @@
 # HISTORIQUE — ISA v0, remplacée par [isa-v2.md](isa-v2.md)
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 Contrat de l'ancien prototype, **ne pas utiliser pour le RTL actuel**.
 Les FIFOs, le streaming, les événements entre contextes et les échéances absolues
 ne sont pas encore implémentés. Cette version ne valide pas l'application WS2812.
