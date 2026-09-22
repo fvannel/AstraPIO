@@ -1,5 +1,11 @@
 # Première révision AstraPIO — tentative bloquée
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 Rapport historique du premier essai. Une nouvelle tentative avec Magic non
 bloquant a ensuite été autorisée explicitement ; voir `provisional-submission.md`.
 

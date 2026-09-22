@@ -1,5 +1,11 @@
 # ISA et ABI v2 — contrat courant
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 Identifiant `0x5049`, version `0x0200`. Incompatible avec v0 et RP2040 PIO.
 Deux contextes, A=8 bits, X=4 bits, PC=6 bits, code limité à 48 mots de 16 bits.
 Chaque contexte exécute une instruction tous les six clocks. DELAY N insère N

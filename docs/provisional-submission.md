@@ -1,5 +1,11 @@
 # Première soumission provisoire — autorisation et périmètre
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 **Résultat vérifié le 18 septembre 2026 à 11:48 Zurich : première révision
 enregistrée**, [PR n°122](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/122)
 ouverte pour le commit `487ee6c`, deux tiles 1×2. Le bilan et les limites sont

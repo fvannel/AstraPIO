@@ -1,5 +1,11 @@
 # AstraPIO — réservation administrative TTIHP26b
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 **Actualisation au 18 septembre 2026, 11:48 Europe/Zurich : première révision
 enregistrée**, commit `487ee6cf5936a1e0e0b7fc0d2b341f32f04f2790`, deux tiles 1×2.
 Le portail affiche la [PR n°122](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/122)

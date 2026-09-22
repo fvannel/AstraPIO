@@ -1,5 +1,11 @@
 # Blocage DRC reproductible — macro SRAM IHP
 
+> **Document historique — pas la référence ABI 5.** Cette page est conservée
+> pour retracer les premières versions du projet. Pour le circuit accepté
+> (commit `1b1c9118`, PR149), consulter la [documentation finale](../README.md)
+> et la [datasheet ABI 5](datasheet/README.md). Les anciennes instructions de
+> soumission et exceptions SRAM ne s’appliquent pas à la version finale.
+
 Constaté localement le 18 septembre 2026. **Aucune règle ni géométrie PDK modifiée ;
 aucune dérogation demandée ou appliquée.** Ce rapport est prêt à communiquer,
 mais aucun message n'a été envoyé à Tiny Tapeout/IHP.
