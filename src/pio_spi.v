@@ -3,7 +3,7 @@
 
 // Mode 0, MSB first, one 32-bit transaction per CS assertion:
 // [command:8][address:8][data:16]. 0x02 writes, 0x03 reads.
-// Oversampling, not a separate SCK clock domain. See docs/isa-v2.md for limits.
+// Oversampling, not a separate SCK clock domain. See docs/compact-v3.md for limits.
 module pio_spi (
     input wire clk, rst_n,
     input wire sck, mosi, cs_n,
@@ -20,8 +20,9 @@ module pio_spi (
     reg sck_previous;
     reg [5:0] count;
     reg command_read, command_write;
-    reg [15:0] rx_shift;
-    reg [15:0] tx_shift;
+    // A transaction either writes or reads: after receiving its header, the
+    // same storage can hold incoming write data OR the outgoing read snapshot.
+    reg [15:0] payload;
     reg miso_bit;
     reg snapshot_valid;
 
@@ -29,20 +30,23 @@ module pio_spi (
     wire falling_sck = ~sck_sync[1] & sck_previous;
     // CS itself only masks the output; all state updates use synchronized CS.
     assign miso = (!cs_n && !cs_sync[1] && rst_n) ? miso_bit : 1'b0;
-    assign write_data = rx_shift;
-    assign read_busy = !cs_sync[1] && command_read && count >= 16 && count < 32;
+    assign write_data = payload;
+    // Keep the RX head locked through the cycle that consumes read_commit.
+    // Releasing at count==32 allowed a peer RECV to duplicate the host's byte.
+    // CS deassertion terminates the lock even for an aborted transaction.
+    assign read_busy = !cs_sync[1] && command_read && count >= 16;
 
-    // Payload registers need no reset: a command is decoded only after eight
+    // Payload storage needs no reset: a command is decoded only after eight
     // received bits and read data is loaded before its first observable bit.
-    // Keeping RX stable when CS rises also covers the queued SRAM write latency.
+    // Write data remains stable at CS rise, until the next transaction shifts.
     always @(posedge clk) begin
         if (rst_n && !cs_sync[1]) begin
-            if (rising_sck && count < 32)
-                rx_shift <= {rx_shift[14:0], mosi_sync[1]};
+            if (rising_sck && count < 32 && (!command_read || count < 16))
+                payload <= {payload[14:0], mosi_sync[1]};
             if (falling_sck && command_read) begin
-                if (count == 16) tx_shift <= {read_data[14:0], 1'b0};
+                if (count == 16) payload <= {read_data[14:0], 1'b0};
                 else if (count > 16 && count < 32)
-                    tx_shift <= {tx_shift[14:0], 1'b0};
+                    payload <= {payload[14:0], 1'b0};
             end
         end
     end
@@ -78,11 +82,11 @@ module pio_spi (
                 if (rising_sck && count < 32) begin
                     count <= count + 1'b1;
                     if (count == 7) begin
-                        command_read <= {rx_shift[6:0], mosi_sync[1]} == 8'h03;
-                        command_write <= {rx_shift[6:0], mosi_sync[1]} == 8'h02;
+                        command_read <= {payload[6:0], mosi_sync[1]} == 8'h03;
+                        command_write <= {payload[6:0], mosi_sync[1]} == 8'h02;
                     end
                     if (count == 15)
-                        address <= {rx_shift[6:0], mosi_sync[1]};
+                        address <= {payload[6:0], mosi_sync[1]};
                     if (count == 31 && command_write) begin
                         write_enable <= 1;
                     end
@@ -95,7 +99,7 @@ module pio_spi (
                         miso_bit <= read_data[15];
                         snapshot_valid <= read_valid;
                     end else if (count > 16 && count < 32 && command_read) begin
-                        miso_bit <= tx_shift[15];
+                        miso_bit <= payload[15];
                     end else begin
                         miso_bit <= 0;
                     end

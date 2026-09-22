@@ -17,14 +17,17 @@ pas la définition exclusive de la puce.
 | Identité logicielle | ID `0x5049`, ABI `0x0500`, un contexte PIO |
 | Nom du module RTL | `tt_um_fabien_pio` |
 
-**Attention aux branches :** cette page décrit la version finale ci-dessus.
-Les sources, scripts, workflows et `design_status.json` à la racine de `main`
-appartiennent encore à l’ancienne version SRAM/double-contexte. Ils ne sont
-**pas** le circuit accepté. Cette mise à jour est documentaire uniquement :
-elle ne remplace ni le code de `main`, ni le commit soumis à Tiny Tapeout.
-Pour examiner ou utiliser le circuit final, prendre les
-[sources figées ABI 5](https://github.com/fvannel/AstraPIO/tree/1b1c91183a4a9a5ea3516699845336175ffe6d96),
-et non les fichiers historiques de `main`.
+`main` contient désormais les sources finales ABI 5, les pilotes et les tests,
+ainsi que la documentation et les artefacts figés du circuit accepté. Le
+[manifeste du release](release/manifest.json) vérifie l’identité de 50 fichiers
+avec la version de référence. Les anciennes architectures restent dans
+[l’historique des études](docs/notes/README.md) et dans Git, pas dans le RTL actif.
+
+Le commit de fusion de `main` n’est pas une nouvelle révision matérielle.
+La référence Tiny Tapeout reste **`1b1c9118` / PR149**. `info.yaml` est conservé
+à l’identique de cette source, y compris son ancienne description prudente ;
+elle ne définit pas le statut courant. Sa correction côté shuttle fait l’objet
+de la [PR documentaire #252](https://github.com/TinyTapeout/tinytapeout-ihp-26b/pull/252).
 
 ## Architecture du circuit final
 
@@ -78,7 +81,8 @@ exécution du firmware sur un ARM réel.
 La datasheet décrit le brochage logique Tiny Tapeout, les registres, l’ISA,
 le protocole SPI, le moteur temporel, les chronogrammes et l’intégration LPC.
 Les anciens documents SRAM, ISA v0/v2 et soumission provisoire sont conservés
-comme **historique**, pas comme instructions pour utiliser ou refabriquer l’ABI 5.
+comme **historique**, pas comme instructions pour utiliser ou refabriquer l’ABI 5. Les guides sont
+regroupés dans [les notes historiques](docs/notes/README.md).
 
 ## Utiliser les bonnes sources
 
@@ -101,6 +105,40 @@ SCK et pour les temps de préparation, maintien et repos de CS.
 si le bus est partagé. Les niveaux électriques et l’adaptation vers les
 périphériques doivent être vérifiés sur la carte utilisée.
 
+## Organisation et vérifications
+
+| Répertoire | Contenu |
+|---|---|
+| `src/` | RTL actif et configuration physique de la version finale |
+| `firmware/`, `tools/`, `examples/` | Pilotes C, assembleur et exemples ABI 5 |
+| `test/` | Régressions et [rejeu WS2812](test/ws2812/README.md) |
+| `release/` | Artefacts et preuves de la fabrication préparée, avec empreintes |
+| `vendor/` | Modèles Verilog du PDK figé nécessaires aux simulations |
+| `docs/` | Documentation actuelle, datasheet et archives des études |
+
+Vérification de l’identité des fichiers, sans nouvelle construction physique :
+
+```sh
+python3 -B tools/check_final_release.py
+make check
+```
+
+Pour les simulations, utiliser Icarus Verilog 13, un compilateur C et les
+versions Python définies dans `test/requirements.txt` :
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r test/requirements.txt
+make test
+make -C test/ws2812 MODE=rtl
+make -C test/ws2812 MODE=gl
+```
+
+Ces tests ne soumettent rien à Tiny Tapeout et ne régénèrent pas le GDS.
+L’historique de [validation](docs/validation-finale.md) distingue les preuves
+physiques conservées des nouvelles régressions fonctionnelles.
+
 ## Validation et limites
 
 Le circuit figé a passé le flow physique officiel, les contrôles Magic/KLayout
@@ -111,8 +149,8 @@ Voir [le bilan détaillé et ses limites](docs/final-validation-abi5.md).
 
 **Aucun contournement DRC/SRAM n’est utilisé pour qualifier cette version finale.**
 Les exceptions des premières expériences sont obsolètes et ne constituent pas
-une autorisation de fabrication. Ne pas relancer les anciens workflows de `main`
-pour produire l’ABI 5.
+une autorisation de fabrication. Les workflows actifs conservent les vérifications officielles bloquantes.
+La construction GDS et le bitstream FPGA restent manuels et verrouillés.
 
 L’acceptation du projet dans le shuttle n’atteste pas que la fabrication ou la
 qualification sur silicium soit terminée. Pas de simulation avec SDF ni de

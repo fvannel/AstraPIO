@@ -11,7 +11,23 @@ jobs:
 
       - name: Install iverilog
         shell: bash
-        run: sudo apt-get update && sudo apt-get install -y iverilog
+        # Same simulator release as tt-gds-action@ttihp26b/gl_test. Icarus 12
+        # leaves the PDK latch models' delayed specify signals undriven.
+        run: |
+          wget https://github.com/TinyTapeout/iverilog/releases/download/v13.0/iverilog_13.0-1_amd64.deb
+          echo '888bca6b06289ea8b55368d43db38dc88932938319ab40d45a763ce5114e8505  iverilog_13.0-1_amd64.deb' | sha256sum -c -
+          sudo apt-get update
+          sudo apt-get install -y ./iverilog_13.0-1_amd64.deb
+          iverilog -V
+
+      - name: Get exact shuttle standard-cell simulation models
+        uses: actions/checkout@v6
+        with:
+          repository: IHP-GmbH/IHP-Open-PDK
+          ref: c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c
+          path: work/ci-pdk
+          sparse-checkout: ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog
+          persist-credentials: false
 
       # Set Python up and install cocotb
       - name: Setup python
@@ -24,6 +40,8 @@ jobs:
         run: pip install -r test/requirements.txt
 
       - name: Run tests
+        env:
+          PDK_ROOT: ${{ github.workspace }}/work/ci-pdk
         run: |
           make test
 
@@ -41,4 +59,8 @@ jobs:
           path: |
             test/tb.fst
             test/results.xml
+            test/units/results.xml
+            test/program/results.xml
+            test/program/results16.xml
+            test/differential/results.xml
             test/output/*

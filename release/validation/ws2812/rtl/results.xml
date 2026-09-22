@@ -1,0 +1,17 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1789841193" />
+    <testcase name="idle_qualified_prefix_capture" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="62" time="1.1843078136444092" sim_time_ns="504701.0" ratio_time="426156.945166907" />
+    <testcase name="prefix_replacement_and_unbroken_tail" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="80" time="1.1865370273590088" sim_time_ns="506721.00000000006" ratio_time="427058.7333695421" />
+    <testcase name="uninitialized_payload_cannot_be_committed" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="100" time="0.23888301849365234" sim_time_ns="96681.00000000012" ratio_time="404721.1083050223" />
+    <testcase name="atomic_update_and_late_host" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="119" time="3.353508949279785" sim_time_ns="1465041.0" ratio_time="436868.0752483571" />
+    <testcase name="randomized_legal_waveforms_and_lengths" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="165" time="29.998966932296753" sim_time_ns="12679383.0" ratio_time="422660.6545690556" />
+    <testcase name="pin_ownership_and_safe_disable" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="199" time="0.6040639877319336" sim_time_ns="169080.0" ratio_time="279904.12180477957" />
+    <testcase name="simultaneous_single_program_and_timed_relay" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="229" time="1.4615256786346436" sim_time_ns="549081.0" ratio_time="375690.2858613823" />
+    <testcase name="generic_timing_and_routing_profile" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="261" time="1.1894488334655762" sim_time_ns="483721.0" ratio_time="406676.5937216747" />
+    <testcase name="malformed_frame_requires_new_idle" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="294" time="1.820180892944336" sim_time_ns="788321.0000000019" ratio_time="433100.3600003783" />
+    <testcase name="every_clock_phase_at_input_timing_limits" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="318" time="22.47583818435669" sim_time_ns="9364199.0" ratio_time="416634.02820356376" />
+    <testcase name="partial_frame_and_midframe_ack_cannot_publish_torn_word" classname="test_timed" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_timed.py" lineno="343" time="3.3581130504608154" sim_time_ns="1492941.0" ratio_time="444577.3497098711" />
+    <testcase name="lpc_counter_on_demand_replaces_prefix_and_relays_tail" classname="test_ws2812_counter" file="/Users/fabien/Documents/_projects/10_hepia/TinyTapeout/test/test_ws2812_counter.py" lineno="57" time="17.659077167510986" sim_time_ns="6240227.0" ratio_time="353372.202907676" />
+  </testsuite>
+</testsuites>

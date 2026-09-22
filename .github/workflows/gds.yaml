@@ -15,6 +15,9 @@ jobs:
       - name: Enforce explicit remote hardware release gate
         run: python3 tools/require_rtl.py
 
+      - name: Reject provisional DRC bypasses
+        run: python3 -m unittest discover -s test -p test_release_policy.py
+
       - name: Build GDS
         uses: TinyTapeout/tt-gds-action@ttihp26b
         with:
@@ -26,29 +29,19 @@ jobs:
     needs: gds
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout provisional submission policy
+      - name: Checkout repo
         uses: actions/checkout@v6
 
       - name: Run Tiny Tapeout Precheck
-        id: official_precheck
-        # User-authorized provisional revision only. Reports stay unchanged.
-        # The next step still rejects every failure outside the known SRAM case.
-        continue-on-error: true
         uses: TinyTapeout/tt-gds-action/precheck@ttihp26b
         with:
           tools-ref: 01d5d2814fa9dd61e9d211e0b235a4a592a9316a
-
-      - name: Enforce narrow provisional SRAM exception (NOT fabrication signoff)
-        if: always()
-        env:
-          OFFICIAL_PRECHECK_OUTCOME: ${{ steps.official_precheck.outcome }}
-        run: python3 tools/provisional_precheck.py tt/precheck/reports "$OFFICIAL_PRECHECK_OUTCOME"
 
       - name: Preserve unmodified precheck evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: provisional_precheck_evidence
+          name: precheck_evidence
           path: tt/precheck/reports
           if-no-files-found: error
 
@@ -63,12 +56,3 @@ jobs:
 
       - name: GL test
         uses: TinyTapeout/tt-gds-action/gl_test@ttihp26b
-
-  viewer:
-    needs: gds
-    runs-on: ubuntu-24.04
-    permissions:
-      pages: write # to deploy to Pages
-      id-token: write # to verify the deployment originates from an appropriate source
-    steps:
-      - uses: TinyTapeout/tt-gds-action/viewer@ttihp26b
