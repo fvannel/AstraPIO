@@ -77,9 +77,8 @@ les seuils, le brochage physique et les adaptations de niveau.
 ## Ressources du dépôt
 
 `src/` contient le circuit ; `firmware/`, `tools/` et `examples/` les ressources
-logicielles ; `test/` les régressions. Les éléments d’identification et de
-validation physique sont regroupés dans [le dossier de validation](docs/final-validation-abi5.md)
-et `release/`.
+logicielles ; `test/` les régressions. `release/` contient les artefacts du circuit.
+La documentation utilisateur se trouve dans `docs/`.
 
 Projet sous [licence Apache-2.0](LICENSE), intégré au shuttle Tiny Tapeout IHP26b
 sur un bloc 1 × 2 tiles. [Projet Tiny Tapeout](https://app.tinytapeout.com/projects/5799).

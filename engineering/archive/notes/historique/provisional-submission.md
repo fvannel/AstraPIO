@@ -1,8 +1,8 @@
 # Première soumission provisoire — autorisation et périmètre
 
 > **Document historique — pas la référence ABI 5.** Pour le circuit accepté,
-> consulter la [documentation finale](../../../README.md) et la
-> [datasheet ABI 5](../../datasheet/README.md). Les anciennes instructions de
+> consulter la [documentation finale](../../../../README.md) et la
+> [datasheet ABI 5](../../../../docs/datasheet/README.md). Les anciennes instructions de
 > soumission et exceptions SRAM ne s’appliquent pas à la version finale.
 
 **Historique uniquement.** À la demande de l'utilisateur du 18 septembre, les

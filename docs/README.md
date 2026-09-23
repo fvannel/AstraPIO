@@ -23,6 +23,3 @@ déduit pas cette fréquence et ne reconfigure pas ses délais automatiquement.
 L’alimentation, les niveaux électriques et le brochage du module livré doivent
 être vérifiés sur la carte utilisée. Les caractéristiques électriques ne sont
 pas encore garanties par une caractérisation sur silicium.
-
-Les [preuves de validation](final-validation-abi5.md) sont un document
-d’ingénierie distinct du manuel utilisateur.

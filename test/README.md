@@ -31,9 +31,5 @@ make -C test/ws2812 MODE=gl
 Un compilateur C est nécessaire pour les tests des pilotes. Ces commandes
 ne construisent pas de nouveau GDS et ne soumettent rien à Tiny Tapeout.
 
-Les anciens tests SRAM/dual-context et leurs outils ont été retirés du
-répertoire actif ; leur bilan est dans `docs/notes/` et leur code reste
-dans l'historique Git. Aucun scénario de la suite finale n'a été supprimé.
-
 Ces simulations sont fonctionnelles, sans SDF. Voir
-[le bilan de validation](../docs/validation-finale.md) pour leur portée.
+[le dossier de validation](../engineering/README.md) pour leur portée.

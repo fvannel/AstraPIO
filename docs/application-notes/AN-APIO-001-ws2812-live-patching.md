@@ -222,37 +222,32 @@ doit gérer les erreurs, les demandes de valeur et les limites de latence.
 
 <!-- page -->
 
-## 7 Vérification de l’application
+## 7 Vérification sur carte
 
-Le banc de test envoie 12 trames de 120 bits : un mot remplacé et quatre mots
-relayés. Il vérifie les captures SPI, le nombre et la valeur des bits DOUT,
-leurs largeurs, les mises à jour atomiques, IRQ/ACK et l’exécution simultanée
-d’un programme PIO sur une autre broche. Il exerce les retenues et le
-rebouclage du compteur 24 bits, ainsi que les trames sans demande d’incrément.
+Contrôler CLK, DIN et DOUT à l’oscilloscope, après vérification des niveaux
+électriques et des adaptations de tension. Pour le profil de cette note,
+les durées hautes nominales sont 320 ns et 640 ns. Mesurer aussi les durées
+basses et les intervalles de reset ; les comparer à la fiche des LED utilisées.
 
-Le rejeu de référence passe 12 scénarios en RTL et 12 sur la netlist routée,
-avec 1 440 bits de sortie vérifiés par mode dans le scénario compteur.
-Les deux modèles donnent les mêmes observations. Ce sont des simulations
-fonctionnelles sans SDF, avec un modèle SPI de l’hôte, pas un LPC réel.
+| Essai | Résultat attendu |
+|---|---|
+| Préfixes `000000`, `FFFFFF`, `AAAAAA`, `555555` | Capture SPI égale au premier mot DIN ; premier mot DOUT égal à la valeur préparée |
+| Longue suite de mots après le préfixe | Nombre de bits conservé ; données suivantes inchangées |
+| COMMIT accepté pendant une trame | Mot sortant courant inchangé ; remplacement à une frontière de trame qualifiée suivante |
+| Aucune nouvelle valeur préparée | Réutilisation du mot actif à chaque trame |
+| Hôte retardé au-delà de la trame suivante | Ancienne capture conservée ; RX_OVERRUN signalé ; nouvelle capture ignorée |
 
-```sh
-python3 tools/check_final_release.py
-make -C test/ws2812 MODE=rtl
-python3 tools/check_results.py work/ws2812-counter-replay/rtl/results.xml
-make -C test/ws2812 MODE=gl
-python3 tools/check_results.py work/ws2812-counter-replay/gl/results.xml
-```
+Lire les deux pages d’état, vérifier IRQ et acquitter les captures après
+leur copie dans l’application. Tester la récupération d’erreur décrite dans
+le manuel, ainsi que le redémarrage après reset global. Le pilote doit
+recharger la configuration ; un simple arrêt du moteur ne la réinitialise pas.
 
-Installer d’abord Icarus Verilog 13 et les dépendances de `test/requirements.txt`
-dans un environnement Python. Les commandes sont détaillées dans le
+La validation fonctionnelle de référence couvre 12 scénarios en RTL et 12
+sur la netlist routée, dont un scénario compteur de 12 trames et 1 440 bits
+de sortie par mode. Ces simulations sont sans SDF, avec un modèle SPI de
+l’hôte, et ne remplacent pas la qualification électrique sur carte. Les
+outils, dépendances et commandes de reproduction sont dans le
 [guide du banc de test](../../test/ws2812/README.md).
-
-Sur carte, contrôler à l’oscilloscope CLK, DIN et DOUT, les durées hautes et
-basses, le reset de trame et les niveaux électriques. Essayer des préfixes
-`000000`, `FFFFFF`, `AAAAAA`, `555555`, une longue suite inchangée, des mises
-à jour pendant la trame et un hôte volontairement retardé. Vérifier les
-compteurs d’erreurs logiciels et le comportement de récupération avant
-d’utiliser le montage dans l’application.
 
 ## Références
 

@@ -49,7 +49,7 @@ Le scénario complet vérifie, par mode, douze trames et 1 440 bits de sortie :
 
 Latence mesurée : 680 à 699 ns ; impulsions hautes de 320/640 ns.
 Les observations RTL et gate-level sont identiques hors étiquette du mode.
-Voir [le détail reproductible](../test/ws2812/README.md).
+Voir [le détail reproductible](../../test/ws2812/README.md).
 
 ## Essais non retenus
 

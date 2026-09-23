@@ -16,9 +16,9 @@ calculées directement depuis le commit soumis puis comparées aux fichiers
 locaux. Vérification : `python3 tools/check_final_release.py` à la racine.
 Ce contrôle d'identité n'est pas un test fonctionnel ni une nouvelle qualification.
 
-Le commit de nettoyage local ne remplace pas le commit soumis. Ces artefacts
-ne doivent pas être présentés comme les résultats d'un circuit modifié.
+Ces artefacts correspondent exclusivement à la source identifiée ci-dessus ;
+ils ne qualifient pas un circuit modifié.
 Les chemins `work/...` présents dans les journaux et configurations résolues
 sont les chemins historiques du build ; ils n'ont volontairement pas été réécrits.
 
-Voir le [bilan de validation](../docs/validation-finale.md).
+Voir le [dossier de validation](../engineering/README.md).

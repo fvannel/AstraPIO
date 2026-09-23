@@ -43,7 +43,7 @@ Ce document s’adresse aux concepteurs de cartes, développeurs de pilotes et a
 | 10 à 12 | Registres PIO, FIFO et mémoire programme |
 | 13 et 14 | Jeu d’instructions ABI 5 et règles d’exécution |
 | 15 à 18 | Moteur temporel, registres et chronogrammes |
-| 19 | Connexion à un microcontrôleur et mise à jour atomique |
+| 19 | Connexion à l’hôte et service des deux blocs |
 | 20 et 21 | Exemples courts et pilote portable C |
 | 22 | Erreurs, récupération et limites d’intégration |
 
@@ -282,7 +282,7 @@ Toutes les adresses sont hexadécimales. Les valeurs de reset sont observables a
 | 0E | EVENT_CLEAR | R/W | 0000 | R : [0] événement. W=1 l’efface ; W=0 sans effet |
 | 0F | CAPACITY | R | 1002 | [15:8]=16 mots ; [7:0]=2 octets par FIFO |
 
-Aux adresses 0x05, 0x0C, 0x0D et 0x0E, seules les valeurs 0 et 1 sont acceptées. Les écritures sur les registres R sont rejetées par HOST_ERROR. RUN n’effectue pas de restart implicite ; HALT et STOP conservent les sorties.
+Aux adresses 0x05, 0x0C, 0x0D et 0x0E, seules les valeurs 0 et 1 sont acceptées. Les écritures sur les registres R sont rejetées par HOST_ERROR. RUN n’effectue pas de restart implicite ; HALT et RUN=0 conservent les sorties.
 
 ### Interruption partagée
 
@@ -534,20 +534,20 @@ RX est gelé tant que RX_VALID=1. Si une nouvelle trame commence avant ACK, RX_O
 | Horloge et reset via la carte | clk, rst_n ; sélection du projet par la carte |
 | Périphériques applicatifs | uio[7:0], ui_in[7:3], uo_out[7:2] |
 
-Le contrat SPI permet un hôte disposant d’un contrôleur maître, tel qu’un LPC546xx. Le pilote laisse à l’application le choix du contrôleur, du DMA, de la tâche de service et de la gestion électrique.
+Un hôte équipé d’un contrôleur SPI maître peut configurer les deux blocs. Le transport doit respecter les contraintes de la section 9 ; le logiciel hôte assure le service des données et des interruptions.
 
 ### Répartition des responsabilités
 
 | Microcontrôleur hôte | AstraPIO |
 | --- | --- |
-| Configure et vérifie les paramètres au démarrage | Échantillonne DIN et cadence DOUT dans le domaine CLK |
-| Prépare les valeurs de remplacement selon l’application | Conserve une valeur active et une valeur en attente |
-| Lit le préfixe reçu et l’acquitte après traitement | Gèle RX24 et lève IRQ jusqu’à acquittement |
-| Traite erreurs, dépassements et besoins de l’application | Exécute le programme PIO indépendamment du moteur temporel |
+| Charge le programme et affecte les broches au PIO | Exécute le programme et cadence les transitions GPIO |
+| Alimente TX et lit RX selon les niveaux des FIFO | Stocke deux octets par FIFO ; bloque PULL ou PUSH si nécessaire |
+| Signale les événements et traite les sources IRQ | Attend EVENT avec AWAIT ; signale données et erreurs par IRQ |
+| Configure le moteur temporel, lit ses captures et prépare ses valeurs TX | Capture et régénère le flux ; applique le remplacement atomique indépendamment du PIO |
 
 Le transfert SPI ne doit pas être exécuté dans une interruption qui préempte un autre transfert sur le même périphérique. Une tâche propriétaire du pilote peut traiter IRQ et les demandes de mise à jour. Un transfert DMA est possible, mais sa fin logique inclut le dernier front sur le fil et le temps de désélection CS.
 
-### Cycle de vie d’une mise à jour
+### Mise à jour du moteur temporel
 
 Écrire les deux moitiés shadow → relire → COMMIT → attendre COMMIT_PENDING=0. Le mot actif ne change qu’au début d’une nouvelle trame qualifiée. Une demande reçue au voisinage exact de ce début ne garantit pas sa prise en compte dans cette trame : confirmer le commit suffisamment avant le premier front pour imposer une frontière précise.
 
