@@ -1,19 +1,25 @@
 # Exemples AstraPIO ABI 5
 
-Deux petits programmes sources compatibles avec la version finale :
+| Programme | Ressources | Fonction et limites |
+|---|---|---|
+| [UART TX](compact/uart_tx.pio) | 14 instructions, uio0, masque `0x0001` | Émission 8N1, 115 740,7 bauds calculés à CLK 50 MHz ; pas de récepteur ni de contrôle de flux |
+| [Émission série SPI](compact/spi_tx.pio) | 9 instructions, uio0 MOSI et uio1 SCK, masque `0x0003` | MSB en premier ; 3,125 Mbit/s à l’intérieur de l’octet, rapport cyclique 25 % ; CS et MISO non gérés |
 
-- `compact/uart_tx.pio` : émission UART, 14 instructions.
-- `compact/spi_tx.pio` : émission série SPI, 9 instructions.
+Depuis la racine du dépôt :
 
-Le nom de sous-dossier `compact/` est conservé pour garder le test UART
-officiel inchangé. Il contient uniquement ces deux sources compatibles ABI 5,
-pas les anciennes variantes du circuit.
+```sh
+python3 tools/pioasm.py --abi 5 examples/compact/uart_tx.pio
+python3 tools/pioasm.py --abi 5 examples/compact/spi_tx.pio
+```
 
-Toujours assembler avec `python3 tools/pioasm.py --abi 5 ...` depuis la racine
-(consulter `--help` pour les options de sortie). Les anciens binaires ABI 3/4
-ne sont pas compatibles. Régler masque, directions et cadence avant exécution.
-Ces exemples ne prétendent pas implémenter des contrôleurs UART/SPI complets.
+Les deux programmes consomment les octets de la FIFO TX. `PULL` attend lorsque
+celle-ci est vide ; des pauses entre octets sont donc possibles. Les débits
+dans le tableau supposent CLK à 50 MHz et ne représentent pas un débit
+soutenu garanti par le transport SPI hôte.
 
-Le cas WS2812 utilise le moteur temporel configurable en parallèle du PIO :
-voir `test/ws2812/README.md`, `test/test_ws2812_counter.py` et le pilote
-`firmware/pio_timed.c`. Aucun ancien programme double-contexte n'est actif.
+Charger le programme à l’arrêt, configurer son masque de sorties, positionner
+PC à zéro, puis lancer le PIO. Voir le [démarrage rapide](../docs/getting-started.md)
+et la [référence des instructions](../docs/reference.md).
+
+Le [patching WS2812](../docs/application-notes/AN-APIO-001-ws2812-live-patching.md)
+utilise le moteur temporel ; il ne consomme pas de mots de programme PIO.

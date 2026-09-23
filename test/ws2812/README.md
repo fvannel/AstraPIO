@@ -21,7 +21,7 @@ error flags and independent PIO progress are checked.
 ## Reproduce
 
 From the repository root, create/activate the Python environment as described
-in the root README and verify the frozen source and artifacts:
+in the [test guide](../README.md) and verify the frozen source and artifacts:
 
 ```sh
 source .venv/bin/activate

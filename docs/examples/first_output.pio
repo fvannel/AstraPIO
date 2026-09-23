@@ -1,0 +1,4 @@
+LDI 2
+DIR
+SET 1,1
+HALT
