@@ -3,7 +3,7 @@
 
 // Mode 0, MSB first, one 32-bit transaction per CS assertion:
 // [command:8][address:8][data:16]. 0x02 writes, 0x03 reads.
-// Oversampling, not a separate SCK clock domain. See docs/reference.md for limits.
+// Oversampling, not a separate SCK clock domain. See docs/compact-v3.md for limits.
 module pio_spi (
     input wire clk, rst_n,
     input wire sck, mosi, cs_n,

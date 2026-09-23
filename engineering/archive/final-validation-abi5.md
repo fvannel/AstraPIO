@@ -86,6 +86,6 @@ niveaux électriques, adaptation de tension, carte et LED réelles. Aucune
 simulation SDF ni qualification sur silicium n’est revendiquée. La fusion
 de PR149 signifie acceptation de la révision, pas fabrication achevée.
 
-La [datasheet ABI 5](datasheet/README.md) décrit le comportement programmé et
+La [datasheet ABI 5](../../docs/datasheet/README.md) décrit le comportement programmé et
 les limites connues. Le suivi automatique reste arrêté ; aucune nouvelle
 construction matérielle ou soumission n’est autorisée par cette documentation.

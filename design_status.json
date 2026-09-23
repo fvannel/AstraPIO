@@ -52,9 +52,9 @@
   "provisional_sram_precheck_nonblocking_authorized": false,
   "automatic_monitoring": "PAUSED",
   "micro_adaptations_approved": false,
-  "study_notes": "docs/notes/micro-adaptations/micro-studies.md",
+  "study_notes": "engineering/archive/notes/micro-adaptations/micro-studies.md",
   "release_manifest": "release/manifest.json",
-  "historical_status_snapshots": "docs/notes/registres",
+  "historical_status_snapshots": "engineering/archive/notes/registres",
   "remaining_validation_limits": [
     "No SDF-annotated simulation",
     "LPC546xx SPI/DMA, voltage translation, board clock and real LED timing remain to verify on hardware"

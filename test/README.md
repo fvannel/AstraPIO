@@ -15,9 +15,21 @@ Verilog gelés sont conservés dans `vendor/ihp-open-pdk/`.
 La variable `PDK_ROOT` permet toujours une installation externe.
 Utiliser Icarus 13 et les dépendances Python de `requirements.txt`.
 
-Les anciens tests SRAM/dual-context et leurs outils ont été retirés du
-répertoire actif ; leur bilan est dans `docs/notes/` et leur code reste
-dans l'historique Git. Aucun scénario de la suite finale n'a été supprimé.
+Depuis la racine du dépôt, préparer puis lancer les vérifications locales :
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r test/requirements.txt
+python3 tools/check_final_release.py
+make check
+make test
+make -C test/ws2812 MODE=rtl
+make -C test/ws2812 MODE=gl
+```
+
+Un compilateur C est nécessaire pour les tests des pilotes. Ces commandes
+ne construisent pas de nouveau GDS et ne soumettent rien à Tiny Tapeout.
 
 Ces simulations sont fonctionnelles, sans SDF. Voir
-[le bilan de validation](../docs/validation-finale.md) pour leur portée.
+[le dossier de validation](../engineering/README.md) pour leur portée.
