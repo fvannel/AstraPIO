@@ -3,8 +3,8 @@
 #define PIO_TIMED_H
 #include "pio_host.h"
 
-/* AstraPIO ABI 5 timed engine: identity 0x5449 / version 0x0118.
- * Configure pulse timing and routing for the application's input stream.
+/* EXPERIMENTAL: requires timed extension identity 0x5449 / version 0x0118.
+ * This extension is NOT present in the submitted compact 946648ff chip.
  * Serialize ALL calls on a device. The board-specific SPI/DMA callback and
  * electrical interface are supplied by the application and not tested here. */
 typedef struct {

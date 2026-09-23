@@ -12,8 +12,10 @@ Le contrat d’utilisation du composant est décrit dans la
 - [Artefacts et manifeste d’identité](../release/README.md).
 
 Le contrôle `python3 tools/check_final_release.py` vérifie les empreintes des
-50 fichiers protégés. Une identité vérifiée n’est pas une nouvelle simulation
-ni une nouvelle qualification physique.
+50 fichiers protégés, ainsi que les quatre corrections éditoriales exactes
+décrites dans [la provenance des textes](../release/reference-text/README.md).
+Une identité vérifiée n’est pas une nouvelle simulation ni une nouvelle
+qualification physique.
 
 ## Résultats de référence
 

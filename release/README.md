@@ -12,8 +12,12 @@ et du scénario WS2812 complémentaire.
 
 `manifest.json` lie ces fichiers, les modèles de simulation et 25 fichiers
 sources/outils à leurs empreintes SHA-256. Les empreintes des sources ont été
-calculées directement depuis le commit soumis puis comparées aux fichiers
-locaux. Vérification : `python3 tools/check_final_release.py` à la racine.
+calculées directement depuis le commit soumis. Pour les quatre fichiers dont
+seuls des textes ont été corrigés, les [copies originales](reference-text/README.md)
+gardent ces empreintes ; le contrôle reconstruit chaque fichier actuel par une
+liste fermée de remplacements et exige une égalité byte pour byte. Les autres
+fichiers sont comparés directement aux empreintes originales.
+Vérification : `python3 tools/check_final_release.py` à la racine.
 Ce contrôle d'identité n'est pas un test fonctionnel ni une nouvelle qualification.
 
 Ces artefacts correspondent exclusivement à la source identifiée ci-dessus ;

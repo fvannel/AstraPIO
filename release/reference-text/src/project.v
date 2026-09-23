@@ -5,7 +5,7 @@
 
 `default_nettype none
 
-// AstraPIO ABI 5: programmable PIO and independent timed pulse-I/O engine.
+// General-purpose PIO prototype. The target frequency and tile fit are unproven.
 module tt_um_fabien_pio (
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
